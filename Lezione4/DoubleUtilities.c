@@ -52,9 +52,9 @@ void printMatDGraph( MatrixDouble matrix )
 			putchar('|');
 		
 		for( int j = 0; j < matrix.ncols - 1; j++ )
-			printf("%lf", matrix.val[i][j]);
+			printf("% 10lf,", matrix.val[i][j]);
 		
-		printf("%lf", matrix.val[i][matrix.ncols - 1]);
+		printf("% 10lf", matrix.val[i][matrix.ncols - 1]);
 		if( i + 1 < matrix.nrows )
 			printf("|\n");	
 	}
@@ -66,12 +66,13 @@ MatrixDouble readMatD(char * filename, int nrows, int ncols)
 {
 	FILE * file = fopen( filename, "r" );
 	
-	matrix = allocMatD( nrows, ncols );
+	MatrixDouble matrix = allocMatD( nrows, ncols );
 	for( int i = 0; i < nrows; i ++ )
-		for( int j = 0; j < ncols < j++ )
+		for( int j = 0; j < ncols; j++ )
 			fscanf( file, "%lf", matrix.val[i] + j );
 	
 	fclose(file);
+	return matrix;
 }
 
 void freeMatD( MatrixDouble matrix )
@@ -84,8 +85,6 @@ void freeMatD( MatrixDouble matrix )
 	free(matrix.val);
 	matrix.val = NULL;
 }
-
-
 
 ArrayDouble buildArrD ( int length, ... )
 {
