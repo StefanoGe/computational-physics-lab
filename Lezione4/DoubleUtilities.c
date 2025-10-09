@@ -139,5 +139,9 @@ ArrayDouble diffArrD( ArrayDouble array1, ArrayDouble array2)
 	return diffArray;
 }
 
-
+void carrTimesScalarD( double * array, int length, double scalar )
+{
+	for( int i = 0; i < length; i++)
+		array[i] *= scalar;
+}
 
