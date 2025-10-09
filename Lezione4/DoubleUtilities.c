@@ -11,17 +11,81 @@ typedef struct _arrayDouble
 	
 } ArrayDouble;
 
+typedef struct _MatrixDouble
+{
+	double ** val;
+	int nrows;
+	int ncols;
+} MatrixDouble;
+
 ArrayDouble allocArrD ( int length)
 {
 	ArrayDouble array;
 	array.length = length;
 	array.val = (double *)malloc(length * sizeof(double));
 	if (array.val == NULL) {
-		printf("Errore nell'allocazione della memoria\n");
+		printf("Errore nell'allocazione della memoria in funzione allocArrD\n");
 		exit(1);
     }
 	return array;
 }
+
+MatrixDouble allocMatD ( int nrows, int ncols )
+{
+	MatrixDouble matrix;
+	matrix.nrows = nrows;
+	matrix.ncols = ncols;
+	
+	matrix.val = (double **)malloc( nrows * sizeof(double*) );
+	for( int i = 0; i < nrows; i++ )
+		matrix.val[i] = (double *)malloc(ncols *sizeof(double));
+		
+	return matrix;
+}
+
+void printMatDGraph( MatrixDouble matrix )
+{
+	putchar('[');
+	for( int i = 0; i < matrix.nrows; i++ )
+	{
+		if( i != 0 )
+			putchar('|');
+		
+		for( int j = 0; j < matrix.ncols - 1; j++ )
+			printf("%lf", matrix.val[i][j]);
+		
+		printf("%lf", matrix.val[i][matrix.ncols - 1]);
+		if( i + 1 < matrix.nrows )
+			printf("|\n");	
+	}
+	putchar(']');
+	putchar('\n');
+}
+
+MatrixDouble readMatD(char * filename, int nrows, int ncols)
+{
+	FILE * file = fopen( filename, "r" );
+	
+	matrix = allocMatD( nrows, ncols );
+	for( int i = 0; i < nrows; i ++ )
+		for( int j = 0; j < ncols < j++ )
+			fscanf( file, "%lf", matrix.val[i] + j );
+	
+	fclose(file);
+}
+
+void freeMatD( MatrixDouble matrix )
+{
+	for(int i = 0; i < matrix.nrows; i++)
+	{
+		free(matrix.val[i]);
+		matrix.val[i] = NULL;
+	}
+	free(matrix.val);
+	matrix.val = NULL;
+}
+
+
 
 ArrayDouble buildArrD ( int length, ... )
 {
