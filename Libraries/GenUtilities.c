@@ -9,3 +9,10 @@ FILE * openFile( char * fileName, char * mode )
     }
     return file;
 }
+
+void raiseErr( char * errorMessage )
+{
+	printf("%s", errorMessage);
+	putchar('\n');
+	exit(EXIT_FAILURE);
+}

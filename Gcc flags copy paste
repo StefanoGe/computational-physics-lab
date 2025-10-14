@@ -4,4 +4,4 @@ g ++ :
 
 gcc :
 
--Wall -pedantic-errors -Wall -Wextra -Wconversion -Werror -std=c17
+sh -c 'mkdir -p "bin" && gcc -Wall -pedantic-errors -Wextra -Wconversion -Werror -Wno-sign-conversion -std=c17 -o "%d/bin/%e" "%f" -I"%d/../Libraries"'
