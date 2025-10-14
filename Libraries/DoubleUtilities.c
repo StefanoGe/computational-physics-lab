@@ -196,3 +196,16 @@ void printDatMatD( MatrixDouble matrix, char * filename, char * format )
 	}
 	fclose(fileDat);
 }
+
+ArrayDouble linspaceD ( double start, double end, int num_values )
+{
+	if (num_values < 2)
+		raiseErr("You must ask for at least 2 values in function linspaceD");
+		
+	ArrayDouble array = allocArrD( num_values);
+	const int n_increments = num_values - 1;
+	for(int i = 0; i <= n_increments; i ++)
+		array.val[ i ] = (end - start) * ((double) i / n_increments) + start;
+	
+	return array;
+}
