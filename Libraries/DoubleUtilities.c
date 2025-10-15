@@ -3,14 +3,14 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdarg.h>
+#include <string.h>
 #include "GenUtilities.c"
-#include "string.h"
+#include "IntUtilities.c"
 
 typedef struct _arrayDouble
 {
 	double * val;
 	int length;
-	
 } ArrayDouble;
 
 typedef struct _MatrixDouble
@@ -20,16 +20,91 @@ typedef struct _MatrixDouble
 	int ncols;
 } MatrixDouble;
 
+
 ArrayDouble allocArrD ( int length)
 {
 	ArrayDouble array;
 	array.length = length;
 	array.val = (double *)malloc(length * sizeof(double));
-	if (array.val == NULL) {
-		printf("Errore nell'allocazione della memoria in funzione allocArrD\n");
-		exit(1);
-    }
+	
+	if (array.val == NULL)
+		raiseErr("Errore nell'allocazione della memoria in funzione allocArrD\n");
+		
 	return array;
+}
+
+void freeArrD( ArrayDouble array )
+{
+	free( array.val );
+	array.val = NULL;
+}
+
+ArrayDouble buildArrD ( int length, ... )
+{
+	va_list list;
+	va_start(list, length);
+	
+	ArrayDouble array = allocArrD( length );
+	
+	for( int i = 0; i < length; i++ )
+		array.val[ i ] = va_arg( list, double );
+		
+	va_end(list);
+	
+	return array;
+}
+
+ArrayDouble linspaceD ( double start, double end, int num_values )
+{
+	if (num_values < 2)
+		raiseErr("You must ask for at least 2 values in function linspaceD");
+		
+	ArrayDouble array = allocArrD( num_values);
+	const int n_increments = num_values - 1;
+	for(int i = 0; i <= n_increments; i ++)
+		array.val[ i ] = (end - start) * ((double) i / n_increments) + start;
+	
+	return array;
+}
+
+ArrayDouble diffArrD( ArrayDouble array1, ArrayDouble array2)
+{
+	if (array1.length != array2.length )
+		raiseErr("Tried to subtract arrays of different sizes in function "
+		"diffArrD\n");
+	
+	ArrayDouble diffArray = allocArrD( array1.length );
+	
+	for ( int i = 0; i < array1.length; i++ )
+		diffArray.val[i] = array1.val[i] - array2.val[i];
+		
+	return diffArray;
+}
+
+void printArrDPar (ArrayDouble array)
+{
+	putchar('[');
+	for(int i = 0; i < array.length; i ++)
+		printf("%.10lf, ", array.val[i]);
+	printf("]\n");
+}
+
+void setValueArrD(ArrayDouble array, double value)
+{
+	for( int i = 0; i < array.length; i++ )
+		array.val[i] = value;
+}
+
+void cpArrD( ArrayDouble source, ArrayDouble destination )
+{
+	if( source.length != destination.length )
+	{
+		printf( "In function cpArrD source and destination must be of"
+		"the same length! [%d; %d]\n", source.length, destination.length );
+		exit(EXIT_FAILURE);
+	}
+	for(int i = 0; i < source.length; i ++)
+		destination.val[i] = source.val[i];
 }
 
 MatrixDouble allocMatD ( int nrows, int ncols )
@@ -39,6 +114,7 @@ MatrixDouble allocMatD ( int nrows, int ncols )
 	matrix.ncols = ncols;
 	
 	matrix.val = (double **)malloc( nrows * sizeof(double*) );
+	
 	for( int i = 0; i < nrows; i++ )
 		matrix.val[i] = (double *)malloc(ncols *sizeof(double));
 		
@@ -88,76 +164,12 @@ void freeMatD( MatrixDouble matrix )
 	matrix.val = NULL;
 }
 
-ArrayDouble buildArrD ( int length, ... )
-{
-	va_list list;
-	va_start(list, length);
-	
-	ArrayDouble array = allocArrD( length );
-	
-	for( int i = 0; i < length; i++ )
-		array.val[ i ] = va_arg( list, double );
-		
-	va_end(list);
-	
-	return array;
-}
-
-void freeArrD( ArrayDouble array )
-{
-	free( array.val );
-	array.val = NULL;
-}
-
-void printArrDPar (ArrayDouble array)
-{
-	putchar('[');
-	for(int i = 0; i < array.length; i ++)
-		printf("%.10lf, ", array.val[i]);
-	printf("]\n");
-}
-
-void setValueArrD(ArrayDouble array, double value)
-{
-	for( int i = 0; i < array.length; i++ )
-		array.val[i] = value;
-}
-
-
-ArrayDouble diffArrD( ArrayDouble array1, ArrayDouble array2)
-{
-	if (array1.length != array2.length )
-	{
-		printf("Tried to subtract arrays of different sizes in function "
-		"diffArrD\n");
-		exit(EXIT_FAILURE);
-	}
-	
-	ArrayDouble diffArray = allocArrD( array1.length );
-	
-	for ( int i = 0; i < array1.length; i++ )
-		diffArray.val[i] = array1.val[i] - array2.val[i];
-		
-	return diffArray;
-}
 
 ArrayDouble getRowMatD( MatrixDouble matrix, int row )
 {
 	ArrayDouble array = allocArrD( matrix.ncols );
 	array.val = matrix.val[ row ];
 	return array;
-}
-
-void cpArrD( ArrayDouble source, ArrayDouble destination )
-{
-	if( source.length != destination.length )
-	{
-		printf( "In function cpArrD source and destination must be of"
-		"the same length! [%d; %d]\n", source.length, destination.length );
-		exit(EXIT_FAILURE);
-	}
-	for(int i = 0; i < source.length; i ++)
-		destination.val[i] = source.val[i];
 }
 
 void passArrayToRowMatD( MatrixDouble matrix, int row, ArrayDouble array )
@@ -170,6 +182,12 @@ void passArrayToRowMatD( MatrixDouble matrix, int row, ArrayDouble array )
 	}
 	
 	matrix.val[row] = array.val;
+}
+
+void cpArrayToRowMatD( MatrixDouble matrix, int row, ArrayDouble array )
+{
+	ArrayDouble rowMat = getRowMatD( matrix, row );
+	cpArrD( array, rowMat );
 }
 
 MatrixDouble transposeMatD( MatrixDouble matrix)
@@ -197,15 +215,96 @@ void printDatMatD( MatrixDouble matrix, char * filename, char * format )
 	fclose(fileDat);
 }
 
-ArrayDouble linspaceD ( double start, double end, int num_values )
+void setValueMatD( MatrixDouble matrix, double value )
 {
-	if (num_values < 2)
-		raiseErr("You must ask for at least 2 values in function linspaceD");
-		
-	ArrayDouble array = allocArrD( num_values);
-	const int n_increments = num_values - 1;
-	for(int i = 0; i <= n_increments; i ++)
-		array.val[ i ] = (end - start) * ((double) i / n_increments) + start;
-	
-	return array;
+	for(int i = 0; i < matrix.nrows; i ++)
+		for(int j = 0; j < matrix.ncols; j ++)
+			matrix.val[i][j] = value;
 }
+
+char * firstWS( char * s )
+{
+	while( (*s != '\0') && ( *s != ' ' ))
+		s++;
+	return s;
+}
+
+ArrayInt parseIndices( const char * select )
+{
+	int count = 0;
+	char * copy = malloc(sizeof(char) * (strlen( select ) + 1) );
+	strcpy( copy, select );
+	char * token = strtok(copy, " ");
+	
+	while( token)
+	{
+		count ++;
+		token = strtok(NULL, " ");
+	}
+	free(copy);
+
+	ArrayInt selIndices = allocArrI( count );
+	copy = malloc(sizeof(char) * (strlen( select ) + 1) );
+	strcpy( copy, select );
+	token = strtok(copy, " ");
+	int i = 0;
+	while( token )
+	{
+		printf("%s\n", token);
+		selIndices.val[i++] = atoi(token);
+		token = strtok(NULL, " ");
+	}
+	free(copy);
+	return selIndices;
+}
+
+MatrixDouble sliceMatD( MatrixDouble matrix, char * rowSelect, char * colSelect )
+{	
+	ArrayInt rowIndices = parseIndices( rowSelect );
+	ArrayInt colIndices = parseIndices( colSelect );
+	
+	printArrIPar(rowIndices);
+	printArrIPar(colIndices);
+	
+	const int newCol = colIndices.length;
+	const int newRow = rowIndices.length;
+	
+	if( newRow > matrix.nrows )
+		raiseErr( "Sliced matrix should have no more rows than starting one.\n" );
+		
+	if( newCol > matrix.ncols )
+		raiseErr( "Sliced matrix should have no more cols than starting one.\n" );
+	
+	MatrixDouble newMatrix = allocMatD( newRow, newCol );
+	
+	for( int i = 0; i < newRow; i++ )
+	{
+		for( int j = 0; j < newCol; j++ )
+			newMatrix.val[i][j] 
+				= matrix.val[ rowIndices.val[i] ][colIndices.val[j]];
+	}
+	freeArrI( rowIndices );
+	freeArrI( colIndices );
+	
+	return newMatrix;
+}
+
+void cpMatToMatD( MatrixDouble source, MatrixDouble dest, 
+	int startRow, int startCol )
+{
+	// add guards later
+	
+	for( int i = 0; i < source.nrows; i ++ )
+		for( int j = 0; j < source.ncols; j++ )
+		
+			dest.val[startRow + i][startCol + j] = source.val[i][j];
+}
+
+void divMat( MatrixDouble matrix, double num, MatrixDouble dest )
+{
+	// Aggiungi guard
+	for( int i = 0; i < matrix.nrows; i ++ )
+		for( int j = 0; j < matrix.ncols; j++ )
+			dest.val[i][j] = matrix.val[i][j] / num;
+}
+
