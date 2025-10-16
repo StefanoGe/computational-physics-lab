@@ -6,6 +6,9 @@
 #include <string.h>
 #include "GenUtilities.c"
 #include "IntUtilities.c"
+#include <stdbool.h>
+
+#define CREATE_MAT NULL
 
 typedef struct _arrayDouble
 {
@@ -19,6 +22,7 @@ typedef struct _MatrixDouble
 	int nrows;
 	int ncols;
 } MatrixDouble;
+
 
 
 ArrayDouble allocArrD ( int length)
@@ -307,4 +311,59 @@ void divMat( MatrixDouble matrix, double num, MatrixDouble dest )
 		for( int j = 0; j < matrix.ncols; j++ )
 			dest.val[i][j] = matrix.val[i][j] / num;
 }
+
+
+void diagMatD( MatrixDouble matrix, double value )
+{
+	if( matrix.nrows != matrix.ncols )
+		raiseErr("matrix must be square! In func diagMatD\n");
+		
+	int const dim = matrix.nrows;
+	
+	for( int i = 0; i < dim; i++ )
+		for( int j = 0; j < dim; j++ )
+			matrix.val[ i ][ j ] = ( i == j ) ? value : 0;
+}
+
+MatrixDouble matMultD( MatrixDouble mat1, MatrixDouble mat2, MatrixDouble * dest)
+{	
+	MatrixDouble tempMat = allocMatD( mat1.nrows, mat2.ncols );
+	setValueMatD( tempMat, 0 );
+	
+	for( int i = 0; i < mat1.nrows; i++ )
+		for( int j = 0; j < mat2.ncols; j++ )
+			for( int p = 0; p < mat1.ncols; p++ )
+			
+				tempMat.val[i][j] += mat1.val[i][p]* mat2.val[p][j];
+	/*
+	if(bool)
+	{
+		freeMatD(mat1);
+		freeMatD(mat2);
+	}
+	*/
+	
+	// Input CREATE_MAT as dest in order to use as dest a newly allocated matrix.
+	if( dest == CREATE_MAT )
+		return tempMat;
+	
+	freeMatD( *dest );
+	dest -> val = tempMat.val;
+	dest -> ncols = tempMat.ncols;
+	dest -> nrows = tempMat.nrows;
+	
+	return *dest;
+}
+
+MatrixDouble asMatrix( ArrayDouble arr )
+{
+	MatrixDouble matrix = allocMatD( arr.length, 1 );
+	
+	for( int i = 0; i < arr.length; i++ )
+		matrix.val[i][0] = arr.val[i];
+		
+	return matrix;
+	
+}
+
 
