@@ -1,5 +1,8 @@
 // GenericUtilities.c
 
+#ifndef SG_GENERIC_UTILITIES_C
+#define SG_GENERIC_UTILITIES_C
+
 FILE * openFile( char * fileName, char * mode )
 {
 	FILE * file;
@@ -16,3 +19,5 @@ void raiseErr( char * errorMessage )
 	putchar('\n');
 	exit(EXIT_FAILURE);
 }
+
+#endif

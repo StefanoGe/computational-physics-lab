@@ -55,46 +55,45 @@ ArrayDouble absErrArr( int n, int length )
 		array.val[i] = absoluteError( (double) i / ( length - 1), n );
 	return array;
 }
+
+MatrixDouble calcAbsErrMat( int max_N, int n_intervals )
+{
+	const int n_points = n_intervals + 1;
+	MatrixDouble absErrMat = allocMatD( n_points, max_N + 1 );
+	
+	ArrayDouble xAxis = linspaceD( 0, 1, n_intervals + 1);
+	cpArrayToColMatD(xAxis, absErrMat, 0, true );
+	
+	for(int N = 1; N < max_N; N ++)
+		for( int i = 0; i < n_points;  )
+	
+	return absErrMat;
+}
+
 // Nota: questo algoritmo è molto inefficiente. Si può fare molto di meglio.
 void analysis ( int max_N, int n_intervals )
 {
-	MatrixDouble matrix = allocMatD( max_N + 1, n_intervals + 1 );
+	MatrixDouble absErrMatrix = allocMatD( max_N + 1, n_intervals + 1 );
 	ArrayDouble xAxis = linspaceD( 0, 1, n_intervals + 1);
-	passArrayToRowMatD(matrix, 0, xAxis);
+	passArrayToRowMatD(absErrMatrix, 0, xAxis);
 	
 	for(int i = 1; i <= max_N; i++)
-		passArrayToRowMatD( matrix, i, 
+		passArrayToRowMatD( absErrMatrix, i, 
 							absErrArr( i, n_intervals + 1) );
+							
 	
 	
-	MatrixDouble traMatrix = transposeMatD(matrix);
+	printDatMatD(absErrMatrix, "e_approx.dat", "%.14lf ", true);
 	
-	printDatMatD(traMatrix, "e_approx.dat", "%.14lf ");
-	
-	freeMatD(matrix);
-	freeMatD(traMatrix);
+	freeAllMatD(absErrMatrix, NULL_MAT);
+	freeArrD( xAxis );
 }
 
 
 int main()
 {
-	printf("Hello world!");
+	printf("Hello world!!!");
 	analysis(10, 100);
 	
 	return 0;
 }
-
-
-
-/*
- *	ArrayFloat arr = allocArrF(10);
- *	setValueArrF(arr, 5);
- *	printArrFPar(arr);
- *	printf("Hello world!\n");
- */
-
-//void testExps()
-//{
-	//printf( "%lf\n", basicExp(1, 5) );
-	//printf( "%lf\n", dankExp(1, 5) );
-//}

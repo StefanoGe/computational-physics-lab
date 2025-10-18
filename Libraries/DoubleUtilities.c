@@ -1,5 +1,8 @@
 // Double.c
 
+#ifndef SG_DOUBLE_UTILITIES_C
+#define SG_DOUBLE_UTILITIES_C
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdarg.h>
@@ -9,6 +12,7 @@
 #include <stdbool.h>
 
 #define CREATE_MAT NULL
+#define NULL_MAT (MatrixDouble){NULL, 0,0}
 
 typedef struct _arrayDouble
 {
@@ -52,7 +56,7 @@ ArrayDouble buildArrD ( int length, ... )
 	
 	for( int i = 0; i < length; i++ )
 		array.val[ i ] = va_arg( list, double );
-		
+	
 	va_end(list);
 	
 	return array;
@@ -194,6 +198,20 @@ void cpArrayToRowMatD( MatrixDouble matrix, int row, ArrayDouble array )
 	cpArrD( array, rowMat );
 }
 
+void cpArrayToColMatD( ArrayDouble array, MatrixDouble dest, int col,
+		bool freeArr )
+{
+	if( dest.nrows != array.length )
+		raiseErr( "In function cpArrayToColMatD array and dest must be"
+				  "of same length!");
+	
+	for(int i = 0; i < array.length; i++)
+		dest.val[i][col] = array.val[i];
+	
+	if(freeArr)
+		freeArrD( array );
+}
+
 MatrixDouble transposeMatD( MatrixDouble matrix)
 {
 	MatrixDouble returnMatrix = allocMatD( matrix.ncols, matrix.nrows );
@@ -205,17 +223,33 @@ MatrixDouble transposeMatD( MatrixDouble matrix)
 	return returnMatrix;
 }
 
-void printDatMatD( MatrixDouble matrix, char * filename, char * format )
+void printDatMatD( MatrixDouble matrix, char * filename, char * format, 
+	bool doTranspose)
 {
 	FILE * fileDat = openFile( filename, "w" );
 	
-	for(int i = 0; i < matrix.nrows; i++)
+	if(doTranspose)
 	{
-		for(int j = 0; j < matrix.ncols; j++)
-			fprintf( fileDat, format, matrix.val[i][j]);
-		
-		putc('\n', fileDat);
+		for(int i = 0; i < matrix.ncols; i++)
+		{
+			for(int j = 0; j < matrix.nrows; j++)
+				fprintf( fileDat, format, matrix.val[j][i]);
+			
+			putc('\n', fileDat);
+		}
+	}else{
+		for(int i = 0; i < matrix.nrows; i++)
+		{
+			for(int j = 0; j < matrix.ncols; j++)
+				fprintf( fileDat, format, matrix.val[i][j]);
+			
+			putc('\n', fileDat);
+		}
 	}
+	
+
+	
+	
 	fclose(fileDat);
 }
 
@@ -366,4 +400,18 @@ MatrixDouble asMatrix( ArrayDouble arr )
 	
 }
 
+void freeAllMatD( MatrixDouble matrix, ... )
+{
+	va_list list;
+	va_start(list, matrix);
+	
+	do{
+		freeMatD(matrix);
+		matrix = va_arg( list, MatrixDouble );
+		// fprintf(stderr, "a\n");
+	}while( !(matrix.val == NULL && matrix.ncols == 0) );
+	
+	va_end(list);
+}
 
+#endif

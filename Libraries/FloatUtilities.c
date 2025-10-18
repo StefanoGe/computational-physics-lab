@@ -1,5 +1,8 @@
 // Float.c
 
+#ifndef SG_FLOAT_UTILITIES_C
+#define SG_FLOAT_UTILITIES_C
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdarg.h>
@@ -76,5 +79,5 @@ ArrayFloat diffArrF( ArrayFloat array1, ArrayFloat array2)
 	return diffArray;
 }
 
-
+#endif
 

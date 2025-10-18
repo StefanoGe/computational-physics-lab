@@ -1,3 +1,6 @@
+#ifndef SG_INTEGER_UTILITIES_C
+#define SG_INTEGER_UTILITIES_C
+
 #include <stdlib.h>
 
 
@@ -33,3 +36,5 @@ void printArrIPar (ArrayInt array)
 		printf("%d, ", array.val[i]);
 	printf("]\n");
 }
+
+#endif

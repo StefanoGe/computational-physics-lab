@@ -187,6 +187,8 @@ MatrixDouble planeTranslation( double x, double y )
 	matT.val[0][2] = x;
 	matT.val[1][2] = y;
 	
+	printMatDGraph(matT);
+	
 	return matT;
 }
 
@@ -196,9 +198,11 @@ MatrixDouble planeRotation( double theta )
 	
 	matR.val[0][0] = cos(theta);
 	matR.val[1][1] = matR.val[0][0];
-	matR.val[0][0] = 1;
+	matR.val[2][2] = 1;
 	matR.val[0][1] = sin(theta);
 	matR.val[1][0] = - matR.val[0][1];
+	
+	printMatDGraph(matR);\
 	
 	return matR;
 }
@@ -209,7 +213,10 @@ void testRotTra()
 	MatrixDouble R = planeRotation( PI/5 );
 	MatrixDouble Tright = planeTranslation(-3, 1);
 	
-	ArrayDouble z = buildArrD( 3, 2, 2, 1 );
+	ArrayDouble z = buildArrD( 3, 2.0, 2.0, 1.0 );
+	
+	printf("z is\n");
+	printArrDPar(z);
 	
 	MatrixDouble A = matMultD( Tleft, R, CREATE_MAT );
 	matMultD( A, Tright, &A );
@@ -241,15 +248,11 @@ void testRotTra()
 	printf("x is: \n");
 	printArrDPar( x );
 	
-	freeMatD(Tleft);
-	freeMatD(Tright);
-	freeMatD(R);
 	freeArrD(z);
-	freeMatD(z_mat);
-	freeMatD(b);
-	freeMatD(A);
 	freeArrD(y);
 	freeArrD(x);
+	
+	freeAllMatD( R, Tleft, Tright, z_mat, b, A, NULL_MAT );
 }
 
 int main()
