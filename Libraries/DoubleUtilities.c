@@ -247,9 +247,6 @@ void printDatMatD( MatrixDouble matrix, char * filename, char * format,
 		}
 	}
 	
-
-	
-	
 	fclose(fileDat);
 }
 
@@ -408,7 +405,7 @@ void freeAllMatD( MatrixDouble matrix, ... )
 	do{
 		freeMatD(matrix);
 		matrix = va_arg( list, MatrixDouble );
-		// fprintf(stderr, "a\n");
+		fprintf(stderr, "a\n");
 	}while( !(matrix.val == NULL && matrix.ncols == 0) );
 	
 	va_end(list);
