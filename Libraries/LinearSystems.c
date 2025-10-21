@@ -3,6 +3,16 @@
 #ifndef SG_LINEAR_SYSTEMS_C
 #define SG_LINEAR_SYSTEMS_C
 
+#include <stdio.h>
+#include <stdlib.h>
+#include <math.h>
+#include "DoubleUtilities.c"
+#include "GenUtilities.c"
+#include "IntUtilities.c"
+
+#define _FORW_SUBST 0
+#define _BACK_SUBST 1
+
 typedef struct {
 	
 	MatrixDouble U;
@@ -11,23 +21,38 @@ typedef struct {
 	
 } LUMats;
 
-void checkMatrixColHeight(MatrixDouble matrix, ArrayDouble colVec)
+typedef struct {
+	
+	MatrixDouble U;
+	MatrixDouble L;
+	MatrixDouble P;
+	int dim;
+	
+} LUP_Mats;
+
+static inline void checkMatrixColHeight(MatrixDouble matrix, ArrayDouble colVec,
+int func_caller)
 {
+	char * func = NULL;
+	if( func_caller == _FORW_SUBST )
+		func = "backSubst";
+	else if( func_caller == _BACK_SUBST )
+		func = "forwSubst";
+	
 	if( matrix.nrows != colVec.length )
-	{
-		printf("Matrix and colVec should have same height! err in func forwSubst.\n");
-		exit(EXIT_FAILURE);
-	}
-	if( matrix.ncols != matrix.nrows )
-	{
-		printf("La matrice deve essere quadrata! err in func forwSubst.\n");
-		exit(EXIT_FAILURE);
-	}
+		raiseErr( "Matrix and colVec should have same height!"
+		"err in func %s.\nmatrix.nrows = %d, colVec.length = %d", func,
+		matrix.nrows, colVec.length );
+	
+	if( matrix.nrows != colVec.length )
+		raiseErr( "Matrix should be square!"
+		"err in func %s.\nmatrix.nrows = %d, matrix.ncols = %d", func,
+		matrix.nrows, matrix.ncols );
 }
 
 ArrayDouble forwSubst( MatrixDouble matrix, ArrayDouble colVec)
 {
-	checkMatrixColHeight( matrix, colVec );
+	checkMatrixColHeight( matrix, colVec, _FORW_SUBST );
 	
 	const int n = colVec.length;
 	
@@ -48,7 +73,7 @@ ArrayDouble forwSubst( MatrixDouble matrix, ArrayDouble colVec)
 
 ArrayDouble backSubst( MatrixDouble matrix, ArrayDouble colVec)
 {
-	checkMatrixColHeight( matrix, colVec );
+	checkMatrixColHeight( matrix, colVec, _BACK_SUBST );
 	
 	const int n = colVec.length;
 	
@@ -76,6 +101,15 @@ LUMats allocLUMats( int dim )
 	return lumats;
 }
 
+LUP_Mats alloc_LUP( int dim )
+{
+	LUP_Mats lumats;
+	lumats.dim = dim;
+	lumats.L = allocMatD(dim, dim);
+	lumats.U = allocMatD(dim, dim);
+	lumats.P = allocMatD(dim, dim);
+	return lumats;
+}
 
 LUMats LUDecomp( MatrixDouble A )
 {
@@ -102,10 +136,29 @@ LUMats LUDecomp( MatrixDouble A )
 	return lumats;
 }
 
+static inline void LUD_helper( LUMats lumats, MatrixDouble Acp, int n, int dim )
+{
+	// Build U
+	for( int col = n; col < dim; col++ )
+		lumats.U.val[n][col] = Acp.val[n][col];
+	
+	// Buil L
+	for( int row = n + 1; row < dim; row ++ )
+		lumats.L.val[row][n] = Acp.val[row][n] / lumats.U.val[n][n];
+	
+	// Subtract over Acp
+	for( int row = 0; row < dim; row ++ )
+		for( int col = 0; col < dim; col ++ )
+	// Col/lines with index less/equal than n are set to 0 
+			Acp.val[row][col] -= ( row <= n || col <= n ) ? 0 :
+				lumats.L.val[row][n] * lumats.U.val[n][col];
+}
+
 LUMats LUDecompLow (MatrixDouble A)
 {
 	if( A.nrows != A.ncols )
-		raiseErr("A must be square! In func LUDecomp\n");
+		raiseErr("A must be square! In func LUDecomp\n"
+		"A.nrows = %d, A.ncols = %d", A.nrows, A.ncols);
 	
 	const int dim = A.nrows;
 	
@@ -119,24 +172,133 @@ LUMats LUDecompLow (MatrixDouble A)
 	diagMatD(lumats.L, 1);
 	
 	for (int n = 0; n < dim; n ++)
-	{
-		// Costruisco U
-		for( int i = n; i < dim; i++ )
-			lumats.U.val[n][i] = Acp.val[n][i];
-		
-		// Costruisco L
-		for( int j = n + 1; j < dim; j ++ )
-			lumats.L.val[j][n] = Acp.val[j][n] / lumats.U.val[n][n];
-			
-		// Sottraggo su Acp
-		for( int i = 0; i < dim; i ++ )
-			for( int j = 0; j < dim; j ++ )
-				Acp.val[i][j] -= lumats.L.val[i][n] * lumats.U.val[n][j];
-	}
+		LUD_helper( lumats, Acp, n, dim );
 	
 	freeMatD( Acp );
 	
 	return lumats;
 }
+
+inline static int find_pivot(MatrixDouble A_cp, int n)
+{
+	double max = fabs(A_cp.val[0][n]);
+	double current;
+	int max_index = 0;
+	
+	for( int row = 1; row < A_cp.nrows; row++ )
+		if( max <= ( current = fabs(A_cp.val[row][n] ) ) )
+		{	
+			max = current;
+			max_index = row;
+		}
+		
+	printMatDGraph(A_cp);
+	
+	fprintf(stderr,"max_index = %d\n", max_index);
+	
+	if( fabs(max) <= 1e-6 )
+		return -1;
+	
+	return max_index;
+}
+
+inline static void LUP_D_permuter ( LUP_Mats mats, MatrixDouble A_cp, int n )
+{
+	int pivot_row = find_pivot(A_cp, n);
+	
+	if( pivot_row == -1 )
+		raiseErr( "Matrix of which solution is to be found is singular!\n" );
+	
+	if( pivot_row == n )
+		return;
+		
+	exchange_rows( A_cp, n, pivot_row );
+	//exchange_rows( mats.L, n, pivot_row );
+	exchange_rows( mats.P, n, pivot_row );
+	
+}
+
+inline static void LUP_D_helper_bad( LUP_Mats mats, MatrixDouble Acp, int n, int dim )
+{
+	LUP_D_permuter(mats, Acp, n);
+	
+	// Build U
+	for( int col = n; col < dim; col++ )
+		mats.U.val[n][col] = Acp.val[n][col];
+	
+	// Build L
+	for( int row = n + 1; row < dim; row ++ )
+		mats.L.val[row][n] = Acp.val[row][n] / mats.U.val[n][n];
+	
+	// Subtract over Acp
+	for( int row = 0; row < dim; row ++ )
+		for( int col = 0; col < dim; col ++ )
+	// Col/lines with index less/equal than n are set to 0
+			Acp.val[row][col] -= mats.L.val[row][n] * mats.U.val[n][col];
+}
+
+void LUP_D_helper( LUP_Mats mats, MatrixDouble Acp, int n, int dim )
+{
+	int pivot = find_pivot( Acp, n );
+	
+	if( pivot == -1 )
+		raiseErr( "Matrix of which solution is to be found is singular!\n" );
+	
+	exchange_rows( mats.P, n, pivot );
+	
+	// Build U
+	for( int col = n; col < dim; col++ )
+		mats.U.val[n][col] = Acp.val[pivot][col];
+	
+	// Build L
+	for( int row = n + 1; row < dim; row ++ )
+		mats.L.val[row][n] = Acp.val[row][n] / mats.U.val[n][n];
+		
+	// Subtract on A
+		
+	for( int row = 0; row < dim; row++ )
+		for( int col = 0; col < dim; col++ )
+			Acp.val[row][col] -= mats.L.val[row][n] * mats.U.val[n][col];
+}
+
+
+LUP_Mats LUP_decomposition ( MatrixDouble A )
+{
+	if( A.nrows != A.ncols )
+		raiseErr("A must be square! In func LUDecomp\n"
+		"A.nrows = %d, A.ncols = %d", A.nrows, A.ncols);
+	
+	const int dim = A.nrows;
+	
+	LUP_Mats lup_mats = alloc_LUP( dim );
+	MatrixDouble A_cp = allocMatD( dim, dim );
+	cpMatToMatD( A, A_cp, 0, 0 );
+	
+	//printMatDGraph( A_cp );
+	
+	diagMatD(lup_mats.U, 0);
+	diagMatD(lup_mats.L, 1);
+	diagMatD(lup_mats.P, 1);
+	
+	for (int n = 0; n < dim; n ++)
+		LUP_D_helper( lup_mats, A_cp, n, dim );
+
+	matMultD( lup_mats.P, lup_mats.L, &lup_mats.L );
+	
+	freeMatD( A_cp );
+	
+	return lup_mats;
+}
+
+double detTri(MatrixDouble triMat)
+{
+	double determinant = 1;
+	for(int i = 0; i < triMat.nrows; i++)
+		determinant *= triMat.val[i][i];
+	
+	return determinant;
+}
+
+
 
 #endif

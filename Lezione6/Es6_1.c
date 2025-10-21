@@ -1,4 +1,4 @@
-// Es5_1.c LU Decomposition
+// Es6_1.c LU Decomposition
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -9,22 +9,28 @@
 #define PI 3.1415926535897932384
 
 
-void testLU( char * filename, int dim )
+void testLUP( char * filename, int dim )
 {
 	MatrixDouble testMat = readMatD( filename, dim, dim);
-	LUMats lumats = LUDecompLow ( testMat );
+	
+	LUP_Mats lup_mats = LUP_decomposition ( testMat );
 	
 	printf("Test of %s:\n", filename);
 	printMatDGraph(testMat);
-	printf("Upper is: \n");
-	printMatDGraph( lumats.U );
-	printf("Lower is: \n");
-	printMatDGraph( lumats.L );
-	printf("Determinant is: %lf\n", detTri(lumats.U));
 	
-	freeMatD(testMat);
-	freeMatD(lumats.U);
-	freeMatD(lumats.L);
+	printf("Upper is: \n");
+	printMatDGraph( lup_mats.U );
+	
+	printf("Lower is: \n");
+	printMatDGraph( lup_mats.L );
+	
+	printf("P is:\n");
+	printMatDGraph(lup_mats.P);
+	
+	printf("Determinant is: %lf\n", detTri(lup_mats.U));
+	printf("---------------------------------------\n");
+	
+	freeAllMatD(testMat, lup_mats.U, lup_mats.P, lup_mats.L, NULL_MAT);
 }
 
 MatrixDouble planeTranslation( double x, double y )
@@ -70,7 +76,7 @@ MatrixDouble buildAMatrix(  )
 }
 
 void printDebugRotra(MatrixDouble A, MatrixDouble z, MatrixDouble b,
-				LUMats lumat, ArrayDouble x, ArrayDouble y)
+				LUP_Mats lumat, ArrayDouble x, ArrayDouble y)
 {
 	printf("\nA matrix is:\n");
 	printMatDGraph( A );
@@ -102,7 +108,7 @@ void testRotTra(bool debug)
 	MatrixDouble b = matMultD( A, z, CREATE_MAT );
 	ArrayDouble b_arr = allocArrD( b.nrows );
 	
-	LUMats lumat = LUDecompLow( A );
+	LUP_Mats lumat = LUP_decomposition( A );
 	
 	for(int i = 0; i < b.nrows; i++)
 		b_arr.val[i] = b.val[i][0];
@@ -119,33 +125,12 @@ void testRotTra(bool debug)
 
 int main()
 {
-	testLU( "samplematrix1.txt", 3 );
-	testLU( "samplematrix2.txt", 4 );
-	testLU( "samplematrix3.txt", 4 );
+	testLUP( "data/samplematrix1.txt", 3 );
+	testLUP( "data/samplematrix2.txt", 4 );
+	testLUP( "data/samplematrix3.txt", 4 );
 	
 	testRotTra(true);
 	
 	
 	return 0;
 }
-
-/*
-void testDiag()
-{
-	MatrixDouble mat = allocMatD(5, 5);
-	diagMatD( mat, -3.7 );
-	printMatDGraph(mat);
-	freeMatD( mat );
-}
-
-void testSlice()
-{
-	MatrixDouble testMat = readMatD("samplematrix1.txt", 3, 3);
-	MatrixDouble slices = sliceMatD( testMat, "1 2", "1" );
-	printf("Sliced matrix is:\n");
-	printMatDGraph(slices);
-	
-	freeMatD( testMat );
-	freeMatD( slices );
-}
-*/

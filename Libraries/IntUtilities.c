@@ -10,6 +10,10 @@ typedef struct _arrayInt
 	int length;
 } ArrayInt;
 
+typedef struct {
+	int x;
+	int y;
+} Point2DI;
 
 ArrayInt allocArrI ( int length)
 {

@@ -12,6 +12,7 @@
 #include <stdbool.h>
 
 #define CREATE_MAT NULL
+#define NULL_ARR (ArrayDouble){NULL,0}
 #define NULL_MAT (MatrixDouble){NULL, 0,0}
 
 typedef struct _arrayDouble
@@ -26,8 +27,6 @@ typedef struct _MatrixDouble
 	int nrows;
 	int ncols;
 } MatrixDouble;
-
-
 
 ArrayDouble allocArrD ( int length)
 {
@@ -150,7 +149,7 @@ void printMatDGraph( MatrixDouble matrix )
 
 MatrixDouble readMatD(char * filename, int nrows, int ncols)
 {
-	FILE * file = fopen( filename, "r" );
+	FILE * file = openFile( filename, "r" );
 	
 	MatrixDouble matrix = allocMatD( nrows, ncols );
 	for( int i = 0; i < nrows; i ++ )
@@ -386,15 +385,31 @@ MatrixDouble matMultD( MatrixDouble mat1, MatrixDouble mat2, MatrixDouble * dest
 	return *dest;
 }
 
-MatrixDouble asMatrix( ArrayDouble arr )
+MatrixDouble asColMatrix( ArrayDouble arr, bool destroySource )
 {
 	MatrixDouble matrix = allocMatD( arr.length, 1 );
 	
 	for( int i = 0; i < arr.length; i++ )
 		matrix.val[i][0] = arr.val[i];
 		
+	if(destroySource)
+		freeArrD( arr );
+		
 	return matrix;
+}
+
+void freeAllArrD( ArrayDouble arr, ... )
+{
+	va_list list;
+	va_start(list, arr);
 	
+	do{
+		freeArrD(arr);
+		arr = va_arg( list, ArrayDouble );
+		//fprintf(stderr, "a\n");
+	}while( !(arr.val == NULL && arr.length == 0) );
+	
+	va_end(list);
 }
 
 void freeAllMatD( MatrixDouble matrix, ... )
@@ -405,10 +420,37 @@ void freeAllMatD( MatrixDouble matrix, ... )
 	do{
 		freeMatD(matrix);
 		matrix = va_arg( list, MatrixDouble );
-		fprintf(stderr, "a\n");
+		//fprintf(stderr, "a\n");
 	}while( !(matrix.val == NULL && matrix.ncols == 0) );
 	
 	va_end(list);
 }
+
+void exchange_rows( MatrixDouble matrix, int row1, int row2 )
+{
+	if( row1 >= matrix.nrows || row2 >= matrix.nrows )
+		raiseErr( "In func exchange_rows:\n"
+					"row indeces must be less than matrix.nrows."
+					"row1 = %d, row2 = %d", row1, row2 );
+	
+	if( row1 < 0 || row2 < 0 )
+		raiseErr( "In func exchange_rows:\n"
+					"indeces should be more than 0: "
+					"row1 = %d, row2 = %d", row1, row2 );
+	
+	if( row1 == row2 )
+		return;
+	
+	double temp = 0;
+	const int ncols = matrix.ncols;
+	
+	for( int col = 0; col < ncols; col++ )
+	{
+		temp = matrix.val[row1][col];
+		matrix.val[row1][col] = matrix.val[row2][col];
+		matrix.val[row2][col] = temp;
+	}
+}
+
 
 #endif
