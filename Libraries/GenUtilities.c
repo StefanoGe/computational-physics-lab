@@ -12,7 +12,7 @@
         exit(EXIT_FAILURE); \
     } while(0)
 
-#define eprint(a) fprintf( stderr, a "\n" )
+#define eprint(a, ...) fprintf( stderr, a "\n" __VA_OPT__(,) __VA_ARGS__ )
 
 FILE * openFile( char * fileName, char * mode )
 {

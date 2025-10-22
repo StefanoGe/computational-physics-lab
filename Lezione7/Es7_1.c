@@ -1,0 +1,61 @@
+#include <stdlib.h>
+#include <stdio.h>
+#include <DoubleUtilities.c>
+#include <LinearSystems.c>
+
+MatrixDouble build_matrix( double epsilon)
+{
+	MatrixDouble mat = allocMatD( 2,2 );
+	mat.val[0][0] = -epsilon;
+	mat.val[0][1] = 1;
+	mat.val[1][0] = 1;
+	mat.val[1][1] = -1;
+	
+	return mat;
+}
+
+
+void cond_numb_study( double eps )
+{
+	printf("eps = %e\n", eps);
+	MatrixDouble mat = build_matrix(eps);
+	ArrayDouble x = buildArrD(2, 1.0, 0.0);
+	ArrayDouble b = mat_vec_mult( mat, x, NULL );
+	
+	
+	printf("A is: ");
+	printMatDGraph(mat);
+	printf("x is: ");
+	printArrDPar( x, "%.30lf " );
+	printf("b is: ");
+	printArrDPar( b, "%.30lf " );
+
+	LUMats lumat= LUDecompLow( mat );
+	ArrayDouble z = forwSubst( lumat.L, b );
+	ArrayDouble x_calc = backSubst( lumat.U, z );
+	
+	printArrDPar( x_calc, "%.30lf " );
+	
+	MatrixDouble LU_product = matMultD( lumat.L, lumat.U, CREATE_MAT );
+	
+	MatrixDouble diff_matrix = mat_diffD( mat, LU_product, CREATE_MAT);
+	
+	printf( "A - LU:\n");
+	printMatDGraph( diff_matrix );
+	
+	// Condition number in sup-norm
+	
+	
+	
+	printf("------------------------------\n");
+}
+
+int main()
+{
+	
+	 cond_numb_study( 1e-12 );
+	 cond_numb_study( 1e-20 );
+	
+	return 0;
+}
+

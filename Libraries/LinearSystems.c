@@ -71,6 +71,30 @@ ArrayDouble forwSubst( MatrixDouble matrix, ArrayDouble colVec)
 	return solutions;
 }
 
+MatrixDouble forw_sub_mat( MatrixDouble L, MatrixDouble known_terms)
+{
+	const int dim = L.nrows;
+	const int n_sol = known_terms.ncols;
+	
+	MatrixDouble solutions = allocMatD( dim, n_sol );
+	
+	double partSum = 0;
+	
+	for( int p = 0; p < n_sol; p ++ )
+	{
+		for( int row = 0; row < dim; row++ )
+		{
+			partSum = 0;
+			for( int col = 0; col < row; col++ )
+				partSum += solutions.val[col][p] * L.val[row][col];
+			solutions.val[row][p] = 
+				(known_terms.val[row][p] - partSum)/L.val[row][row];
+		}
+	}
+	
+	return solutions;
+}
+
 ArrayDouble backSubst( MatrixDouble matrix, ArrayDouble colVec)
 {
 	checkMatrixColHeight( matrix, colVec, _BACK_SUBST );
@@ -300,5 +324,71 @@ double detTri(MatrixDouble triMat)
 }
 
 
+double vec_1norm( ArrayDouble vec )
+{
+	double sum = 0;
+	for( int i = 0; i < vec.length; i ++ )
+		sum+= fabs(vec.val[i]);
+	
+	return sum;
+}
+
+double vec_infnorm( ArrayDouble vec )
+{
+	double max = fabs(vec.val[0]);
+	double current;
+	
+	for(int i = 1; i < vec.length; i ++)
+		if( max < ( current = vec.val[i] ) )
+			max = current;
+	
+	return max;
+}
+
+double mat_infnorm( MatrixDouble A )
+{
+	double max = 0;
+	double current;
+
+	for( int i = 0; i < A.nrows; i ++ )
+	{
+		current = vec_1norm( getRowMatD( A, i ) );
+		if (current > max)
+			max = current;
+	}
+	
+	return max;
+}
+
+double mat_1norm( MatrixDouble A )
+{
+	double max = 0;
+	double sum = 0;
+
+	for( int j = 0; j < A.ncols; j ++ )
+	{
+		sum = 0;
+		for( int i = 0; i < A.nrows; i++  )
+			sum += A.val[i][j];
+		
+		if( max < sum )
+			max = sum;	
+	}
+	
+	return max;
+}
+
+
 
 #endif
+
+
+
+
+
+
+
+
+
+
+

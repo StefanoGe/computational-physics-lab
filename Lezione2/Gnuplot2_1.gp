@@ -15,7 +15,7 @@ set ylabel "True value deviation"
 p [2000:6000] [] "data.dat" u 1:2 w lp title "Right order", \
 	"data.dat" u 1:3 w lp title "Reversed order"
 
-pause -1 "Press Enter to continue and save plot"
+pause mouse close
 
 # --- Save to file ---
 set terminal pdfcairo enhanced

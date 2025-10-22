@@ -88,11 +88,11 @@ ArrayDouble diffArrD( ArrayDouble array1, ArrayDouble array2)
 	return diffArray;
 }
 
-void printArrDPar (ArrayDouble array)
+void printArrDPar (ArrayDouble array, char * format)
 {
 	putchar('[');
 	for(int i = 0; i < array.length; i ++)
-		printf("%.10lf, ", array.val[i]);
+		printf(format, array.val[i]);
 	printf("]\n");
 }
 
@@ -451,6 +451,61 @@ void exchange_rows( MatrixDouble matrix, int row1, int row2 )
 		matrix.val[row2][col] = temp;
 	}
 }
+
+ArrayDouble mat_vec_mult( MatrixDouble matrix, ArrayDouble array, 
+ArrayDouble * dest )
+{
+	if( matrix.ncols != array.length )
+		raiseErr( "In func mat_vec_mult:"
+					"matrix.mcols != array.length\n"
+					"matrix.ncols = %d, matrix.length = %d\n", 
+					matrix.ncols, array.length);
+					
+	MatrixDouble col_array = asColMatrix( array, false );
+
+	matMultD(matrix, col_array, &col_array);
+	
+	ArrayDouble final_arr = allocArrD( array.length );
+	
+	for( int i = 0; i < array.length; i ++)
+		final_arr.val[i] = col_array.val[i][0];
+	
+	freeMatD( col_array );
+	
+	if( dest == NULL )
+		return final_arr;
+	
+	freeArrD( *dest );
+	dest -> val = final_arr.val;
+	dest ->length = final_arr.length;
+	
+	return *dest;
+	
+	
+}
+
+MatrixDouble mat_diffD( MatrixDouble mat1, MatrixDouble mat2, MatrixDouble * dest)
+{	
+	MatrixDouble tempMat = allocMatD( mat1.nrows, mat2.ncols );
+	setValueMatD( tempMat, 0 );
+	
+	for( int i = 0; i < mat1.nrows; i++ )
+		for( int j = 0; j < mat2.ncols; j++ )
+			
+				tempMat.val[i][j] = mat1.val[i][j] - mat2.val[i][j];
+	
+	// Input CREATE_MAT as dest in order to use as dest a newly allocated matrix.
+	if( dest == CREATE_MAT )
+		return tempMat;
+	
+	freeMatD( *dest );
+	dest -> val = tempMat.val;
+	dest -> ncols = tempMat.ncols;
+	dest -> nrows = tempMat.nrows;
+	
+	return *dest;
+}
+
 
 
 #endif

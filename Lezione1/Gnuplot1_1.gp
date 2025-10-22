@@ -15,15 +15,20 @@ set ylabel "Absolute error"
 
 #set yrange [0:2]
 
-plot for [N = 1:4] "e_approx.dat" using 1:(column(N)+1) with linespoints title "N = ".N	
+set multiplot
 
-pause -1 "Press Enter to continue and save plot"
+plot [0: 1]for [N = 1:1] "e_approx.dat" using 1:(column(N + 1)) with linespoints title "N = ".N, \
+		x**(1+1)/(1+1)! with linespoints
+
+pause mouse close
 
 # --- Save to file ---
-set terminal pngcairo enhanced
-set output 'Confronto convergenze in valore assoluto.png'
+set terminal pdfcairo enhanced
+set output 'Confronto convergenze in valore assoluto.pdf'
 replot
 unset output
+
+unset multiplot
 
 unset logscale x
 unset logscale y
@@ -44,12 +49,10 @@ unset yrange
 
 plot for [N = 1:4] "rel_errors.dat" using 1:(column(N)+1) with linespoints title "N = ".N	
 
-# metto due pause perché se no mi ruba l'enter 
-pause -1
-pause -1 "Press Enter to continue and save plot"
+pause mouse close
 
 # --- Save to file ---
 set terminal pdfcairo enhanced
-set output 'Confronto convergenze relative.png'
+set output 'Confronto convergenze relative.pdf'
 replot
 unset output
