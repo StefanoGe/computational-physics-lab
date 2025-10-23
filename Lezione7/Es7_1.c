@@ -50,11 +50,32 @@ void cond_numb_study( double eps )
 	printf("------------------------------\n");
 }
 
-int main()
+void test_inv()
 {
+	MatrixDouble id = readMatD( "data/inv_test_matrix.txt", 3, 3 );
+	MatrixDouble known_terms = readMatD( "data/inv_test_matrix_2.txt", 3, 3 );
 	
+	MatrixDouble inv_id = mat_inv(id);
+	
+	eprint("ok 4\n");
+	
+	MatrixDouble inv_other = mat_inv(known_terms);
+	
+	printf("inv id:\n");
+	printMatDGraph(inv_id);
+	printf("Other inv:\n");
+	printMatDGraph(inv_other);
+}
+
+/*
 	 cond_numb_study( 1e-12 );
 	 cond_numb_study( 1e-20 );
+*/
+
+int main()
+{
+	test_inv();
+
 	
 	return 0;
 }

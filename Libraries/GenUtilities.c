@@ -6,6 +6,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+#define UNUSED(expr) do { (void)(expr); } while(0)
+
 #define raiseErr(msg, ...) \
     do { \
         fprintf(stderr, msg __VA_OPT__(,) __VA_ARGS__); \

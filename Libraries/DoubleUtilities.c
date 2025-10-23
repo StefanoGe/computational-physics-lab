@@ -15,6 +15,8 @@
 #define NULL_ARR (ArrayDouble){NULL,0}
 #define NULL_MAT (MatrixDouble){NULL, 0,0}
 
+typedef double(*Func_Ptr)(double);
+
 typedef struct _arrayDouble
 {
 	double * val;
@@ -211,15 +213,22 @@ void cpArrayToColMatD( ArrayDouble array, MatrixDouble dest, int col,
 		freeArrD( array );
 }
 
-MatrixDouble transposeMatD( MatrixDouble matrix)
+MatrixDouble transposeMatD( MatrixDouble matrix, MatrixDouble * dest)
 {
 	MatrixDouble returnMatrix = allocMatD( matrix.ncols, matrix.nrows );
 
 	for(int i = 0; i < matrix.nrows; i++)
 		for(int j = 0; j < matrix.ncols; j++)
 			returnMatrix.val[j][i] = matrix.val[i][j];
-			
-	return returnMatrix;
+	
+	if(dest == NULL)
+		return returnMatrix;
+		
+	freeMatD(*dest);
+	dest -> nrows = returnMatrix.nrows;
+	dest -> ncols = returnMatrix.ncols;
+	dest -> val = returnMatrix.val;
+	return *dest;
 }
 
 void printDatMatD( MatrixDouble matrix, char * filename, char * format, 
@@ -454,20 +463,22 @@ void exchange_rows( MatrixDouble matrix, int row1, int row2 )
 
 ArrayDouble mat_vec_mult( MatrixDouble matrix, ArrayDouble array, 
 ArrayDouble * dest )
-{
+{	
 	if( matrix.ncols != array.length )
 		raiseErr( "In func mat_vec_mult:"
-					"matrix.mcols != array.length\n"
+					"matrix.ncols != array.length\n"
 					"matrix.ncols = %d, matrix.length = %d\n", 
 					matrix.ncols, array.length);
+					
+	const int res_dim = matrix.nrows;
 					
 	MatrixDouble col_array = asColMatrix( array, false );
 
 	matMultD(matrix, col_array, &col_array);
 	
-	ArrayDouble final_arr = allocArrD( array.length );
+	ArrayDouble final_arr = allocArrD( res_dim );
 	
-	for( int i = 0; i < array.length; i ++)
+	for( int i = 0; i < res_dim; i ++)
 		final_arr.val[i] = col_array.val[i][0];
 	
 	freeMatD( col_array );
@@ -506,6 +517,15 @@ MatrixDouble mat_diffD( MatrixDouble mat1, MatrixDouble mat2, MatrixDouble * des
 	return *dest;
 }
 
+ArrayDouble build_from( ArrayDouble arr, Func_Ptr func )
+{
+	const int length = arr.length;
+	ArrayDouble ret_arr = allocArrD( length );
+	for( int i = 0; i < length; i++)
+		arr.val[i] = (*func)(arr.val[i]);
+	
+	return ret_arr;
+}
 
 
 #endif

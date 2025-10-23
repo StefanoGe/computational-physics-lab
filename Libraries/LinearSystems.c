@@ -13,6 +13,8 @@
 #define _FORW_SUBST 0
 #define _BACK_SUBST 1
 
+typedef double(*Func_Ptr)(double);
+
 typedef struct {
 	
 	MatrixDouble U;
@@ -29,6 +31,22 @@ typedef struct {
 	int dim;
 	
 } LUP_Mats;
+
+typedef struct {
+	
+	Func_Ptr * funcs;
+	int npar;
+	
+} Linear_Model;
+
+Linear_Model alloc_linear_model( int npar )
+{
+	Linear_Model model;
+	model.npar = npar;
+	model.funcs = ( Func_Ptr * ) malloc( sizeof(Func_Ptr) * npar );
+	
+	return model;
+}
 
 static inline void checkMatrixColHeight(MatrixDouble matrix, ArrayDouble colVec,
 int func_caller)
@@ -111,6 +129,30 @@ ArrayDouble backSubst( MatrixDouble matrix, ArrayDouble colVec)
 		for( int col = row + 1; col < n; col++ )
 			partSum += solutions.val[col] * matrix.val[row][col];
 		solutions.val[row] = (colVec.val[row] - partSum)/matrix.val[row][row];
+	}
+	
+	return solutions;
+}
+
+MatrixDouble back_sub_mat( MatrixDouble U, MatrixDouble known_terms)
+{
+	const int dim = U.nrows;
+	const int n_sol = known_terms.ncols;
+	
+	MatrixDouble solutions = allocMatD( dim, n_sol );
+	
+	double partSum = 0;
+	
+	for( int p = 0; p < n_sol; p ++ )
+	{
+		for( int row = dim - 1; row >= 0; row-- )
+		{
+			partSum = 0;
+			for( int col = row + 1; col < dim; col++ )
+				partSum += solutions.val[col][p] * U.val[row][col];
+			solutions.val[row][p] = 
+				(known_terms.val[row][p] - partSum)/U.val[row][row];
+		}
 	}
 	
 	return solutions;
@@ -377,6 +419,87 @@ double mat_1norm( MatrixDouble A )
 	
 	return max;
 }
+
+MatrixDouble mat_inv ( MatrixDouble A )
+{
+	
+	LUMats lumats = LUDecompLow( A );
+	MatrixDouble id = allocMatD( A.nrows, A.ncols );
+	diagMatD( id, 1 );
+	
+	eprint("ok 1\n");
+	
+	MatrixDouble inv_U = back_sub_mat( lumats.U, id );
+	MatrixDouble inv_L = forw_sub_mat( lumats.L, id );
+	
+	eprint("ok 2\n");
+	
+	MatrixDouble inv = matMultD( inv_U, inv_L, CREATE_MAT );
+	
+	eprint("ok 3\n");
+	
+	freeAllMatD( lumats.U, lumats.L, id, inv_L, inv_U, NULL_MAT );
+	
+	eprint("ok 3.5\n");
+	
+	return inv;
+}
+
+ArrayDouble min_x ( MatrixDouble A, ArrayDouble b )
+{
+	if( A.nrows < A.ncols )
+		raiseErr( "In func min_x: A.nrows < A.ncols\n"
+		"A.nrows = %d, A.ncols = %d", A.nrows, A.ncols );
+		
+	if( A.nrows != b.length )
+		raiseErr( "In func min_x: A.nrows and b.length should have same length.n"
+		"A.nrows = %d, b.length = %d", A.nrows, b.length );
+	
+	MatrixDouble Atr = transposeMatD( A, CREATE_MAT );
+	MatrixDouble Atr_A = matMultD( Atr, A, CREATE_MAT );
+	ArrayDouble Atr_b = mat_vec_mult( Atr, b, NULL );
+	LUMats lumat = LUDecompLow( Atr_A );
+	ArrayDouble z = forwSubst( lumat.L, Atr_b );
+	ArrayDouble x = backSubst( lumat.U, z );
+	
+	
+	freeAllMatD( Atr, Atr_A, lumat.U, lumat.L, NULL_MAT );
+	freeAllArrD( z, Atr_b, NULL_ARR );
+	
+	return x;
+}
+
+ArrayDouble linear_least_square_fitting( ArrayDouble x_data, ArrayDouble y_data,
+			Linear_Model model)
+{
+	if( x_data.length != y_data.length )
+		raiseErr( "must have same size\n" );
+		
+	const int n_parameters = model.npar;
+	const int n_data = x_data.length;
+		
+	MatrixDouble A = allocMatD( n_data, n_parameters );
+	
+	//Costruisco la matrice di f
+	
+	
+	for( int col = 0; col < n_parameters; col++ )
+		for( int row = 0; row < n_data; row++ )
+			A.val[ row ][ col ] = (*model.funcs[ col ])(x_data.val[row]);
+	
+	//La do in pasto a min_x
+	
+	ArrayDouble result = min_x( A, y_data );
+	
+	freeMatD(A);
+	
+	//Ho il risultato
+	
+	return result;
+}
+
+
+
 
 
 
