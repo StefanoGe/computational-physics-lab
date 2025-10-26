@@ -4,4 +4,13 @@ g ++ :
 
 gcc :
 
-sh -c 'mkdir -p "bin" && gcc -Wall -pedantic-errors -Wextra -Wconversion -Werror -Wno-sign-conversion -std=c17 -o "%d/bin/%e" "%f" -I"%d/../Libraries" -lm'
+Compile:
+
+sh -c 'mkdir -p "bin" && gcc -c -Wall -pedantic-errors -Wextra -Wconversion -Werror -Wno-sign-conversion -std=c23 -o "%d/../obj/%e.o" "%f" -I "%d/../header" -lm'
+
+Build:
+
+sh -c 'mkdir -p "bin" && gcc "%f" "%d/../Libraries/obj"/*.o -Wall -pedantic-errors -Wextra -Wconversion -Werror -Wno-sign-conversion -std=c23 -o "%d/bin/%e" -I "%d/../Libraries/header" -lm'
+
+
+/usr/bin/ld: cannot find /home/stefano/University/Fisica_Computazionale/StefanoGe/Lezione8/../Libraries/obj/

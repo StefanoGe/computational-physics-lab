@@ -7,9 +7,8 @@
 #include <stdio.h>
 #include <stdarg.h>
 #include <string.h>
-#include "GenUtilities.c"
-#include "IntUtilities.c"
 #include <stdbool.h>
+#include "comp_physics.h"
 
 #define CREATE_MAT NULL
 #define NULL_ARR (ArrayDouble){NULL,0}

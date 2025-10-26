@@ -1,7 +1,6 @@
 #include <stdlib.h>
 #include <stdio.h>
-#include <DoubleUtilities.c>
-#include <LinearSystems.c>
+#include "comp_physics.h"
 
 MatrixDouble build_matrix( double epsilon)
 {

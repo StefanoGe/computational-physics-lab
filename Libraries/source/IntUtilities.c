@@ -1,19 +1,7 @@
 #ifndef SG_INTEGER_UTILITIES_C
 #define SG_INTEGER_UTILITIES_C
 
-#include <stdlib.h>
-
-
-typedef struct _arrayInt
-{
-	int * val;
-	int length;
-} ArrayInt;
-
-typedef struct {
-	int x;
-	int y;
-} Point2DI;
+#include <comp_physics.h>
 
 ArrayInt allocArrI ( int length)
 {

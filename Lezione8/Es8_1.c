@@ -1,7 +1,6 @@
 #include <stdlib.h>
 #include <stdio.h>
-#include <DoubleUtilities.c>
-#include <LinearSystems.c>
+#include "comp_physics.h"
 #include <math.h>
 
 void test_min_x(  )

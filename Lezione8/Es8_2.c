@@ -1,7 +1,6 @@
 #include <stdlib.h>
 #include <stdio.h>
-#include <DoubleUtilities.c>
-#include <LinearSystems.c>
+#include "comp_physics.h"
 #include <math.h>
 
 #define PI 3.14159265358979323846

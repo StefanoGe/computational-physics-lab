@@ -6,38 +6,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
-#include "DoubleUtilities.c"
-#include "GenUtilities.c"
-#include "IntUtilities.c"
+#include "comp_physics.h"
 
 #define _FORW_SUBST 0
 #define _BACK_SUBST 1
 
-typedef double(*Func_Ptr)(double);
-
-typedef struct {
-	
-	MatrixDouble U;
-	MatrixDouble L;
-	int dim;
-	
-} LUMats;
-
-typedef struct {
-	
-	MatrixDouble U;
-	MatrixDouble L;
-	MatrixDouble P;
-	int dim;
-	
-} LUP_Mats;
-
-typedef struct {
-	
-	Func_Ptr * funcs;
-	int npar;
-	
-} Linear_Model;
 
 Linear_Model alloc_linear_model( int npar )
 {
@@ -303,7 +276,7 @@ inline static void LUP_D_helper_bad( LUP_Mats mats, MatrixDouble Acp, int n, int
 			Acp.val[row][col] -= mats.L.val[row][n] * mats.U.val[n][col];
 }
 
-void LUP_D_helper( LUP_Mats mats, MatrixDouble Acp, int n, int dim )
+inline static void LUP_D_helper( LUP_Mats mats, MatrixDouble Acp, int n, int dim )
 {
 	int pivot = find_pivot( Acp, n );
 	
@@ -529,11 +502,6 @@ ArrayDouble linear_least_square_fitting( ArrayDouble x_data, ArrayDouble y_data,
 	
 	return result;
 }
-
-
-
-
-
 
 #endif
 

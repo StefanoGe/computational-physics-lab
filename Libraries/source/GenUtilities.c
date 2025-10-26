@@ -5,6 +5,7 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include "comp_physics.h"
 
 #define UNUSED(expr) do { (void)(expr); } while(0)
 
@@ -16,12 +17,13 @@
 		exit(EXIT_FAILURE); \
 	} while (0)
 
-
+/*
 #define __OLD_raiseErr(msg, ...) \
     do { \
         fprintf(stderr, msg __VA_OPT__(,) __VA_ARGS__); \
         exit(EXIT_FAILURE); \
     } while(0)
+*/
 
 #define eprint(a, ...) fprintf( stderr, a "\n" __VA_OPT__(,) __VA_ARGS__ )
 

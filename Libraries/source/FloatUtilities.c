@@ -3,16 +3,8 @@
 #ifndef SG_FLOAT_UTILITIES_C
 #define SG_FLOAT_UTILITIES_C
 
-#include <stdlib.h>
-#include <stdio.h>
+#include "comp_physics.h"
 #include <stdarg.h>
-
-typedef struct _arrayFloat
-{
-	float * val;
-	int length;
-	
-} ArrayFloat;
 
 ArrayFloat allocArrF ( int length)
 {
