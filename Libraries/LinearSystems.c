@@ -447,13 +447,13 @@ MatrixDouble mat_inv ( MatrixDouble A )
 
 ArrayDouble min_x ( MatrixDouble A, ArrayDouble b )
 {
+	//We should have more equations than variables
 	if( A.nrows < A.ncols )
-		raiseErr( "In func min_x: A.nrows < A.ncols\n"
-		"A.nrows = %d, A.ncols = %d", A.nrows, A.ncols );
-		
+		raiseErr( "A.nrows = %d should be less than A.ncols = %d\n", A.nrows, A.ncols );
+	
+	//Number of equations should match height of the known term vector
 	if( A.nrows != b.length )
-		raiseErr( "In func min_x: A.nrows and b.length should have same length.n"
-		"A.nrows = %d, b.length = %d", A.nrows, b.length );
+		raiseErr( "A.nrows = %d and b.length = %d should have same length.\n", A.nrows, b.length );
 	
 	MatrixDouble Atr = transposeMatD( A, CREATE_MAT );
 	MatrixDouble Atr_A = matMultD( Atr, A, CREATE_MAT );
@@ -467,6 +467,38 @@ ArrayDouble min_x ( MatrixDouble A, ArrayDouble b )
 	freeAllArrD( z, Atr_b, NULL_ARR );
 	
 	return x;
+}
+
+ArrayDouble linear_ls_pol_fitting( 
+							ArrayDouble x_data, ArrayDouble y_data, int max_n )
+{
+// Function for the polynomial fitting of data by the least squares method. 
+// max_n fixes the highest degree of the polynomials used.
+
+	if( x_data.length != y_data.length )
+		raiseErr( "x_data = %d and y_data = %d must have same size\n", 
+			x_data.length, y_data.length );
+			
+	if( max_n < 0 )
+		raiseErr(  );
+			
+	const int n_data = x_data.length;
+	const int n_parameters = max_n +1;
+	MatrixDouble A = allocMatD( n_data, n_parameters );
+	
+	// Set first col to 1 ( as it is the col of the constant function)
+	for(int row = 0; row < n_data; row++ )
+		A.val[row][0] = 1.0;
+	
+	for( int col = 1; col < n_parameters; col++ )
+		for( int row = 0; row < n_data; row++ )
+			A.val[ row ][ col ] = A.val[row][col - 1] * x_data.val[row];
+			
+	ArrayDouble result = min_x( A, y_data );
+	
+	freeMatD(A);
+	
+	return result;
 }
 
 ArrayDouble linear_least_square_fitting( ArrayDouble x_data, ArrayDouble y_data,

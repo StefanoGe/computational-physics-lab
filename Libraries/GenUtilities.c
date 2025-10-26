@@ -8,7 +8,16 @@
 
 #define UNUSED(expr) do { (void)(expr); } while(0)
 
-#define raiseErr(msg, ...) \
+
+#define raiseErr( msg, ...) \
+	do { \
+		fprintf(stderr, "[%s: line %d in %s]: " msg, __FILE__, __LINE__, __func__ \
+		__VA_OPT__(,) __VA_ARGS__); \
+		exit(EXIT_FAILURE); \
+	} while (0)
+
+
+#define __OLD_raiseErr(msg, ...) \
     do { \
         fprintf(stderr, msg __VA_OPT__(,) __VA_ARGS__); \
         exit(EXIT_FAILURE); \

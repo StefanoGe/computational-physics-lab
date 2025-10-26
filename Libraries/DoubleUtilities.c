@@ -30,6 +30,15 @@ typedef struct _MatrixDouble
 	int ncols;
 } MatrixDouble;
 
+double pown( double x, int n )
+{
+	double product = 1.0;
+	for( int i = 0; i < n; i++ )
+		product *=x;
+	
+	return product;
+}
+
 ArrayDouble allocArrD ( int length)
 {
 	ArrayDouble array;
@@ -96,6 +105,19 @@ void printArrDPar (ArrayDouble array, char * format)
 	for(int i = 0; i < array.length; i ++)
 		printf(format, array.val[i]);
 	printf("]\n");
+}
+
+void print_arr( ArrayDouble array, char * format, FILE * output )
+{
+	for( int i = 0; i < array.length; i ++ )
+		fprintf(output,  format, array.val[i] );
+}
+
+void print_arr_tofile( ArrayDouble array, char * file_name)
+{
+	FILE * file = openFile( file_name, "w" );
+	print_arr( array, "%lf\n", file );
+	fclose( file );
 }
 
 void setValueArrD(ArrayDouble array, double value)
@@ -522,7 +544,7 @@ ArrayDouble build_from( ArrayDouble arr, Func_Ptr func )
 	const int length = arr.length;
 	ArrayDouble ret_arr = allocArrD( length );
 	for( int i = 0; i < length; i++)
-		arr.val[i] = (*func)(arr.val[i]);
+		ret_arr.val[i] = (*func)(arr.val[i]);
 	
 	return ret_arr;
 }
