@@ -6,6 +6,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdarg.h>
+#include <stdbool.h>
 
 #define CREATE_MAT NULL
 #define NULL_ARR (ArrayDouble){NULL,0}
@@ -43,13 +44,13 @@ void printArrIPar (ArrayInt array);
 
 typedef double(*Func_Ptr)(double);
 
-typedef struct _arrayDouble
+typedef struct
 {
 	double * val;
 	int length;
 } ArrayDouble;
 
-typedef struct _MatrixDouble
+typedef struct
 {
 	double ** val;
 	int nrows;

@@ -16,19 +16,6 @@
 
 typedef double(*Func_Ptr)(double);
 
-typedef struct _arrayDouble
-{
-	double * val;
-	int length;
-} ArrayDouble;
-
-typedef struct _MatrixDouble
-{
-	double ** val;
-	int nrows;
-	int ncols;
-} MatrixDouble;
-
 double pown( double x, int n )
 {
 	double product = 1.0;
