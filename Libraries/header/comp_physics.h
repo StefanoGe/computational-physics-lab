@@ -23,6 +23,18 @@
 
 #define eprint(a, ...) fprintf( stderr, a "\n" __VA_OPT__(,) __VA_ARGS__ )
 
+typedef double(*Func_Ptr)(double);
+
+typedef double(*ParamFuncPtr) (double, double *);
+
+typedef struct {
+	ParamFuncPtr param_func_ptr;
+	double * params;
+	int nparams;
+} Par_Func;
+
+double evaluate( const Par_Func * self, double x );
+
 FILE * openFile( char * fileName, char * mode );
 
 typedef struct _arrayInt
@@ -50,12 +62,17 @@ typedef struct
 	int length;
 } ArrayDouble;
 
-typedef struct
+typedef struct MatrixDouble MatrixDouble;
+
+// double * __m_get( MatrixDouble * mat, int nrow, int ncol );
+
+struct MatrixDouble
 {
 	double ** val;
 	int nrows;
 	int ncols;
-} MatrixDouble;
+	//double * (*get)( MatrixDouble * self, int nrow, int ncol );
+};
 
 double pown( double x, int n );
 
@@ -151,13 +168,24 @@ typedef struct {
 } LUP_Mats;
 
 typedef struct {
-	
+
 	Func_Ptr * funcs;
 	int npar;
-	
+
 } Linear_Model;
 
+typedef struct {
+	
+	Par_Func * funcs;
+	int nfuncs;
+	
+} Param_Linear_Model;
+
+Par_Func alloc_par_func( ParamFuncPtr, int );
+
 Linear_Model alloc_linear_model( int npar );
+
+Param_Linear_Model alloc_param_linear_model( int nfuncs );
 
 ArrayDouble forwSubst( MatrixDouble matrix, ArrayDouble colVec);
 
@@ -214,5 +242,6 @@ void setValueArrF(ArrayFloat array, float value);
 
 ArrayFloat diffArrF( ArrayFloat array1, ArrayFloat array2);
 
+ArrayDouble solve_LU( MatrixDouble A, ArrayDouble known_terms );
 
 #endif

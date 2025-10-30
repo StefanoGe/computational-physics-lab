@@ -14,7 +14,18 @@
 #define NULL_ARR (ArrayDouble){NULL,0}
 #define NULL_MAT (MatrixDouble){NULL, 0,0}
 
-typedef double(*Func_Ptr)(double);
+/*
+double * __m_get( MatrixDouble * mat, int nrow, int ncol )
+{
+	if( nrow >= mat -> nrows )
+		raiseErr( "Tried indexing out of bounds. Asked = %d mat.nrows = %d",
+			nrow, mat->nrows);
+	if( ncol >= mat -> ncols )
+		raiseErr( "Tried indexing out of bounds. Asked = %d mat.ncols = %d",
+			ncol, mat->ncols);
+	
+	return &(mat->val[nrow][ncol]);
+}
 
 double pown( double x, int n )
 {
@@ -24,6 +35,7 @@ double pown( double x, int n )
 	
 	return product;
 }
+*/
 
 ArrayDouble allocArrD ( int length)
 {
@@ -134,7 +146,9 @@ MatrixDouble allocMatD ( int nrows, int ncols )
 	
 	for( int i = 0; i < nrows; i++ )
 		matrix.val[i] = (double *)malloc(ncols *sizeof(double));
-		
+	
+	//matrix.get = __m_get;
+	
 	return matrix;
 }
 
@@ -536,4 +550,25 @@ ArrayDouble build_from( ArrayDouble arr, Func_Ptr func )
 }
 
 
+double evaluate(const Par_Func * self, double x)
+{
+	return self->param_func_ptr( x, self->params );
+}
+
+Par_Func alloc_par_func( ParamFuncPtr param_func, int nparams )
+{
+	Par_Func pf;
+	pf.param_func_ptr = param_func;
+	pf.nparams = nparams;
+	pf.params = malloc( nparams * sizeof( double ) );
+	return pf;
+}
+
 #endif
+
+
+
+
+
+
+

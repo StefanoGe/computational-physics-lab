@@ -329,6 +329,19 @@ LUP_Mats LUP_decomposition ( MatrixDouble A )
 	return lup_mats;
 }
 
+ArrayDouble solve_LU( MatrixDouble A, ArrayDouble known_terms )
+{
+	LUMats lumat = LUDecompLow(A);
+	
+	ArrayDouble y = forwSubst( lumat.L, known_terms );
+	ArrayDouble x = backSubst( lumat.U, y );
+	
+	freeAllMatD( lumat.L, lumat.U, NULL_MAT );
+	freeArrD( y );
+	
+	return x;
+}
+
 double detTri(MatrixDouble triMat)
 {
 	double determinant = 1;
@@ -501,6 +514,15 @@ ArrayDouble linear_least_square_fitting( ArrayDouble x_data, ArrayDouble y_data,
 	//Ho il risultato
 	
 	return result;
+}
+
+Param_Linear_Model alloc_param_linear_model( int nfuncs ){
+	
+	Param_Linear_Model model;
+	model.funcs =  malloc( nfuncs * sizeof( Par_Func ) );
+	model.nfuncs = nfuncs;
+	
+	return model;
 }
 
 #endif
