@@ -139,7 +139,11 @@ MatrixDouble asColMatrix( ArrayDouble arr, bool destroySource );
 
 void freeAllArrD( ArrayDouble arr, ... );
 
+# define free_arrD( ... ) freeAllArrD( __VA_ARGS__, NULL_ARR )
+
 void freeAllMatD( MatrixDouble matrix, ... );
+
+# define free_MatD( ... ) freeAllMatD( __VA_ARGS__, NULL_MAT )
 
 void exchange_rows( MatrixDouble matrix, int row1, int row2 );
 
@@ -243,5 +247,14 @@ void setValueArrF(ArrayFloat array, float value);
 ArrayFloat diffArrF( ArrayFloat array1, ArrayFloat array2);
 
 ArrayDouble solve_LU( MatrixDouble A, ArrayDouble known_terms );
+
+typedef struct{
+	MatrixDouble Q;
+	MatrixDouble R;
+} QR_Mats;
+
+QR_Mats alloc_QR( int nrows, int ncols  );
+
+QR_Mats QR_decomp( MatrixDouble A );
 
 #endif

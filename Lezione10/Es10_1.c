@@ -35,7 +35,7 @@ ArrayDouble polynomial_interpolation( ArrayDouble x_data, ArrayDouble y_data)
 	if( x_data.length != y_data.length )
 		raiseErr( "x_data = %d and y_data = %d must have same size\n", 
 			x_data.length, y_data.length );
-			
+	
 	const int n_data = x_data.length;
 
 	MatrixDouble A = allocMatD( n_data, n_data );
@@ -53,8 +53,6 @@ ArrayDouble polynomial_interpolation( ArrayDouble x_data, ArrayDouble y_data)
 	freeMatD(A);
 	
 	return result;
-	
-	
 }
 
 void test( int n, int k )

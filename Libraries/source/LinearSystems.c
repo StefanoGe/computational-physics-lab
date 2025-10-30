@@ -486,7 +486,7 @@ ArrayDouble linear_ls_pol_fitting(
 	
 	return result;
 }
-
+//idea: creo un algoritmo che mi permette di scegliere se usare QR, LU or Q-less !!!
 ArrayDouble linear_least_square_fitting( ArrayDouble x_data, ArrayDouble y_data,
 			Linear_Model model)
 {
@@ -499,7 +499,6 @@ ArrayDouble linear_least_square_fitting( ArrayDouble x_data, ArrayDouble y_data,
 	MatrixDouble A = allocMatD( n_data, n_parameters );
 	
 	//Costruisco la matrice di f
-	
 	
 	for( int col = 0; col < n_parameters; col++ )
 		for( int row = 0; row < n_data; row++ )
@@ -523,6 +522,71 @@ Param_Linear_Model alloc_param_linear_model( int nfuncs ){
 	model.nfuncs = nfuncs;
 	
 	return model;
+}
+
+
+QR_Mats alloc_QR( int nrows, int ncols  )
+{
+	QR_Mats qr_mats;
+	qr_mats.Q = allocMatD( nrows, ncols );
+	qr_mats.R = allocMatD( ncols, ncols );
+	return qr_mats;
+}
+
+static inline double norm( MatrixDouble * Q, int col )
+{
+	double norm_sq = 0;
+	for( int i = 0; i < Q->nrows; i++ )
+		norm_sq += Q->val[i][col] * Q->val[i][col];
+		
+	return sqrt(norm_sq);
+}
+
+static inline double normalise( MatrixDouble * Q, int col )
+{		
+	double vec_norm = norm( Q, col );
+	for( int i = 0; i < Q->nrows; i++ )
+		Q->val[i][col] /= vec_norm;
+		
+	return vec_norm;
+}
+
+static inline void QR_decomp_helper( const QR_Mats * qr, const int i, const int j,
+const int height )
+{
+	double scalar_product = 0;
+	for( int p = 0; p < height; p++ )
+		scalar_product += qr->Q.val[p][i] * qr->Q.val[p][j];
+	
+	qr->R.val[i][j] = scalar_product;
+	
+	for( int p = 0; p < height; p++ )
+	{
+		qr->Q.val[p][j] -= scalar_product * qr->Q.val[p][i];
+	}
+}
+
+// Sistemare meglio questa funzione
+
+QR_Mats QR_decomp( MatrixDouble A )
+{
+	const int height = A.nrows;
+	const int nvecs = A.ncols;
+	QR_Mats qr = alloc_QR( height, nvecs );
+	diagMatD(qr.R, 0);
+	cpMatToMatD( A, qr.Q, 0, 0 );
+	
+	// loop che controlla il q che sto usando
+	for( int i = 0; i < nvecs; i ++ )
+	{
+		qr.R.val[i][ i ] = normalise( &qr.Q, i );
+		// Mi serve ora un algoritmo che calcoli i vari vj
+		for( int j = i + 1; j < nvecs; j++)
+		{
+			QR_decomp_helper( &qr, i, j, height );
+		}
+	}
+	return qr;
 }
 
 #endif
