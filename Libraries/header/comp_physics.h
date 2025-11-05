@@ -244,4 +244,43 @@ ArrayFloat diffArrF( ArrayFloat array1, ArrayFloat array2);
 
 ArrayDouble solve_LU( MatrixDouble A, ArrayDouble known_terms );
 
+// vector.c
+
+#define DEFAULT_VEC_SIZE 64
+
+typedef struct {
+	double * val;
+	int size;
+	int length;
+}VectorD;
+
+VectorD init_vecD();
+
+VectorD alloc_vecD( int size );
+
+void appendD( VectorD *, double );
+
+void _free_all_vecD( VectorD *, ... );
+# define free_vecD(vec, ...) \
+	_free_all_vecD( vec, __VA_ARGS__ __VA_OPT__(,) NULL_VEC );
+
+VectorD build_vecD ( int length, ... );
+
+// interp.c
+
+typedef struct {
+	VectorD points;
+	VectorD weights;
+} BaricFitter;
+
+BaricFitter init_bar_fitter( VectorD points );
+
+VectorD build_weights( const VectorD * points );
+
+void print_vecD( const VectorD *, char * format, FILE * output );
+
+void std_print_vecD( const VectorD * );
+
+
+
 #endif

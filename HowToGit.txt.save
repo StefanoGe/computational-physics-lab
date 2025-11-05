@@ -1,0 +1,15 @@
+git init = rende una directory una reporitory
+git status = controlla lo status della repository
+git add = aggiunge file alla lista di quelli tracciati /oppure stage
+i file già tracciati
+git [command] help
+git add . = aggiunge tutti i file nella repository (eccetto 
+quelli contrassegnati da ignore)
+.gitignore = è importante
+git diff = mostra le differenze
+git commit = 
+git commit -a = fa stage + commit in automatico
+git rm = rimuove il file dal file system
+git rm -cached = rimuove il file da quelli tracciati da git
+git mv = sposta i file
+
