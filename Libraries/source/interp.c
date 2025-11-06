@@ -3,14 +3,7 @@
 #include <math.h>
 #include "comp_physics.h"
 
-/*
-typedef struct BaricFit{
-	VectorD points;
-	VectorD weights;
-	VectorD coeffs;
-	
-};
-*/
+
 
 static inline double get_kth_vector( const VectorD * points, int step )
 {
@@ -21,7 +14,21 @@ static inline double get_kth_vector( const VectorD * points, int step )
 	return prod;
 }
 
-VectorD build_weights( const VectorD * points )
+static inline VectorD cp_carr_to_vec( double * carr, int length )
+{
+	VectorD vec;
+	
+	vec.length = length;
+	int size = DEFAULT_VEC_SIZE;
+	while( (size *=2) < length );
+	vec.size = size;
+	carr = realloc( carr, size * sizeof(double) );
+	vec.val = carr;
+	
+	return vec;
+}
+
+static inline VectorD build_weights( const VectorD * points )
 {
 	const int length = points->length;
 	double * weights = malloc( length * sizeof(double) );
@@ -41,12 +48,28 @@ VectorD build_weights( const VectorD * points )
 	for( int i =0; i < length; i ++ )
 		weights[i] = 1/weights[i];
 	
-	VectorD weight_vec;
-	weight_vec.length = length;
-	int size = DEFAULT_VEC_SIZE;
-	while( (size *=2) < length );
-	weight_vec.size = size;
-	weights = realloc( weights, size * sizeof(double) );
-	return weight_vec;
+	return cp_carr_to_vec( weights, length );
 }
+
+BaricFitter init_bar_fitter( const VectorD * points )
+{
+	BaricFitter barf;
+	barf.points = vec_cp( points );
+	barf.weights = build_weights( points );
+	return barf;
+}
+
+BarFit bar_fir( const BaricFitter * bar_fitter, Func_Ptr func )
+{
+	BarFit fit;
+	fit.points = vec_cp( &bar_fitter->points );
+	fit.weights = vec_cp( &bar_fitter->weights );
+	fit.f_values = alloc_vecD( fit.points.size );
+	fit.f_values.length = fit.points.length;
+	for( int i = 0; i < fit.f_values.length; i ++ )
+		fit.f_values.val[i] = func( fit.points.val[i] );
+	
+	return fit;
+}
+
 
