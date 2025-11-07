@@ -268,6 +268,8 @@ typedef struct {
 	int length;
 }VectorD;
 
+extern const VectorD NULL_VEC;
+
 VectorD init_vecD();
 
 VectorD alloc_vecD( int size );
@@ -276,13 +278,17 @@ void appendD( VectorD *, double );
 
 void _free_all_vecD( VectorD *, ... );
 # define free_vecD(vec, ...) \
-	_free_all_vecD( vec, __VA_ARGS__ __VA_OPT__(,) NULL_VEC );
+	_free_all_vecD( vec, __VA_ARGS__ __VA_OPT__(,) &NULL_VEC );
 
 VectorD build_vecD ( int length, ... );
 
 void print_vecD( const VectorD *, char * format, FILE * output );
 
 void std_print_vecD( const VectorD * );
+
+VectorD vec_cp( const VectorD * source );
+
+VectorD init_vec_length( int length );
 
 // interp.c
 
@@ -291,9 +297,22 @@ typedef struct {
 	VectorD weights;
 } BaricFitter;
 
-BaricFitter init_bar_fitter( VectorD points );
+BaricFitter init_bar_fitter( const VectorD * points );
 
-VectorD build_weights( const VectorD * points );
+typedef struct {
+	VectorD points;
+	VectorD weights;
+	VectorD f_values;
+} BarFit;
 
+BaricFitter init_bar_fitter( const VectorD * points );
+
+BarFit bar_fir( const BaricFitter *, Func_Ptr );
+
+//plot .c
+
+void plot_2vecs( const VectorD * x, const VectorD * y );
+
+void plot_func( VectorD * domain, Func_Ptr func );
 
 #endif
