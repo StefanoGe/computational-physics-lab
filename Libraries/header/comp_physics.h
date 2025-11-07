@@ -280,6 +280,10 @@ void _free_all_vecD( VectorD *, ... );
 
 VectorD build_vecD ( int length, ... );
 
+void print_vecD( const VectorD *, char * format, FILE * output );
+
+void std_print_vecD( const VectorD * );
+
 // interp.c
 
 typedef struct {
@@ -290,11 +294,6 @@ typedef struct {
 BaricFitter init_bar_fitter( VectorD points );
 
 VectorD build_weights( const VectorD * points );
-
-void print_vecD( const VectorD *, char * format, FILE * output );
-
-void std_print_vecD( const VectorD * );
-
 
 
 #endif
