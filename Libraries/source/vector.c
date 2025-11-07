@@ -7,7 +7,7 @@
 
 const VectorD NULL_VEC = { NULL, 0, 0 };
 
-static inline int necessary_size(int length)
+int vecD_necessary_size(int length)
 {
 	int size = DEFAULT_VEC_SIZE;
 	for( ; size < length; size *=2 );
@@ -29,7 +29,7 @@ VectorD init_vecD(){return alloc_vecD( DEFAULT_VEC_SIZE );}
 
 VectorD init_vec_length( int length )
 {
-	VectorD vec = alloc_vecD( necessary_size(length) );
+	VectorD vec = alloc_vecD( vecD_necessary_size(length) );
 	vec.length = length;
 	return vec;
 }

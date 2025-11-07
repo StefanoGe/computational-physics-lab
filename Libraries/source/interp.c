@@ -4,52 +4,35 @@
 #include <float.h>
 #include "comp_physics.h"
 
-
-
-static inline double get_kth_vector( const VectorD * points, int step )
-{
-	double prod = 1;
-	for( int i = 0; i < step; i++ )
-		prod *= points->val[step] - points->val[i];
-		
-	return prod;
-}
-
-static inline VectorD cp_carr_to_vec( double * carr, int length )
+/*
+static inline VectorD arrD_as_VecD( ArrayDouble arr )
 {
 	VectorD vec;
-	
-	vec.length = length;
-	int size = DEFAULT_VEC_SIZE;
-	while( (size *=2) < length );
-	vec.size = size;
-	carr = realloc( carr, size * sizeof(double) );
-	vec.val = carr;
-	
+	vec.length = arr.length;
+	vec.val = arr.val;
+	vec.size = vecD_necessary_size( vec.length );
+	vec.val = realloc( vec.val, vec.size * sizeof(double) );
 	return vec;
 }
+*/
 
 static inline VectorD build_weights( const VectorD * points )
 {
 	const int length = points->length;
-	double * weights = malloc( length * sizeof(double) );
-	if( !weights )
-		raiseErr( "Failed to allocate memory!" );
+	VectorD weights = init_vec_length( length );
+	double prod = 1;
 	
-	for( int step = 0; step < length; step ++ )
+	for( int w = 0; w < length; w++ )
 	{
-		weights[ step ] = get_kth_vector( points, step );
-		for( int w = 0; w < step; w++ )
-		{
-			if( w != step )
-				weights[ w ] *= weights[w]*(points->val[w] - points->val[step]);
-		}
+		prod = 1;
+		for( int j = 0; j < length; j++ )
+			if( w != j )
+				prod *= ( points->val[w] - points -> val[j] );
+				
+		weights.val[w] = 1 / prod;
 	}
 	
-	for( int i =0; i < length; i ++ )
-		weights[i] = 1/weights[i];
-	
-	return cp_carr_to_vec( weights, length );
+	return weights;
 }
 
 BaricFitter init_bar_fitter( const VectorD * points )
@@ -63,7 +46,7 @@ BaricFitter init_bar_fitter( const VectorD * points )
 static inline VectorD eq_weights( int n )
 {
 	VectorD weights = init_vec_length( n );
-	weights.val[ 0 ] = n;
+	weights.val[ 0 ] = 1;
 	for( int i = 1; i < n; i++ )
 		weights.val[i] = weights.val[ i -1 ] * ( i - 1 - n ) / i;
 	return weights;

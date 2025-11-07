@@ -292,6 +292,8 @@ VectorD init_vec_length( int length );
 
 VectorD vec_range( double x1, double x2, int num );
 
+int vecD_necessary_size(int length);
+
 // interp.c
 
 typedef struct {
