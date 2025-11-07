@@ -290,6 +290,8 @@ VectorD vec_cp( const VectorD * source );
 
 VectorD init_vec_length( int length );
 
+VectorD vec_range( double x1, double x2, int num );
+
 // interp.c
 
 typedef struct {
@@ -303,11 +305,16 @@ typedef struct {
 	VectorD points;
 	VectorD weights;
 	VectorD f_values;
+	Func_Ptr func;
 } BarFit;
 
 BaricFitter init_bar_fitter( const VectorD * points );
 
 BarFit bar_fir( const BaricFitter *, Func_Ptr );
+
+double barf_get_value( const BarFit * barf, double x );
+
+BaricFitter bar_fitter_eq_init( double x1, double x2, int n_points );
 
 //plot .c
 

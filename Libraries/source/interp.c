@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
+#include <float.h>
 #include "comp_physics.h"
 
 
@@ -59,6 +60,23 @@ BaricFitter init_bar_fitter( const VectorD * points )
 	return barf;
 }
 
+static inline VectorD eq_weights( int n )
+{
+	VectorD weights = init_vec_length( n );
+	weights.val[ 0 ] = n;
+	for( int i = 1; i < n; i++ )
+		weights.val[i] = weights.val[ i -1 ] * ( i - 1 - n ) / i;
+	return weights;
+}
+
+BaricFitter bar_fitter_eq_init( double x1, double x2, int n_points )
+{
+	BaricFitter barf;
+	barf.points = vec_range( x1, x2, n_points );
+	barf.weights = eq_weights(n_points);
+	return barf;
+}
+
 BarFit bar_fir( const BaricFitter * bar_fitter, Func_Ptr func )
 {
 	BarFit fit;
@@ -69,7 +87,38 @@ BarFit bar_fir( const BaricFitter * bar_fitter, Func_Ptr func )
 	for( int i = 0; i < fit.f_values.length; i ++ )
 		fit.f_values.val[i] = func( fit.points.val[i] );
 	
+	fit.func = func;
+	
 	return fit;
 }
+
+static inline bool is_diff_too_small( double x1, double x2 )
+{
+	const double abs_diff = fabs( x1- x2 );
+	const double tolerance = DBL_EPSILON * ( 1 + fabs(x2) );
+	return abs_diff <= tolerance;
+}
+
+double barf_get_value( const BarFit * barf, double x )
+{
+	double num = 0;
+	double den = 0;
+	const int length = barf->points.length;
+	
+	double temp = 0;
+	
+	for ( int i=0; i < length; i++ )
+	{
+		if( is_diff_too_small( x, barf -> points.val[i] ) )
+			return barf->f_values.val[i];
+		
+		temp = barf->weights.val[i]/( x - barf -> points.val[i] );
+		num += temp * barf->f_values.val[i];
+		den += temp;
+	}
+	
+	return num/den;
+}
+
 
 
