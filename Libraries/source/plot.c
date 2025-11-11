@@ -13,6 +13,18 @@ static inline FILE * gp_open(  )
 	return gnuplot;
 }
 
+PlotInfo plot_info_init(int num)
+{
+	PlotInfo plot_info;
+	plot_info.title = NULL;
+	plot_info.labels = malloc( num * sizeof(char *) );
+	for(int i = 0; i < num; i++)
+		plot_info.labels[i] = NULL;
+		
+	plot_info.num = num;		
+	return plot_info;
+}
+
 void plot_2vecs( const VectorD * x, const VectorD * y )
 {
 	if( x->length != y->length )
@@ -45,7 +57,7 @@ void plot_func( VectorD * domain, Func_Ptr func )
 	free_vecD( &y );
 }
 
-void plot_mult_vecs( int num, const VectorD * x_axis, ... )
+void plot_mult_vecs_var( int num, const VectorD * x_axis, ... )
 {
 	va_list list;
 	va_start(list, x_axis);
@@ -71,6 +83,42 @@ void plot_mult_vecs( int num, const VectorD * x_axis, ... )
 		fprintf( gp, "e\n" );
 	}
 	va_end(list);
+	
+	fflush( gp );
+	pclose( gp );
+}
+
+void plot_mult_vecs( const VectorD * x_axis, const VectorD y_values[], 
+					int num_vec, PlotInfo plot_info )
+{
+	FILE * gp = gp_open();
+	
+	fprintf( gp, "set terminal qt\n" );
+
+	if( plot_info.title )
+		fprintf( gp, "set title %s\n", plot_info.title );
+		
+	fprintf( gp, "set key box\n" );
+	
+	fprintf(gp, "plot ");
+	
+    for(int i = 0; i < num_vec; i++)
+    {
+		if( plot_info.labels )
+			fprintf(gp, "'-' title '%s'%s", 
+				plot_info.labels[i] ? plot_info.labels[i]: "" ,
+				( i < num_vec -1 ) ? ", ": "\n" );
+		else
+			fprintf(gp, "'-'%s", ( i < num_vec -1 ) ? ", ": "\n" );
+	}
+	
+	for( int i = 0; i < num_vec; i++ )
+	{
+		for( int j = 0; j < y_values[i].length; j++ )
+			fprintf( gp, "%g %g\n", x_axis->val[j], y_values[i].val[j] );
+		fprintf( gp, "e\n" );
+	}
+	fprintf( gp, "pause mouse close\n" );
 	
 	fflush( gp );
 	pclose( gp );

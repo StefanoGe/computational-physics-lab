@@ -8,9 +8,12 @@
 #include <stdarg.h>
 #include <stdbool.h>
 
+#define PI 3.1415926535897932384626433
+
 #define CREATE_MAT NULL
 #define NULL_ARR (ArrayDouble){NULL,0}
 #define NULL_MAT (MatrixDouble){NULL, 0,0}
+#define NULL_INFO (PlotInfo){NULL, NULL,0}
 
 #define UNUSED(expr) do { (void)(expr); } while(0)
 
@@ -318,10 +321,33 @@ double barf_get_value( const BarFit * barf, double x );
 
 BaricFitter bar_fitter_eq_init( double x1, double x2, int n_points );
 
+VectorD cheb2_nodes_def( int num );
+
+VectorD cheb2_nodes( double x1, double x2, int num );
+
+VectorD cheb2_weights( int num );
+
+BarFit fit_cheb2_def( Func_Ptr, int n_nodes );
+
+BarFit fit_cheb2( Func_Ptr, int n_nodes, double x1, double x2 );
+
 //plot .c
+
+typedef struct{
+	char * title;
+	char ** labels;
+	int num;
+} PlotInfo;
 
 void plot_2vecs( const VectorD * x, const VectorD * y );
 
 void plot_func( VectorD * domain, Func_Ptr func );
+
+void plot_mult_vecs( const VectorD * x_axis, const VectorD y_values[], 
+					int num_vec, PlotInfo );
+
+PlotInfo plot_info_init( int num);
+
+
 
 #endif

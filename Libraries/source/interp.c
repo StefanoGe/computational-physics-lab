@@ -103,5 +103,57 @@ double barf_get_value( const BarFit * barf, double x )
 	return num/den;
 }
 
+VectorD cheb2_nodes_def( int num )
+{
+	VectorD nodes = init_vec_length( num );
+	const double const_factor = PI/( num - 1 );
+	for( int i = 1; i <= num; i++ )
+		nodes.val[i-1] = -cos( ( i - 1 ) * const_factor );
+	return nodes;
+}
+
+VectorD cheb2_nodes( double x1, double x2, int num )
+{
+	VectorD nodes = cheb2_nodes_def( num );
+	double half_length = ( x2 - x1 ) / 2;
+	for( int i = 0; i < num; i ++ )
+		nodes.val[i] = (nodes.val[i] + 1 ) * half_length + x1;
+	return nodes;
+}
+
+VectorD cheb2_weights( int num )
+{
+	VectorD nodes = init_vec_length( num );
+	for( int i = 1; i <= num; i ++ )
+	{
+		nodes.val[i - 1] = 1;
+		if( i % 2 )
+			nodes.val[i - 1] *= (-1);
+		if( i == 1 || i == num )
+			nodes.val[ i - 1 ] /= 2;
+	}
+	return nodes;
+}
+
+BarFit fit_cheb2_def( Func_Ptr func, int n_nodes )
+{
+	BaricFitter fit_par;
+	fit_par.points = cheb2_nodes_def( n_nodes );
+	fit_par.weights = cheb2_weights( n_nodes );
+	BarFit barf = bar_fir( &fit_par, func );
+	free_vecD( &fit_par.points, &fit_par.weights );
+	return barf;
+}
+
+BarFit fit_cheb2( Func_Ptr func, int n_nodes, double x1, double x2 )
+{
+	BaricFitter fit_par;
+	fit_par.points = cheb2_nodes( x1, x2, n_nodes );
+	fit_par.weights = cheb2_weights( n_nodes );
+	BarFit barf = bar_fir( &fit_par, func );
+	free_vecD( &fit_par.points, &fit_par.weights );
+	return barf;
+}
+
 
 
