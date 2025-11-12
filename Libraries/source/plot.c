@@ -7,17 +7,17 @@
 
 FILE * gp_open(  )
 {
-	FILE * gnuplot;
-	if ( !(gnuplot = popen("gnuplot", "w")) )
+	FILE * gp;
+	if ( !(gp = popen("gnuplot", "w")) )
 		raiseErr("Cannot run gnuplot");
-	return gnuplot;
+	return gp;
 }
 
 void gp_term_def( FILE * gp, char * title )
 {
 	fprintf( gp, "set terminal qt\n" );
 	if (title)
-		fprintf( gp, "set title %s\n", title );
+		fprintf( gp, "set title '%s'\n", title );
 }
 
 void gp_end( FILE * gp )
@@ -29,6 +29,7 @@ void gp_end( FILE * gp )
 
 void gp_prt_carr( FILE * gp, double * xcarr, double * ycarr, int length )
 {
+	
 	for( int j = 0; j < length; j++ )
 		fprintf( gp, "%g %g\n", xcarr[j], ycarr[j] );
 	fprintf( gp, "e\n" );
@@ -36,7 +37,25 @@ void gp_prt_carr( FILE * gp, double * xcarr, double * ycarr, int length )
 
 void gp_set_plot( FILE * gp, int num, char ** labels )
 {
-	
+	fprintf(gp, "plot ");
+    for(int i = 0; i < num; i++)
+    {
+		if( labels )
+			fprintf(gp, "'-' title '%s'%s", 
+				labels[i] ? labels[i]: "" ,
+				( i < num -1 ) ? ", ": "\n" );
+		else
+			fprintf(gp, "'-'%s", ( i < num -1 ) ? ", ": "\n" );
+	}
+}
+
+void gp_axes_labels( FILE * gp, char * x_label, char * y_label )
+{
+	if( x_label )
+		fprintf( gp, "set xlabel '%s'\n", x_label );
+		
+	if( y_label )
+		fprintf( gp, "set ylabel '%s'\n", y_label );
 }
 
 PlotInfo plot_info_init(int num)
@@ -56,14 +75,14 @@ void plot_2vecs( const VectorD * x, const VectorD * y )
 	if( x->length != y->length )
 		raiseErr( "x and y must be of same length" );
 	
-	FILE * gnuplot = gp_open();
+	FILE * gp = gp_open();
 		
-	gp_term_def( gnuplot, NULL );
+	gp_term_def( gp, NULL );
 	
-	fprintf(gnuplot, "plot '-'\n");
-	gp_prt_carr( gnuplot, x->val, y->val, x->length );
+	gp_set_plot( gp, 1, NULL );
+	gp_prt_carr( gp, x->val, y->val, x->length );
 	
-	gp_end(gnuplot);
+	gp_end(gp);
 }
 
 void plot_func( VectorD * domain, Func_Ptr func )
@@ -131,11 +150,8 @@ void plot_mult_vecs( const VectorD * x_axis, const VectorD y_values[],
 	}
 	
 	for( int i = 0; i < num_vec; i++ )
-	{
-		for( int j = 0; j < y_values[i].length; j++ )
-			fprintf( gp, "%g %g\n", x_axis->val[j], y_values[i].val[j] );
-			fprintf( gp, "e\n" );
-	}
+		gp_prt_carr( gp, x_axis->val, y_values[i].val, x_axis->length );
+		
 	gp_end( gp );
 }
 

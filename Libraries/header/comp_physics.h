@@ -337,6 +337,14 @@ FILE * gp_open(  );
 
 void gp_term_def( FILE * gp, char * title );
 
+void gp_axes_labels( FILE * gp, char * x_label, char * y_label );
+
+void gp_set_plot( FILE * gp, int num, char ** labels );
+
+void gp_prt_carr( FILE * gp, double * xcarr, double * ycarr, int length );
+
+void gp_end( FILE * gp );
+
 typedef struct{
 	char * title;
 	char ** labels;
@@ -351,7 +359,6 @@ void plot_mult_vecs( const VectorD * x_axis, const VectorD y_values[],
 					int num_vec, PlotInfo );
 
 PlotInfo plot_info_init( int num);
-
 
 
 #endif

@@ -51,22 +51,16 @@ double one_test( Func_Ptr func, int n_nodes )
 	return sup_norm;
 }
  
-void test_cheb2( Func_Ptr func , const ArrayInt * n_nodes)
+VectorD test_cheb2( Func_Ptr func , const ArrayInt * n_nodes)
 {
 	VectorD sup_vec = init_vecD();
 	for( int i = 0; i < n_nodes->length; i ++ )
 		appendD( &sup_vec, one_test(func, n_nodes-> val[i]) );
-	//printf( "Sup_norm is: %lf\n", sup_norm );
 	
-	VectorD n_nodesD = init_vecD();
-	for( int i = 0; i < n_nodes->length; i++ )
-		appendD( &n_nodesD, (double)n_nodes->val[i] );
-		
-	//printf( "%d %d %d\n", n_nodes->length, sup_vec.length, n_nodesD.length );
-	
-	plot_2vecs( &n_nodesD ,&sup_vec );
-	eprint("ok2");
+
 	free_vecD( &sup_vec, &n_nodesD );
+	
+	return sup_vec;
 }
 
 int main()
@@ -74,15 +68,35 @@ int main()
 	ArrayInt n_nodes = allocArrI( 10 );
 	for( int i = 0; i < 10; i++ )
 		n_nodes.val[i] = (i+1) * 10;
+		
+	VectorD n_nodesD = init_vecD();
+	for( int i = 0; i < n_nodes->length; i++ )
+		appendD( &n_nodesD, (double)n_nodes->val[i] );
+	
+	VectorD * sup_norms [6];
 	
 	//ArrayInt exp = allocArrI( 6 );
 	for( int i = 0; i < 6; i++)
 	{
 		m = 1 + 2 * i;
-		test_cheb2( f1, &n_nodes );
-		eprint("ok1");
+		sup_norms = test_cheb2( f1, &n_nodes );
 	}
+	
+	FILE * gp = gp_open();
+	
+	char * title = malloc( sizeof(char) * 100 );
+	sprintf(title, "Plot finale", m);
+	
+	gp_term_def( gp, title );
+	gp_axes_labels( gp, "n", "inf-norm error" );
+	gp_set_plot(gp, 6, NULL);
+	gp_prt_carr( gp, n_nodesD.val, sup_vec.val, n_nodesD.length );
+	
+	gp_end(gp);
+	free(title);
 	
 	exit(EXIT_SUCCESS);
 }
+
+
 
