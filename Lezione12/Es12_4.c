@@ -57,9 +57,6 @@ VectorD test_cheb2( Func_Ptr func , const ArrayInt * n_nodes)
 	for( int i = 0; i < n_nodes->length; i ++ )
 		appendD( &sup_vec, one_test(func, n_nodes-> val[i]) );
 	
-
-	free_vecD( &sup_vec, &n_nodesD );
-	
 	return sup_vec;
 }
 
@@ -70,27 +67,37 @@ int main()
 		n_nodes.val[i] = (i+1) * 10;
 		
 	VectorD n_nodesD = init_vecD();
-	for( int i = 0; i < n_nodes->length; i++ )
-		appendD( &n_nodesD, (double)n_nodes->val[i] );
+	for( int i = 0; i < n_nodes.length; i++ )
+		appendD( &n_nodesD, (double)n_nodes.val[i] );
 	
-	VectorD * sup_norms [6];
+	VectorD sup_norms [6];
+	char * labels[6];
 	
 	//ArrayInt exp = allocArrI( 6 );
 	for( int i = 0; i < 6; i++)
 	{
 		m = 1 + 2 * i;
-		sup_norms = test_cheb2( f1, &n_nodes );
+		labels[i] = malloc( 100 * sizeof(char) );
+		sprintf( labels[i], "m = %d", m );
+		sup_norms[i] = test_cheb2( f1, &n_nodes );
 	}
 	
 	FILE * gp = gp_open();
 	
 	char * title = malloc( sizeof(char) * 100 );
-	sprintf(title, "Plot finale", m);
+	sprintf(title, "Plot finale");
+	
+	fprintf(gp, "set logscale y\n");
+	fprintf(gp, "set key box\n");
 	
 	gp_term_def( gp, title );
 	gp_axes_labels( gp, "n", "inf-norm error" );
-	gp_set_plot(gp, 6, NULL);
-	gp_prt_carr( gp, n_nodesD.val, sup_vec.val, n_nodesD.length );
+	gp_set_plot(gp, 6, labels);
+	for( int i = 0; i < 6; i++ )
+	{
+		std_print_vecD( sup_norms+i );
+		gp_prt_carr( gp, n_nodesD.val, sup_norms[i].val, n_nodesD.length );
+	}
 	
 	gp_end(gp);
 	free(title);
