@@ -8,9 +8,12 @@
 #include <stdarg.h>
 #include <stdbool.h>
 
+#define PI 3.1415926535897932384626433
+
 #define CREATE_MAT NULL
 #define NULL_ARR (ArrayDouble){NULL,0}
 #define NULL_MAT (MatrixDouble){NULL, 0,0}
+#define NULL_INFO (PlotInfo){NULL, NULL,0}
 
 #define UNUSED(expr) do { (void)(expr); } while(0)
 
@@ -139,7 +142,11 @@ MatrixDouble asColMatrix( ArrayDouble arr, bool destroySource );
 
 void freeAllArrD( ArrayDouble arr, ... );
 
+# define free_arrD( ... ) freeAllArrD( __VA_ARGS__, NULL_ARR )
+
 void freeAllMatD( MatrixDouble matrix, ... );
+
+# define free_MatD( ... ) freeAllMatD( __VA_ARGS__, NULL_MAT )
 
 void exchange_rows( MatrixDouble matrix, int row1, int row2 );
 
@@ -244,6 +251,16 @@ ArrayFloat diffArrF( ArrayFloat array1, ArrayFloat array2);
 
 ArrayDouble solve_LU( MatrixDouble A, ArrayDouble known_terms );
 
+
+typedef struct{
+	MatrixDouble Q;
+	MatrixDouble R;
+} QR_Mats;
+
+QR_Mats alloc_QR( int nrows, int ncols  );
+
+QR_Mats QR_decomp( MatrixDouble A );
+
 // vector.c
 
 #define DEFAULT_VEC_SIZE 64
@@ -276,6 +293,10 @@ VectorD vec_cp( const VectorD * source );
 
 VectorD init_vec_length( int length );
 
+VectorD vec_range( double x1, double x2, int num );
+
+int vecD_necessary_size(int length);
+
 // interp.c
 
 typedef struct {
@@ -289,16 +310,44 @@ typedef struct {
 	VectorD points;
 	VectorD weights;
 	VectorD f_values;
+	Func_Ptr func;
 } BarFit;
 
 BaricFitter init_bar_fitter( const VectorD * points );
 
 BarFit bar_fir( const BaricFitter *, Func_Ptr );
 
+double barf_get_value( const BarFit * barf, double x );
+
+BaricFitter bar_fitter_eq_init( double x1, double x2, int n_points );
+
+VectorD cheb2_nodes_def( int num );
+
+VectorD cheb2_nodes( double x1, double x2, int num );
+
+VectorD cheb2_weights( int num );
+
+BarFit fit_cheb2_def( Func_Ptr, int n_nodes );
+
+BarFit fit_cheb2( Func_Ptr, int n_nodes, double x1, double x2 );
+
 //plot .c
+
+typedef struct{
+	char * title;
+	char ** labels;
+	int num;
+} PlotInfo;
 
 void plot_2vecs( const VectorD * x, const VectorD * y );
 
 void plot_func( VectorD * domain, Func_Ptr func );
+
+void plot_mult_vecs( const VectorD * x_axis, const VectorD y_values[], 
+					int num_vec, PlotInfo );
+
+PlotInfo plot_info_init( int num);
+
+
 
 #endif

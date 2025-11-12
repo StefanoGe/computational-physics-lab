@@ -7,11 +7,10 @@
 
 const VectorD NULL_VEC = { NULL, 0, 0 };
 
-static inline int necessary_size(int length)
+int vecD_necessary_size(int length)
 {
 	int size = DEFAULT_VEC_SIZE;
-	for( ; size < length; size *=2 )
-		eprint("%d", size);
+	for( ; size < length; size *=2 );
 	return size;
 }
 
@@ -20,10 +19,7 @@ VectorD alloc_vecD( int size )
 	VectorD vec;
 	vec.length = 0;
 	vec.size = size;
-	eprint("ok1");
-	eprint("%d", size);
 	vec.val = malloc( size * sizeof(double) );
-	eprint("ok2");
 	if (!vec.val)
 		raiseErr( "Failed to allocate memory" );
 	return vec;
@@ -33,7 +29,7 @@ VectorD init_vecD(){return alloc_vecD( DEFAULT_VEC_SIZE );}
 
 VectorD init_vec_length( int length )
 {
-	VectorD vec = alloc_vecD( necessary_size(length) );
+	VectorD vec = alloc_vecD( vecD_necessary_size(length) );
 	vec.length = length;
 	return vec;
 }
@@ -45,6 +41,7 @@ void appendD(VectorD * vec, double entry)
 		vec->val = realloc( vec->val, vec->size * 2 * sizeof(double) );
 		if(!vec->val)
 			raiseErr( "Failed to reallocate memory" );
+		vec->size *= 2;
 	}
 	vec->val[vec->length] = entry;
 	++vec->length;
@@ -60,7 +57,6 @@ static inline bool are_same_vecD( const VectorD * vec1, const VectorD * vec2 )
 
 void _free_all_vecD( VectorD * vec, ... )
 {
-
 	va_list list;
 	va_start(list, vec);
 	
@@ -70,8 +66,7 @@ void _free_all_vecD( VectorD * vec, ... )
 		//eprint( "%p, %d, %d\n", (void *)vec->val, vec->length, vec->size );
 	}while( !(are_same_vecD( vec, &NULL_VEC )) );
 	
-	va_end(list);
-	
+	va_end(list);	
 }
 
 VectorD build_vecD ( int length, ... )
@@ -110,4 +105,16 @@ VectorD vec_cp( const VectorD * source )
 	for( int i = 0; i < new_vec.length; i++ )
 		new_vec.val[i] = source -> val [i];
 	return new_vec;
+}
+
+VectorD vec_range( double x1, double x2, int num )
+{
+	if( x2 < x1 )
+		raiseErr( "given x2 < x1" );
+	const double spacing = (x2- x1) / (num - 1);
+	VectorD vec = init_vecD();
+	for( int i = 0; i < num; i++ )
+		appendD( &vec, i * spacing + x1 );
+	
+	return vec;
 }
