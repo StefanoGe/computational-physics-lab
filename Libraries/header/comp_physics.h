@@ -333,6 +333,10 @@ BarFit fit_cheb2( Func_Ptr, int n_nodes, double x1, double x2 );
 
 //plot .c
 
+FILE * gp_open(  );
+
+void gp_term_def( FILE * gp, char * title );
+
 typedef struct{
 	char * title;
 	char ** labels;

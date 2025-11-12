@@ -5,12 +5,38 @@
 #include <stdio.h>
 #include "comp_physics.h"
 
-static inline FILE * gp_open(  )
+FILE * gp_open(  )
 {
 	FILE * gnuplot;
 	if ( !(gnuplot = popen("gnuplot", "w")) )
 		raiseErr("Cannot run gnuplot");
 	return gnuplot;
+}
+
+void gp_term_def( FILE * gp, char * title )
+{
+	fprintf( gp, "set terminal qt\n" );
+	if (title)
+		fprintf( gp, "set title %s\n", title );
+}
+
+void gp_end( FILE * gp )
+{
+	fprintf( gp, "pause mouse close\n" );
+	fflush(gp);
+	pclose(gp);
+}
+
+void gp_prt_carr( FILE * gp, double * xcarr, double * ycarr, int length )
+{
+	for( int j = 0; j < length; j++ )
+		fprintf( gp, "%g %g\n", xcarr[j], ycarr[j] );
+	fprintf( gp, "e\n" );
+}
+
+void gp_set_plot( FILE * gp, int num, char ** labels )
+{
+	
 }
 
 PlotInfo plot_info_init(int num)
@@ -32,17 +58,12 @@ void plot_2vecs( const VectorD * x, const VectorD * y )
 	
 	FILE * gnuplot = gp_open();
 		
-	fprintf( gnuplot, "set terminal qt\n" );
+	gp_term_def( gnuplot, NULL );
 	
 	fprintf(gnuplot, "plot '-'\n");
-	for (int i = 0; i < x->length; i++)
-		fprintf(gnuplot, "%g %g\n", x->val[i], y->val[i]);
-	fprintf(gnuplot, "e\n");
+	gp_prt_carr( gnuplot, x->val, y->val, x->length );
 	
-	fprintf( gnuplot, "pause mouse close\n" );
-
-	fflush(gnuplot);
-	pclose(gnuplot);
+	gp_end(gnuplot);
 }
 
 void plot_func( VectorD * domain, Func_Ptr func )
@@ -93,10 +114,7 @@ void plot_mult_vecs( const VectorD * x_axis, const VectorD y_values[],
 {
 	FILE * gp = gp_open();
 	
-	fprintf( gp, "set terminal qt\n" );
-
-	if( plot_info.title )
-		fprintf( gp, "set title %s\n", plot_info.title );
+	gp_term_def( gp, plot_info.title );
 		
 	fprintf( gp, "set key box\n" );
 	
@@ -116,11 +134,13 @@ void plot_mult_vecs( const VectorD * x_axis, const VectorD y_values[],
 	{
 		for( int j = 0; j < y_values[i].length; j++ )
 			fprintf( gp, "%g %g\n", x_axis->val[j], y_values[i].val[j] );
-		fprintf( gp, "e\n" );
+			fprintf( gp, "e\n" );
 	}
-	fprintf( gp, "pause mouse close\n" );
-	
-	fflush( gp );
-	pclose( gp );
+	gp_end( gp );
 }
+
+
+
+
+
 
