@@ -13,4 +13,4 @@ git rm = rimuove il file dal file system
 git rm -cached = rimuove il file da quelli tracciati da git
 git mv = sposta i file
 
-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
+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
