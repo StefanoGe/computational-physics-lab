@@ -88,6 +88,7 @@ int main()
 	sprintf(title, "Plot finale");
 	
 	fprintf(gp, "set logscale y\n");
+	fprintf(gp, "set logscale x\n");
 	fprintf(gp, "set key box\n");
 	
 	gp_term_def( gp, title );

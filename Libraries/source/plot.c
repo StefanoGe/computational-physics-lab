@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include "comp_physics.h"
+#include <stdbool.h>
 
 FILE * gp_open(  )
 {
@@ -29,23 +30,30 @@ void gp_end( FILE * gp )
 
 void gp_prt_carr( FILE * gp, double * xcarr, double * ycarr, int length )
 {
-	
 	for( int j = 0; j < length; j++ )
 		fprintf( gp, "%g %g\n", xcarr[j], ycarr[j] );
 	fprintf( gp, "e\n" );
 }
 
-void gp_set_plot( FILE * gp, int num, char ** labels )
+static inline bool is_requested_present( char ** s_arr, int num )
+{
+	if( s_arr )
+		if( s_arr[num] )
+			return true;
+	
+	return false;
+}
+
+void gp_set_plot( FILE * gp, int num, char ** labels, char ** styles )
 {
 	fprintf(gp, "plot ");
     for(int i = 0; i < num; i++)
     {
-		if( labels )
-			fprintf(gp, "'-' title '%s'%s", 
-				labels[i] ? labels[i]: "" ,
-				( i < num -1 ) ? ", ": "\n" );
-		else
-			fprintf(gp, "'-'%s", ( i < num -1 ) ? ", ": "\n" );
+		
+		fprintf(gp, "'-' with %s title '%s'%s", 
+			is_requested_present( styles, i ) ? styles[i]: "lines",
+			is_requested_present( labels, i ) ? labels[i]: "" ,
+			( i < num -1 ) ? ", ": "\n" );
 	}
 }
 
@@ -79,7 +87,7 @@ void plot_2vecs( const VectorD * x, const VectorD * y )
 		
 	gp_term_def( gp, NULL );
 	
-	gp_set_plot( gp, 1, NULL );
+	gp_set_plot( gp, 1, NULL, NULL );
 	gp_prt_carr( gp, x->val, y->val, x->length );
 	
 	gp_end(gp);

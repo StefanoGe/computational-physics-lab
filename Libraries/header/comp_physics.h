@@ -339,7 +339,7 @@ void gp_term_def( FILE * gp, char * title );
 
 void gp_axes_labels( FILE * gp, char * x_label, char * y_label );
 
-void gp_set_plot( FILE * gp, int num, char ** labels );
+void gp_set_plot( FILE * gp, int num, char ** labels, char ** styles );
 
 void gp_prt_carr( FILE * gp, double * xcarr, double * ycarr, int length );
 
@@ -360,5 +360,8 @@ void plot_mult_vecs( const VectorD * x_axis, const VectorD y_values[],
 
 PlotInfo plot_info_init( int num);
 
+// roots.c
+
+double root_bis( Par_Func fnc, double x1, double x2, double tol, VectorD * debug);
 
 #endif
