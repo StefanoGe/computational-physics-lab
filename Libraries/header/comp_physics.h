@@ -297,6 +297,10 @@ VectorD vec_range( double x1, double x2, int num );
 
 int vecD_necessary_size(int length);
 
+VectorD vec_par_func( const VectorD *, const Par_Func * );
+
+VectorD vec_full ( int length, double value );
+
 // interp.c
 
 typedef struct {
@@ -362,6 +366,11 @@ PlotInfo plot_info_init( int num);
 
 // roots.c
 
+#define DEF_TOL -1
+
 double root_bis( Par_Func fnc, double x1, double x2, double tol, VectorD * debug);
+
+double root_newt( const Par_Func * fnc, const Par_Func * derivative, 
+					double start, double xtol, double ftol, VectorD * debug );
 
 #endif

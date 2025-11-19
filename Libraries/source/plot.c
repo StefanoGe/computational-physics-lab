@@ -86,7 +86,7 @@ void plot_2vecs( const VectorD * x, const VectorD * y )
 	FILE * gp = gp_open();
 		
 	gp_term_def( gp, NULL );
-	
+	fprintf(gp, "set grid nopolar\n");
 	gp_set_plot( gp, 1, NULL, NULL );
 	gp_prt_carr( gp, x->val, y->val, x->length );
 	

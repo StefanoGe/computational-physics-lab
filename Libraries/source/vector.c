@@ -118,3 +118,21 @@ VectorD vec_range( double x1, double x2, int num )
 	
 	return vec;
 }
+
+VectorD vec_par_func( const VectorD * domain, const Par_Func * fnc )
+{
+	VectorD vec = init_vec_length(domain -> length);
+	for( int i =0; i < domain->length; i++ )
+		vec.val[i] = evaluate( fnc, domain->val[i] );
+	return vec;
+}
+
+VectorD vec_full ( int length, double value )
+{
+	VectorD vec = init_vec_length(length);
+	for( int i = 0; i < length; i++ )
+		vec.val[i] = value;
+	return vec; 
+}
+
+
