@@ -87,6 +87,8 @@ void convergence_study(double root, const VectorD * debug)
 	std_print_vecD( &ratios );
 }
 
+//NOTE: DETERMINE THE C CONSTANT!
+
 void test( Par_Func f_p, Par_Func f_der_p, double x1, double x2, int nroots, ... )
 {
 	VectorD debug = init_vecD();
@@ -98,6 +100,8 @@ void test( Par_Func f_p, Par_Func f_der_p, double x1, double x2, int nroots, ...
 	VectorD starting_points = init_vec_length(nroots);
 	for(int i =0; i < nroots; i++)
 		starting_points.val[i] = va_arg( args, double );
+
+	va_end(args);
 
 	VectorD roots = init_vec_length(nroots);
 	
