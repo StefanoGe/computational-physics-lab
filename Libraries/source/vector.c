@@ -135,4 +135,27 @@ VectorD vec_full ( int length, double value )
 	return vec; 
 }
 
+double vec_min( const VectorD * vec )
+{
+	double min = vec->val[0];
+	double curr = 0;
+	for( int i = 1; i < vec -> length; i++ )
+	{
+		if( (curr = vec->val[i]) < min )
+			min = curr;
+	}
+	return min;
+}
+
+double vec_max( const VectorD * vec )
+{
+	double max = vec->val[0];
+	double curr = 0;
+	for( int i = 1; i < vec -> length; i++ )
+	{
+		if( (curr = vec->val[i]) > max )
+			max = curr;
+	}
+	return max;
+}
 

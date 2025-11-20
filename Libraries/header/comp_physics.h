@@ -301,6 +301,10 @@ VectorD vec_par_func( const VectorD *, const Par_Func * );
 
 VectorD vec_full ( int length, double value );
 
+double vec_min( const VectorD * );
+
+double vec_max( const VectorD * );
+
 // interp.c
 
 typedef struct {
@@ -372,5 +376,9 @@ double root_bis( Par_Func fnc, double x1, double x2, double tol, VectorD * debug
 
 double root_newt( const Par_Func * fnc, const Par_Func * derivative, 
 					double start, double xtol, double ftol, VectorD * debug );
+
+
+double root_sec( const Par_Func * fnc, double x1, double x2, 
+				double xtol, double ftol, VectorD * debug, int * exit_status );
 
 #endif

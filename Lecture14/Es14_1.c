@@ -101,3 +101,4 @@ int main()
 	exit(EXIT_SUCCESS);
 }
 
+// ci dovrebbe uscire 0.5 perche' ogni volta dividiamo l'intervallo in 2

@@ -122,13 +122,19 @@ void test( Par_Func f_p, Par_Func f_der_p, double x1, double x2, int nroots, ...
 
 int main()
 {
-	test( f1_p, f1_der_p, -2, 2, 1, 0.0 );
+	test( f1_p, f1_der_p, -2, 2, 1, 0.0 ); 
+	// ricorda: calcola c con q esatto, non effettivo
+	// ovrebbe venire tipo 0.4
 	test( f2_p, f2_der_p, -0.2, 1.4, 2, -0.1, 1.0 ); 
-	//oss: convergenza del primo zero e' rapidissima poiche' la funzione e'
-	//molto lineare
+	// oss: convergenza del primo zero e' rapidissima poiche' la funzione e'
+	// molto lineare, proprio la derivata seconda e' nulla quindi
+	// nel cacolo di q potremmo dimostrare che e' 3
+	// pure si puo' calcolare c usando e troviamo circa 0.675
+	
 	test( f3_p, f3_der_p, -2, 2, 1, 0.0 );
-	//Qui la convergenza e' molto lenta poich' la funzione ha derivata
-	//0 nel punto cercato
+	// Qui la convergenza e' molto lenta . radice e' non semplice.
+	// conoscendo pero' la cost asintotica pero' si possono fare considerazioni 
+	// interessanti. i.e. si puo' usare il metodo di newton modificato.
 	
 	exit(EXIT_SUCCESS);
 }
