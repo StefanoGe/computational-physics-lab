@@ -549,7 +549,6 @@ ArrayDouble build_from( ArrayDouble arr, Func_Ptr func )
 	return ret_arr;
 }
 
-
 double evaluate(const Par_Func * self, double x)
 {
 	return self->param_func_ptr( x, self->params );

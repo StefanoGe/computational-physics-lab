@@ -378,7 +378,11 @@ double root_newt( const Par_Func * fnc, const Par_Func * derivative,
 					double start, double xtol, double ftol, VectorD * debug );
 
 
-double root_sec( const Par_Func * fnc, double x1, double x2, 
+double root_sec( const Par_Func *, double x1, double x2, 
 				double xtol, double ftol, VectorD * debug, int * exit_status );
+
+// integration.c
+
+
 
 #endif
