@@ -93,7 +93,7 @@ int main()
 	
 	gp_term_def( gp, title );
 	gp_axes_labels( gp, "n", "inf-norm error" );
-	gp_set_plot(gp, 6, labels);
+	gp_set_plot(gp, 6, labels, NULL);
 	for( int i = 0; i < 6; i++ )
 	{
 		std_print_vecD( sup_norms+i );

@@ -1,7 +1,7 @@
 // My general header
 
-# ifndef SG_COMP_PHYSICS_HEADER_H
-# define SG_COMP_PHYSICS_HEADER_H
+#ifndef SG_COMP_PHYSICS_HEADER_H
+#define SG_COMP_PHYSICS_HEADER_H
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -349,6 +349,8 @@ void gp_axes_labels( FILE * gp, char * x_label, char * y_label );
 
 void gp_set_plot( FILE * gp, int num, char ** labels, char ** styles );
 
+void gp_set_logscale( FILE * gp, bool x, bool y );
+
 void gp_prt_carr( FILE * gp, double * xcarr, double * ycarr, int length );
 
 void gp_end( FILE * gp );
@@ -368,6 +370,8 @@ void plot_mult_vecs( const VectorD * x_axis, const VectorD y_values[],
 
 PlotInfo plot_info_init( int num);
 
+void config_parser( const char * filename, char * dest );
+
 // roots.c
 
 #define DEF_TOL -1
@@ -383,6 +387,8 @@ double root_sec( const Par_Func *, double x1, double x2,
 
 // integration.c
 
+double int_trap( const Par_Func *, double x1, double x2, int n_subint );
 
+double int_simp( const Par_Func *, double x1, double x2, int n_subint );
 
 #endif

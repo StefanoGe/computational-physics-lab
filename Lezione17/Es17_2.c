@@ -1,4 +1,4 @@
-// Test of trapezoidal rule of integration and study of its convergence
+// Test of Simpson's rule of integration and study of its convergence
 
 #include <stdio.h>
 #include <math.h>
@@ -97,7 +97,7 @@ void integration_study( const Par_Func * fnc, double x1, double x2, double true_
 	for( int i = 1; i <= MAX_NODE_POWER; i++ )
 	{
 		int n_nodes = 10 * pow_int(2, i);
-		double integral = int_trap( fnc, x1, x2, n_nodes );
+		double integral = int_simp( fnc, x1, x2, n_nodes );
 		double error = true_value - integral;
 		//Absolute error or no? Yes for the log plot
 		appendD( &errors, fabs(error) );

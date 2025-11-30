@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include "comp_physics.h"
 #include <stdbool.h>
+#include <string.h>
 
 FILE * gp_open(  )
 {
@@ -55,6 +56,14 @@ void gp_set_plot( FILE * gp, int num, char ** labels, char ** styles )
 			is_requested_present( labels, i ) ? labels[i]: "" ,
 			( i < num -1 ) ? ", ": "\n" );
 	}
+}
+
+void gp_set_logscale( FILE * gp, bool x, bool y )
+{
+	if( x )
+		fprintf( gp, "set logscale x\n" );
+	if( y )
+		fprintf( gp, "set logscale y\n" );
 }
 
 void gp_axes_labels( FILE * gp, char * x_label, char * y_label )
@@ -163,6 +172,61 @@ void plot_mult_vecs( const VectorD * x_axis, const VectorD y_values[],
 	gp_end( gp );
 }
 
+static inline void append_and_advance( char **dest, char c ){ **dest = c; ++*dest; }
+
+static inline bool is_c_fine( char c, char stop )
+{
+	return c != stop && c != EOF;
+}
+
+static inline bool read_until_char( FILE * file, char stop, char ** dest )
+{
+	char c;
+	while( is_c_fine( c = (char)getc(file), stop ) )
+		append_and_advance( dest, c );
+		
+	if (c == EOF)
+		return true;
+		
+	return false;
+}
+
+static inline bool parse_line( FILE * cfg, char ** dest )
+{
+
+	if( read_until_char( cfg, '=', dest ) )
+		return false;
+	
+	append_and_advance( dest, '=' );
+	append_and_advance( dest, '\'' );
+			
+	read_until_char( cfg, '\n', dest );
+	
+	append_and_advance(dest, '\'');
+	append_and_advance(dest, ';');
+	append_and_advance(dest, ' ');
+	
+	return true;
+} 
+
+void config_parser( const char * filename, char * dest )
+{
+	char path[100] = "./config/";
+	strcat( path, filename );
+	//eprint("%s", path);
+	FILE * config = openFile( path, "r" );
+	
+	while( parse_line( config, &dest) );
+	
+	fclose(config);
+}
+
+void two_vec_to_file( const char * filename, const * VectorD vec1, const * VectorD vec2 )
+{
+	
+	for(  )
+	
+}
 
 
 
