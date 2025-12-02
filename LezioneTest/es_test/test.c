@@ -10,6 +10,3 @@ int main()
 	free_vecD( &domain, &y_values );
 	return 0;
 }
-
-
-

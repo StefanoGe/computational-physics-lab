@@ -27,7 +27,7 @@
 
 #define eprint(a, ...) fprintf( stderr, a "\n" __VA_OPT__(,) __VA_ARGS__ )
 
-FILE * openFile( char * fileName, char * mode )
+FILE * openFile( const char * fileName, const char * mode )
 {
 	FILE * file;
 	file = fopen(fileName, mode);

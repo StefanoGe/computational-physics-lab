@@ -38,7 +38,7 @@ typedef struct {
 
 double evaluate( const Par_Func * self, double x );
 
-FILE * openFile( char * fileName, char * mode );
+FILE * openFile( const char * fileName, const char * mode );
 
 typedef struct _arrayInt
 {
@@ -370,7 +370,7 @@ void plot_mult_vecs( const VectorD * x_axis, const VectorD y_values[],
 
 PlotInfo plot_info_init( int num);
 
-void config_parser( const char * filename, char * dest );
+void tmplot_2vecs( const char * cfg_name, const VectorD * xaxis, const VectorD * yaxis);
 
 // roots.c
 

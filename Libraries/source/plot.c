@@ -209,26 +209,69 @@ static inline bool parse_line( FILE * cfg, char ** dest )
 	return true;
 } 
 
-void config_parser( const char * filename, char * dest )
+static inline void config_parser( const char * filename, char * dest )
 {
-	char path[100] = "./config/";
-	strcat( path, filename );
-	//eprint("%s", path);
-	FILE * config = openFile( path, "r" );
+	FILE * config = openFile( filename, "r" );
 	
 	while( parse_line( config, &dest) );
+	
+	*dest = '\0';
 	
 	fclose(config);
 }
 
-void two_vec_to_file( const char * filename, const * VectorD vec1, const * VectorD vec2 )
+static inline bool are_same_length(const VectorD * vecs[], int num_vecs)
 {
-	
-	for(  )
-	
+	for( int i = 1; i < num_vecs; i++ )
+		if( vecs[i]->length != vecs[0]->length )
+			return false;
+	return true;
 }
 
+static inline void vecs_to_file( FILE * file, const VectorD * vecs[], int num_vecs )
+{
+	if( !are_same_length(vecs, num_vecs) )
+		raiseErr("vecs are not all same length.");
+	
+	const int vec_length = vecs[0]->length;
+	
+	for( int i = 0; i < vec_length; i++ )
+	{
+		for( int j = 0; j < num_vecs; j++ )
+		{
+			fprintf( file, "%16g ", vecs[j]->val[i]);
+		}
+		putc('\n', file);
+	}
+}
 
+void two_carr_to_file( const char * filename, const VectorD * vec1, const VectorD * vec2 )
+{
+	FILE * data = openFile( filename, "w" );
+	const VectorD * vecs[2] = { vec1, vec2 };
+	vecs_to_file( data, vecs, 2 );
+	fclose(data);
+}
+
+void tmplot_2vecs( const char * cfg_name, const VectorD * xaxis, const VectorD * yaxis)
+{
+	char command [1000] = "gnuplot -e \"";
+	
+	char cfg_path[100] = "conf/";
+	strcat(cfg_path, cfg_name);
+	strcat( cfg_path, ".cfg" );
+	
+	char data_path[100] = "data/";
+	strcat(data_path, cfg_name);
+	strcat(data_path, ".dat");
+
+	config_parser( cfg_path, strchr( command, '\0' ) );
+	
+	two_carr_to_file( data_path, xaxis, yaxis );
+	
+	sprintf( strchr(command, '\0'), "MY_DATAFILE=\'%s\'\" ../../gp_templates/general_template.gp", data_path );
+	system(command);
+}
 
 
 
