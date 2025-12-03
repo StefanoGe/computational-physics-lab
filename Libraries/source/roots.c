@@ -5,7 +5,7 @@
 
 #define max(a,b) (( a < b ) ? b : a)
 
-#define DEFAULT_TOLERANCE 100*DBL_EPSILON
+#define DEFAULT_TOLERANCE DBL_EPSILON
 #define MAX_ITERATION 10000
 
 // da sistemare tenendo conto della machine precision

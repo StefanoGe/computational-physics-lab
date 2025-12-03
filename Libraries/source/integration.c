@@ -1,6 +1,7 @@
 // integration.c
 
 #include "comp_physics.h"
+#include <math.h>
 
 double int_trap( const Par_Func * fnc, double x1, double x2, int n_subint )
 {
@@ -38,7 +39,7 @@ double int_simp( const Par_Func * fnc, double x1, double x2, int n_subint )
 	return integral;	
 }
 
-double legendre_naive( double x, int degree )
+static inline double legendre_naive( double x, int degree )
 {
 	if(degree == 0)
 		return 1;
@@ -51,6 +52,38 @@ double legendre_naive( double x, int degree )
 	return (first_addend + second_addend) / degree;
 }
 
-double legendre(double x, int degree){return legendre_naive(x, degree);}
+double legendre(double x, int degree, VectorD * pol_value_registry){return legendre_naive(x, degree);}
+
+double legendre_par(double x, void *degree) {
+    int d = *(int *)degree;
+    return legendre(x, d);
+}
+
+double legendre_der( double x, int degree )
+{
+	const double num = x*legendre ( x, degree ) - legendre( x, degree - 1 );
+	const double den = x*x - 1;
+	return degree * num/den;
+}
+
+double legendre_der_par(double x, void *degree) {
+    int d = *(int *)degree;
+    return legendre_der(x, d);
+}
+
+static inline double initial_point( int degree, int root_index )
+{
+	const double cos_arg = PI*( 4*root_index - 1 )/( 4*degree + 2);
+	return cos(cos_arg);
+}
+
+double legendre_root( int degree, int root_index )
+{
+	Par_Func leg_par = {legendre_par, &degree, 1};
+	Par_Func leg_der_par = {legendre_der_par, &degree, 1};
+	
+	return root_newt( &leg_par, &leg_der_par, initial_point( degree, root_index), 
+				DEF_TOL, DEF_TOL, nullptr );
+}
 
 

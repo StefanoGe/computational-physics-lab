@@ -28,11 +28,11 @@
 
 typedef double(*Func_Ptr)(double);
 
-typedef double(*ParamFuncPtr) (double, double *);
+typedef double(*ParamFuncPtr) (double, void *);
 
 typedef struct {
 	ParamFuncPtr param_func_ptr;
-	double * params;
+	void * params;
 	int nparams;
 } Par_Func;
 
@@ -390,5 +390,9 @@ double root_sec( const Par_Func *, double x1, double x2,
 double int_trap( const Par_Func *, double x1, double x2, int n_subint );
 
 double int_simp( const Par_Func *, double x1, double x2, int n_subint );
+
+double legendre(double x, int degree);
+
+double legendre_root( int degree, int root_index );
 
 #endif
