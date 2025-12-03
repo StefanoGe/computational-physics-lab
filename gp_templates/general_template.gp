@@ -28,16 +28,22 @@ plot_command = sprintf("plot '%s' with %s title '%s'", MY_DATAFILE, plot_style, 
 exec_mode = "default"
 if( exists("MY_TERMINAL") ){ exec_mode = "custom" }
 
-if(exec_mode eq "custom")
-{
+if (exec_mode eq "custom") {
 
-	term_command = sprintf( "set terminal %s font 'CMU Serif, 12' enhanced", MY_TERMINAL )
-	eval(term_command)
-	if(exists("OUTPUT_NAME")){set output OUTPUT_NAME}
-	eval(plot_command)
-	unset output
-	if(MY_TERMINAL eq "qt"){pause mouse close}
+    eval(sprintf("set terminal %s font 'CMU Serif, 12' enhanced", MY_TERMINAL))
+
+    if (exists("OUTPUT_NAME")) {
+        set output OUTPUT_NAME
+    }
+
+    eval(plot_command)
+    unset output
+
+    if (exists("MY_TERMINAL") && MY_TERMINAL eq "qt") {
+        pause mouse close
+    }
 }
+
 
 if(exec_mode eq "default")
 {
