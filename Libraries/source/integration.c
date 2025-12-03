@@ -37,3 +37,20 @@ double int_simp( const Par_Func * fnc, double x1, double x2, int n_subint )
 	
 	return integral;	
 }
+
+double legendre_naive( double x, int degree )
+{
+	if(degree == 0)
+		return 1;
+	if(degree == 1)
+		return x;
+		
+	const double first_addend = ( 2 * degree - 1 ) * x * legendre_naive( x, degree - 1 );
+	const double second_addend = ( 1 - degree ) * legendre_naive( x, degree - 2 );
+	
+	return (first_addend + second_addend) / degree;
+}
+
+double legendre(double x, int degree){return legendre_naive(x, degree);}
+
+

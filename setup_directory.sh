@@ -13,6 +13,6 @@ while [[ $go_on == y || $go_on == Y ]]; do
 	mkdir -p "$path/data"
 	mkdir -p "$path/plots"
 	mkdir -p "$path/conf"
-	cp --update=none "./template.gp" "$path/plots/template.gp"
+#	cp --update=none "./template.gp" "$path/plots/template.gp"
 	read -p "Go on?[y/n]: " go_on
 done

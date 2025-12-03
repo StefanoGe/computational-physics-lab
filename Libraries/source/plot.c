@@ -270,6 +270,7 @@ void tmplot_2vecs( const char * cfg_name, const VectorD * xaxis, const VectorD *
 	two_carr_to_file( data_path, xaxis, yaxis );
 	
 	sprintf( strchr(command, '\0'), "MY_DATAFILE=\'%s\'\" ../../gp_templates/general_template.gp", data_path );
+	printf(command);
 	system(command);
 }
 
