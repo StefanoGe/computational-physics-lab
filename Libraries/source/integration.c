@@ -40,7 +40,7 @@ double int_simp( const Par_Func * fnc, double x1, double x2, int n_subint )
 	
 	return integral;	
 }
-
+// scales bad with degree
 static inline double legendre_naive( double x, int degree )
 {
 	if(degree == 0)
@@ -53,18 +53,50 @@ static inline double legendre_naive( double x, int degree )
 	
 	return (first_addend + second_addend) / degree;
 }
-/*
+
+static inline void leg_smart_reset( int * length, double * curr_x, double new_x  )
+{
+	*length = 0;
+	*curr_x = new_x;
+}
+
+double legendre_smart( double x, int degree );
+
+static inline void update_values( double x, int degree, double * values )
+{
+	if(degree == 0)
+		values[degree] = 1;
+	
+	else if(degree == 1)
+		values[degree] = x;
+	
+	else
+	{
+		const double first_addend = ( 2 * degree - 1 ) * x * legendre_smart( x, degree - 1 );
+		const double second_addend = ( 1 - degree ) * legendre_smart( x, degree - 2 );
+		
+		values[degree] = (first_addend + second_addend) / degree;
+	}
+}
+
+// scales as O(degree)
 double legendre_smart( double x, int degree )
 {
 	static double values[MAX_LEG];
-	static int length;
-	static double curr_x;
+	static int length = 0;
+	static double curr_x = NAN;
 	
-	if( x == curr_x )
+	if( x != curr_x)
+		leg_smart_reset( &length, &curr_x, x );
+		
+	if( degree >= length )
+		update_values( x, degree, values );
+	
+	return values[degree];
 }
-*/
 
-double legendre(double x, int degree){return legendre_naive(x, degree);}
+
+double legendre(double x, int degree){return legendre_smart(x, degree);}
 
 double legendre_par(double x, void *degree) {
     int d = *(int *)degree;
