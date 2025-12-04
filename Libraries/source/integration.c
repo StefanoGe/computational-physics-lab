@@ -3,6 +3,8 @@
 #include "comp_physics.h"
 #include <math.h>
 
+#define MAX_LEG 100
+
 double int_trap( const Par_Func * fnc, double x1, double x2, int n_subint )
 {
 	const double interval_length = (x2 - x1) / n_subint;
@@ -51,8 +53,18 @@ static inline double legendre_naive( double x, int degree )
 	
 	return (first_addend + second_addend) / degree;
 }
+/*
+double legendre_smart( double x, int degree )
+{
+	static double values[MAX_LEG];
+	static int length;
+	static double curr_x;
+	
+	if( x == curr_x )
+}
+*/
 
-double legendre(double x, int degree, VectorD * pol_value_registry){return legendre_naive(x, degree);}
+double legendre(double x, int degree){return legendre_naive(x, degree);}
 
 double legendre_par(double x, void *degree) {
     int d = *(int *)degree;
