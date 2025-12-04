@@ -1,0 +1,1 @@
+/usr/bin/cc -Wl,--dependency-file=CMakeFiles/gauss_legendre_weights.dir/link.d CMakeFiles/gauss_legendre_weights.dir/gauss_legendre_weights.c.o -o /home/stefano/University/Fisica_Computazionale/StefanoGe/bin/gauss_legendre_weights  ../../libcp_library.a -lm
