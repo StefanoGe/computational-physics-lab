@@ -142,6 +142,32 @@ gauss_legendre_weights/fast:
 	$(MAKE) $(MAKESILENT) -f Lezione18/Es18_1/CMakeFiles/gauss_legendre_weights.dir/build.make Lezione18/Es18_1/CMakeFiles/gauss_legendre_weights.dir/build
 .PHONY : gauss_legendre_weights/fast
 
+#=============================================================================
+# Target rules for targets named test1
+
+# Build rule for target.
+test1: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 test1
+.PHONY : test1
+
+# fast build rule for target.
+test1/fast:
+	$(MAKE) $(MAKESILENT) -f LezioneTest/es_test/CMakeFiles/test1.dir/build.make LezioneTest/es_test/CMakeFiles/test1.dir/build
+.PHONY : test1/fast
+
+#=============================================================================
+# Target rules for targets named test
+
+# Build rule for target.
+test: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 test
+.PHONY : test
+
+# fast build rule for target.
+test/fast:
+	$(MAKE) $(MAKESILENT) -f LezioneTest/test/CMakeFiles/test.dir/build.make LezioneTest/test/CMakeFiles/test.dir/build
+.PHONY : test/fast
+
 Libraries/source/DoubleUtilities.o: Libraries/source/DoubleUtilities.c.o
 .PHONY : Libraries/source/DoubleUtilities.o
 
@@ -392,6 +418,8 @@ help:
 	@echo "... rebuild_cache"
 	@echo "... cp_library"
 	@echo "... gauss_legendre_weights"
+	@echo "... test"
+	@echo "... test1"
 	@echo "... Libraries/source/DoubleUtilities.o"
 	@echo "... Libraries/source/DoubleUtilities.i"
 	@echo "... Libraries/source/DoubleUtilities.s"

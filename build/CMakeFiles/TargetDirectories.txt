@@ -4,3 +4,9 @@
 /home/stefano/University/Fisica_Computazionale/StefanoGe/build/Lezione18/Es18_1/CMakeFiles/gauss_legendre_weights.dir
 /home/stefano/University/Fisica_Computazionale/StefanoGe/build/Lezione18/Es18_1/CMakeFiles/edit_cache.dir
 /home/stefano/University/Fisica_Computazionale/StefanoGe/build/Lezione18/Es18_1/CMakeFiles/rebuild_cache.dir
+/home/stefano/University/Fisica_Computazionale/StefanoGe/build/LezioneTest/es_test/CMakeFiles/test1.dir
+/home/stefano/University/Fisica_Computazionale/StefanoGe/build/LezioneTest/es_test/CMakeFiles/edit_cache.dir
+/home/stefano/University/Fisica_Computazionale/StefanoGe/build/LezioneTest/es_test/CMakeFiles/rebuild_cache.dir
+/home/stefano/University/Fisica_Computazionale/StefanoGe/build/LezioneTest/test/CMakeFiles/test.dir
+/home/stefano/University/Fisica_Computazionale/StefanoGe/build/LezioneTest/test/CMakeFiles/edit_cache.dir
+/home/stefano/University/Fisica_Computazionale/StefanoGe/build/LezioneTest/test/CMakeFiles/rebuild_cache.dir

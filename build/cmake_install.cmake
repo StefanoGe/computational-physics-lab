@@ -45,6 +45,8 @@ endif()
 if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   # Include the install script for each subdirectory.
   include("/home/stefano/University/Fisica_Computazionale/StefanoGe/build/Lezione18/Es18_1/cmake_install.cmake")
+  include("/home/stefano/University/Fisica_Computazionale/StefanoGe/build/LezioneTest/es_test/cmake_install.cmake")
+  include("/home/stefano/University/Fisica_Computazionale/StefanoGe/build/LezioneTest/test/cmake_install.cmake")
 
 endif()
 

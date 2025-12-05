@@ -3,12 +3,15 @@
 
 /home/stefano/University/Fisica_Computazionale/StefanoGe/bin/gauss_legendre_weights: libcp_library.a \
   /lib/x86_64-linux-gnu/libc.so.6 \
+  /lib/x86_64-linux-gnu/libm.so.6 \
+  /lib/x86_64-linux-gnu/libmvec.so.1 \
   /lib64/ld-linux-x86-64.so.2 \
   /usr/lib/x86_64-linux-gnu/Scrt1.o \
   /usr/lib/x86_64-linux-gnu/crti.o \
   /usr/lib/x86_64-linux-gnu/crtn.o \
   /usr/lib/x86_64-linux-gnu/libc.so \
   /usr/lib/x86_64-linux-gnu/libgcc_s.so.1 \
+  /usr/lib/x86_64-linux-gnu/libm.so \
   /usr/lib/gcc/x86_64-linux-gnu/14/crtbeginS.o \
   /usr/lib/gcc/x86_64-linux-gnu/14/crtendS.o \
   /usr/lib/gcc/x86_64-linux-gnu/14/libgcc.a \
@@ -97,6 +100,8 @@ Lezione18/Es18_1/CMakeFiles/gauss_legendre_weights.dir/gauss_legendre_weights.c.
 
 /usr/include/x86_64-linux-gnu/bits/uintn-identity.h:
 
+/usr/include/x86_64-linux-gnu/bits/typesizes.h:
+
 /usr/include/stdlib.h:
 
 /usr/lib/x86_64-linux-gnu/crti.o:
@@ -119,13 +124,13 @@ libcp_library.a:
 
 /usr/include/x86_64-linux-gnu/bits/types/__fpos_t.h:
 
+/usr/include/x86_64-linux-gnu/bits/types/timer_t.h:
+
+/usr/include/endian.h:
+
 /usr/include/x86_64-linux-gnu/bits/endianness.h:
 
 /usr/include/x86_64-linux-gnu/bits/types/struct_FILE.h:
-
-/usr/include/x86_64-linux-gnu/bits/typesizes.h:
-
-/usr/include/x86_64-linux-gnu/bits/floatn-common.h:
 
 /usr/include/stdio.h:
 
@@ -133,41 +138,51 @@ Lezione18/Es18_1/CMakeFiles/gauss_legendre_weights.dir/gauss_legendre_weights.c.
 
 /usr/include/x86_64-linux-gnu/bits/thread-shared-types.h:
 
-/usr/lib/x86_64-linux-gnu/Scrt1.o:
-
-/usr/include/x86_64-linux-gnu/bits/types/cookie_io_functions_t.h:
-
-/lib64/ld-linux-x86-64.so.2:
-
-/usr/include/x86_64-linux-gnu/bits/floatn.h:
-
 /usr/lib/x86_64-linux-gnu/libc_nonshared.a:
 
 /usr/include/x86_64-linux-gnu/bits/timesize.h:
-
-/usr/lib/x86_64-linux-gnu/libc.so:
-
-/usr/lib/gcc/x86_64-linux-gnu/14/libgcc_s.so:
-
-/usr/include/x86_64-linux-gnu/bits/endian.h:
-
-/usr/lib/x86_64-linux-gnu/libgcc_s.so.1:
-
-/usr/include/x86_64-linux-gnu/sys/cdefs.h:
-
-/usr/include/x86_64-linux-gnu/bits/types/struct_timeval.h:
 
 /usr/lib/gcc/x86_64-linux-gnu/14/libgcc.a:
 
 /home/stefano/University/Fisica_Computazionale/StefanoGe/Lezione18/Es18_1/gauss_legendre_weights.c:
 
+/usr/include/x86_64-linux-gnu/bits/types/clock_t.h:
+
 /usr/include/x86_64-linux-gnu/bits/types/__FILE.h:
 
-/usr/include/x86_64-linux-gnu/bits/types/clock_t.h:
+/usr/include/x86_64-linux-gnu/sys/cdefs.h:
+
+/usr/include/x86_64-linux-gnu/bits/types/struct_timeval.h:
+
+/usr/lib/x86_64-linux-gnu/Scrt1.o:
+
+/usr/lib/gcc/x86_64-linux-gnu/14/libgcc_s.so:
+
+/lib/x86_64-linux-gnu/libmvec.so.1:
+
+/usr/include/x86_64-linux-gnu/bits/types/cookie_io_functions_t.h:
+
+/lib64/ld-linux-x86-64.so.2:
+
+/usr/include/x86_64-linux-gnu/bits/types/time_t.h:
+
+/lib/x86_64-linux-gnu/libm.so.6:
+
+/usr/include/x86_64-linux-gnu/bits/pthreadtypes-arch.h:
+
+/usr/lib/x86_64-linux-gnu/libc.so:
+
+/usr/include/x86_64-linux-gnu/bits/endian.h:
+
+/usr/lib/x86_64-linux-gnu/libgcc_s.so.1:
 
 /home/stefano/University/Fisica_Computazionale/StefanoGe/Libraries/header/comp_physics.h:
 
 /usr/lib/gcc/x86_64-linux-gnu/14/crtendS.o:
+
+/usr/include/x86_64-linux-gnu/bits/floatn-common.h:
+
+/usr/include/x86_64-linux-gnu/bits/floatn.h:
 
 /usr/include/x86_64-linux-gnu/bits/libc-header-start.h:
 
@@ -199,20 +214,14 @@ Lezione18/Es18_1/CMakeFiles/gauss_legendre_weights.dir/gauss_legendre_weights.c.
 
 /usr/include/x86_64-linux-gnu/bits/struct_mutex.h:
 
-/usr/include/endian.h:
-
-/usr/include/x86_64-linux-gnu/bits/types/timer_t.h:
-
 /usr/include/x86_64-linux-gnu/bits/struct_rwlock.h:
 
 /lib/x86_64-linux-gnu/libc.so.6:
+
+/usr/lib/x86_64-linux-gnu/libm.so:
 
 /usr/include/x86_64-linux-gnu/bits/types/__mbstate_t.h:
 
 /usr/include/x86_64-linux-gnu/bits/types/__fpos64_t.h:
 
 /usr/include/x86_64-linux-gnu/bits/types/struct_timespec.h:
-
-/usr/include/x86_64-linux-gnu/bits/pthreadtypes-arch.h:
-
-/usr/include/x86_64-linux-gnu/bits/types/time_t.h:

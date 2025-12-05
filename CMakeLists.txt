@@ -22,3 +22,5 @@ add_library(cp_library STATIC ${LIB_SOURCES})
 target_include_directories(cp_library PUBLIC ${CMAKE_SOURCE_DIR}/Libraries/header)
 
 add_subdirectory(Lezione18/Es18_1)
+add_subdirectory(LezioneTest/es_test/)
+add_subdirectory(LezioneTest/test/)
