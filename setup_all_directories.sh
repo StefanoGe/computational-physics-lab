@@ -10,18 +10,18 @@ create_dirs(){
 	mv "$path.c" $path
 }
 
+
 create_cmake(){
 	cfile="$1"
-	path=
+	path="$2"
+	cfile="${cfile#*//}"
 	touch "$path.CMakeLists.txt"
-	set(EXERCISE_SOURCES gauss_legendre_weights.c)
-	add_executable(gauss_legendre_weights ${EXERCISE_SOURCES})
-	target_link_libraries(gauss_legendre_weights PRIVATE cp_library m)
-	target_include_directories(gauss_legendre_weights PRIVATE ${CMAKE_SOURCE_DIR}/Libraries/header)
-
-	
-	
+	"set(EXERCISE_SOURCES $cfile)" >> "$path.CMakeLists.txt"
+	"add_executable($cfile ${EXERCISE_SOURCES})" > "$path.CMakeLists.txt"
+	"target_link_libraries($cfile PRIVATE cp_library m)" > "$path.CMakeLists.txt"
+	"target_include_directories($cfile PRIVATE ${CMAKE_SOURCE_DIR}/Libraries/header)" > "$path.CMakeLists.txt"
 }
+
 
 create_subdirectories(){
 	dir=$1
@@ -34,10 +34,21 @@ create_subdirectories(){
 	done
 }
 
-for dir in */; do
-	if [[ $dir == Lezione* ]]
+for lezdir in */; do
+	if [[ $lezdir == LezioneTest ]]
 	then
-		echo $dir
-		create_subdirectories $dir
+#		echo $lezdir
+		create_subdirectories $lezdir
+		for esdir in "$lezdir"/*/; do
+			for cfile in $esdir/*.c; do
+				[ -f "$cfile" ] || break
+				echo "$cfile"
+			done
+		done
 	fi
 done
+
+
+
+
+
