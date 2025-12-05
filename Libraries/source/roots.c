@@ -64,10 +64,16 @@ static inline void init_debug( VectorD * debug )
 static inline void newt_next_step( const Par_Func * fnc, const Par_Func * derivative,
 							double * prev_x, double * curr_x, VectorD * debug )
 {
+	static int count = 0;
+	count++;
+//	if( (count%100) == 0 )
+		eprint("%d\n", count);
+	
 	*prev_x = *curr_x;
 	*curr_x -= evaluate( fnc, *curr_x ) / evaluate( derivative, *curr_x );
 	if(debug)
 		appendD( debug, *curr_x );
+		
 }
 
 double root_newt( const Par_Func * fnc, const Par_Func * derivative, 

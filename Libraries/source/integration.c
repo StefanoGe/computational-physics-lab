@@ -1,7 +1,7 @@
 // integration.c
-
 #include "comp_physics.h"
 #include <math.h>
+#include <float.h>
 
 #define MAX_LEG 100
 
@@ -60,7 +60,7 @@ static inline void leg_smart_reset( int * length, double * curr_x, double new_x 
 	*curr_x = new_x;
 }
 
-double legendre_smart( double x, int degree );
+static inline double legendre_smart( double x, int degree );
 
 static inline void update_values( double x, int degree, double * values )
 {
@@ -80,7 +80,7 @@ static inline void update_values( double x, int degree, double * values )
 }
 
 // scales as O(degree)
-double legendre_smart( double x, int degree )
+static inline double legendre_smart( double x, int degree )
 {
 	static double values[MAX_LEG];
 	static int length = 0;
@@ -96,7 +96,7 @@ double legendre_smart( double x, int degree )
 }
 
 
-double legendre(double x, int degree){return legendre_smart(x, degree);}
+double legendre(double x, int degree){return legendre_naive(x, degree);}
 
 double legendre_par(double x, void *degree) {
     int d = *(int *)degree;
@@ -127,7 +127,36 @@ double legendre_root( int degree, int root_index )
 	Par_Func leg_der_par = {legendre_der_par, &degree, 1};
 	
 	return root_newt( &leg_par, &leg_der_par, initial_point( degree, root_index), 
-				DEF_TOL, DEF_TOL, nullptr );
+				DBL_EPSILON*10, DBL_EPSILON*10, nullptr );
 }
+
+static inline double gauss_legendre_weight( double x, int n )
+{
+	const double num = 1 - x * x;
+	const int den1 = ( n + 1 ) * ( n + 1 );
+	const double den2 = pown( legendre( x, n + 1 ), 2 );
+	return 2 * num / den1 / den2;
+}
+
+double int_gauss_legendre( Par_Func * fnc, int order )
+{
+	double sum = 0;
+	double curr_root = NAN;
+	for( int i = 1; i <= order; i++)
+	{
+		curr_root = legendre_root( order, i );
+		eprint( "root ok" );
+		const double curr_weight = gauss_legendre_weight( curr_root, order );
+		eprint("weight ok");
+		const double fnc_value = evaluate( fnc, curr_root );
+		eprint("fnc_value ok");
+		sum += curr_weight * fnc_value;
+	}
+	return sum;
+}
+
+
+
+
 
 

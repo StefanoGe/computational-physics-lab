@@ -26,7 +26,7 @@ double * __m_get( MatrixDouble * mat, int nrow, int ncol )
 	
 	return &(mat->val[nrow][ncol]);
 }
-
+*/
 double pown( double x, int n )
 {
 	double product = 1.0;
@@ -35,7 +35,7 @@ double pown( double x, int n )
 	
 	return product;
 }
-*/
+
 
 ArrayDouble allocArrD ( int length)
 {

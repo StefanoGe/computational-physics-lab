@@ -1,6 +1,6 @@
 #include "comp_physics.h"
 
-#define MAX_DEGREE_TEST 5
+#define MAX_DEGREE_TEST 10
 
 int main()
 {

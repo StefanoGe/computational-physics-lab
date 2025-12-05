@@ -395,4 +395,6 @@ double legendre(double x, int degree);
 
 double legendre_root( int degree, int root_index );
 
+double int_gauss_legendre( Par_Func *, int order );
+
 #endif
