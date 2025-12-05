@@ -5,13 +5,13 @@
 
 #define DOMAIN_PLOT_SIZE 1000
 
-double f1( double x, double * unused )
+double f1( double x, void * unused )
 {
 	UNUSED(unused);
 	return x*x - exp( -x );
 }
 
-double f1_der( double x, double * unused )
+double f1_der( double x, void * unused )
 {
 	UNUSED(unused);
 	return 2 * x + exp(-x);
@@ -20,13 +20,13 @@ double f1_der( double x, double * unused )
 Par_Func f1_p =     { f1,     NULL, 0 };
 Par_Func f1_der_p = { f1_der, NULL, 0 };
 
-double f2( double x, double * unused )
+double f2( double x, void * unused )
 {
 	UNUSED(unused);
 	return tan(x) - 2 * x;
 }
 
-double f2_der( double x, double * unused )
+double f2_der( double x, void * unused )
 {
 	UNUSED(unused);
 	return 1/cos(x)/cos(x) - 2 ;
@@ -35,13 +35,13 @@ double f2_der( double x, double * unused )
 Par_Func f2_p =     { f2,     NULL, 0 };
 Par_Func f2_der_p = { f2_der, NULL, 0 };
 
-double f3( double x, double * unused )
+double f3( double x, void * unused )
 {
 	UNUSED(unused);
 	return exp(x + 1) - x - 2;
 }
 
-double f3_der( double x, double * unused )
+double f3_der( double x, void * unused )
 {
 	UNUSED(unused);
 	return exp(x+1) - 1;

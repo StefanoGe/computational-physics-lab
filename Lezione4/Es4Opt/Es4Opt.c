@@ -3,8 +3,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
-#include "DoubleUtilities.c"
-
+#include "comp_physics.h"
+/*
 void checkMatrixsHeight(MatrixDouble matrix, MatrixDouble knownTerms)
 {
 	if( matrix.nrows != knownTerms.nrows )
@@ -44,6 +44,7 @@ ArrayDouble forwSubstGen( MatrixDouble matrix, ArrayDouble knownTerms)
 	return solutions;
 }
 
+*/
 
 int main()
 {

@@ -30,7 +30,7 @@ double inf_norm( const BarFit * barf )
 
 double one_test( Func_Ptr func, int n_nodes )
 {
-	BarFit barf = fit_cheb( func, n_nodes );
+	BarFit barf = fit_cheb2_def( func, n_nodes );
 	
 	double sup_norm = inf_norm( &barf );
 	

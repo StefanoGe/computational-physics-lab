@@ -1,6 +1,6 @@
 // Es 3_1.c
 
-#include "FloatUtilities.c"
+#include "comp_physics.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>

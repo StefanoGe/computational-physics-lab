@@ -1,8 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
-#include "DoubleUtilities.c"
-#include "LinearSystems.c"
+#include "comp_physics.h"
 
 void testID()
 {
@@ -11,8 +10,8 @@ void testID()
 	ArrayDouble testSol = forwSubst( testMatrix, colVec );
 	ArrayDouble testSolBack = backSubst( testMatrix, colVec );
 	
-	printArrDPar( testSol );
-	printArrDPar( testSolBack );
+	printArrDPar( testSol, "%.14lf" );
+	printArrDPar( testSolBack, "%.14lf");
 	
 	freeArrD(colVec);
 	freeMatD( testMatrix );
@@ -26,7 +25,7 @@ void testSample1()
 	ArrayDouble colVec = buildArrD(3, -4.0, 2.0, 1.0);
 	ArrayDouble testSol = forwSubst( testMatrix, colVec );
 	
-	printArrDPar( testSol );
+	printArrDPar( testSol, "%.14lf" );
 	
 	freeArrD(colVec);
 	freeMatD( testMatrix );
@@ -40,7 +39,7 @@ void testSample2()
 	ArrayDouble colVec = buildArrD(4, -4.0, 1.0, -3.0, 5.0);
 	ArrayDouble testSol = forwSubst( testMatrix, colVec );
 	
-	printArrDPar( testSol );
+	printArrDPar( testSol, "%.14lf" );
 	
 	freeArrD(colVec);
 	freeMatD( testMatrix );
@@ -54,7 +53,7 @@ void testSample1Back( )
 	ArrayDouble colVec = buildArrD(3, 1.0, 1.0, 6.0);
 	ArrayDouble testSol = backSubst( testMatrix, colVec );
 	
-	printArrDPar( testSol );
+	printArrDPar( testSol, "%.14lf" );
 	
 	freeArrD(colVec);
 	freeMatD( testMatrix );
@@ -68,7 +67,7 @@ void testSample2Back()
 	ArrayDouble colVec = buildArrD(4, 4.0, 1.0, 1.0, 5.0);
 	ArrayDouble testSol = backSubst( testMatrix, colVec );
 	
-	printArrDPar( testSol );
+	printArrDPar( testSol, "%.14lf" );
 	
 	freeArrD(colVec);
 	freeMatD( testMatrix );

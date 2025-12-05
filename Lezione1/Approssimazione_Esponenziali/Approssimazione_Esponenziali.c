@@ -3,7 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
-#include "DoubleUtilities.c"
+#include "comp_physics.h"
 
 #define MAX_N 10
 #define N_INTERVALS 100

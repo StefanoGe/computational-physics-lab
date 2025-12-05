@@ -10,15 +10,6 @@
 
 int m = 0;
 
-double pown( double x, int n )
-{
-	double product = 1.0;
-	for( int i = 0; i < n; i++ )
-		product *=x;
-	
-	return product;
-}
-
 double f1(double x){ return pown( fabs( x ), m ); }
 
 double inf_norm( const BarFit * barf )

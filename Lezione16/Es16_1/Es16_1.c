@@ -8,7 +8,7 @@
 
 #define DOMAIN_PLOT_SIZE 1000
 
-double f1( double x, double * unused )
+double f1( double x, void * unused )
 {
 	UNUSED(unused);
 	return x*x - exp( -x );
@@ -16,7 +16,7 @@ double f1( double x, double * unused )
 
 Par_Func f1_p = { f1,     NULL, 0 };
 
-double f2( double x, double * unused )
+double f2( double x, void * unused )
 {
 	UNUSED(unused);
 	return tan(x) - 2 * x;
@@ -24,7 +24,7 @@ double f2( double x, double * unused )
 
 Par_Func f2_p = { f2,     NULL, 0 };
 
-double f3( double x, double * unused )
+double f3( double x, void * unused )
 {
 	UNUSED(unused);
 	return exp(x + 1) - x - 2;

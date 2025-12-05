@@ -5,8 +5,6 @@
 #include <math.h>
 #include "comp_physics.h"
 
-#define PI 3.1415926535897932384
-
 
 void testLUP( char * filename, int dim )
 {
@@ -92,9 +90,9 @@ void printDebugRotra(MatrixDouble A, MatrixDouble z, MatrixDouble b,
 	printMatDGraph( lumat.L );
 
 	printf("y is: \n");
-	printArrDPar( y );
+	printArrDPar( y, "%.14lf" );
 	printf("x is: \n");
-	printArrDPar( x );
+	printArrDPar( x, "%.14lf" );
 
 }
 

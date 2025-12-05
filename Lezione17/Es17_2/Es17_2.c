@@ -7,7 +7,7 @@
 #define MAX_NODE_POWER 10
 #define DO_ALL true
 
-double f1( double x, double * unused )
+double f1( double x, void * unused )
 {
 	UNUSED(unused);
 	return x * log(1 + x);
@@ -15,7 +15,7 @@ double f1( double x, double * unused )
 
 Par_Func f1_p = { f1, NULL, 0 };
 
-double f2( double x, double * unused )
+double f2( double x, void * unused )
 {
 	UNUSED(unused);
 	return x*x*atan(x);
@@ -23,7 +23,7 @@ double f2( double x, double * unused )
 
 Par_Func f2_p = { f2, NULL, 0 };
 
-double f3( double x, double * unused )
+double f3( double x, void * unused )
 {
 	UNUSED(unused);
 	return exp(x) * cos(x);
@@ -31,7 +31,7 @@ double f3( double x, double * unused )
 
 Par_Func f3_p = { f3, NULL, 0 };
 
-double f4( double x, double * unused )
+double f4( double x, void * unused )
 {
 	UNUSED(unused);
 	const double A = sqrt( 2 + x * x );
@@ -40,7 +40,7 @@ double f4( double x, double * unused )
 
 Par_Func f4_p = { f4, NULL, 0 };
 
-double f5( double x, double * unused )
+double f5( double x, void * unused )
 {
 	UNUSED(unused);
 	if (x == 0)
@@ -50,7 +50,7 @@ double f5( double x, double * unused )
 
 Par_Func f5_p = { f5, NULL, 0 };
 
-double f6( double x, double * unused )
+double f6( double x, void * unused )
 {
 	UNUSED(unused);
 	return sqrt( 1 - x * x );

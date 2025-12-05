@@ -3,8 +3,6 @@
 #include "comp_physics.h"
 #include <math.h>
 
-#define PI 3.14159265358979323846
-
 double logarithm(double x){return log(x);}
 
 double cst_1( double x )

@@ -1,6 +1,6 @@
 // Es 3_1double.c
 
-#include "DoubleUtilities.c"
+#include "comp_physics.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
@@ -77,7 +77,7 @@ int main()
 	
 	exit(EXIT_SUCCESS);
 }
-
+/*
 void testAve()
 {
 
@@ -108,3 +108,4 @@ void testVar1()
 	freeArrD( testArr1 );
 }
 
+*/

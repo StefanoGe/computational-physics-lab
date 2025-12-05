@@ -3,9 +3,9 @@
 #include <math.h>
 #include <stdlib.h>
 
-double cosk( double x, double * k )
+double cosk( double x, void * k )
 {
-	return cos( x * *k );
+	return cos( x * *(int*)k );
 }
 
 Par_Func init_cosk(int k)
@@ -13,7 +13,7 @@ Par_Func init_cosk(int k)
 	Par_Func pf;
 	pf.param_func_ptr = cosk;
 	pf.params = malloc( sizeof( double ) );
-	pf.params[0] = (double) k;
+	((int *)pf.params)[0] = k;
 	return pf;
 }
 

@@ -10,7 +10,7 @@ double cos_sin(double x) { return cosh(sin(x)); }
 void test_cheb( Func_Ptr func, int n_nodes, double x1, double x2 )
 {
 	VectorD domain = vec_range( x1, x2, N_DOMAIN );
-	BarFit barf = fit_cheb( func, n_nodes, x1, x2 );
+	BarFit barf = fit_cheb2( func, n_nodes, x1, x2 );
 	VectorD y_values = init_vecD();
 	VectorD true_values = init_vecD();
 	for( int i = 0; i < N_DOMAIN; i++ )

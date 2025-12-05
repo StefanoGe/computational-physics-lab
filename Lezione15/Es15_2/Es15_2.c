@@ -7,13 +7,13 @@
 
 #define DOMAIN_PLOT_SIZE 1000
 
-double f1(double x, double * unused)
+double f1(double x, void * unused)
 {
 	UNUSED(unused);
 	return 1/x/x - sin(x);
 }
 
-double f1_der(double x, double * unused)
+double f1_der(double x, void * unused)
 {
 	UNUSED(unused);
 	return -2/x/x/x - cos(x);
