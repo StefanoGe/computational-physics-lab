@@ -239,6 +239,8 @@ typedef struct _arrayFloat
 	
 } ArrayFloat;
 
+ArrayFloat allocArrF ( int length);
+
 ArrayFloat buildArrF ( int length, ... );
 
 void freeArrF( ArrayFloat array );

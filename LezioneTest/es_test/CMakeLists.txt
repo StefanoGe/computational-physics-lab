@@ -1,0 +1,4 @@
+set(EXERCISE_SOURCES test1.c)
+add_executable(test1 ${EXERCISE_SOURCES})
+target_link_libraries(test1 PRIVATE cp_library m)
+target_include_directories(test1 PRIVATE ${CMAKE_SOURCE_DIR}/Libraries/header)
