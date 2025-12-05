@@ -82,7 +82,6 @@ void plot_graph_conv(const VectorD * n_node_list, const VectorD * errors )
 
 	gp_axes_labels( gp, "n nodes", "Error" );
 	char * styles[] = {"lp"};
-	//char * labels[] = {""}
 
 	gp_set_plot( gp, 1, NULL, styles );
 	gp_prt_carr( gp, n_node_list->val, errors->val, n_node_list->length );
@@ -105,7 +104,7 @@ void integration_study( const Par_Func * fnc, double x1, double x2, double true_
 		printf( "n_nodes: %6d. Error: %e.\n", n_nodes, error );
 	}
 	
-	plot_graph_conv( &n_node_list, &errors );
+	tmplot_2vecs( "trap_rule_plot", &n_node_list, &errors );
 	
 	free_vecD(&errors, &n_node_list);
 	// Aggiungere interpolazione

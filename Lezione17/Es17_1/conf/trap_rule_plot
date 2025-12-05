@@ -1,0 +1,5 @@
+MY_LOGSCALE=XY
+MY_STYLE=lp
+MY_XLABEL=n nodes
+MY_YLABEL=Error
+MY_TITLE=Convergence of trapezoidal rule

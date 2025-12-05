@@ -10,7 +10,6 @@ set(CMAKE_C_STANDARD_REQUIRED ON)
 add_compile_options(-Wall -Wextra -Werror -pedantic-errors -Wconversion -Wno-sign-conversion -O0 -lm)
 
 set(LAB_BIN_DIR ${CMAKE_SOURCE_DIR}/bin)
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${LAB_BIN_DIR})
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${LAB_BIN_DIR})
 
 # include headers
