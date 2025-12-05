@@ -1,14 +1,16 @@
 #!/usr/bin/bash
 
 create_dirs(){
-	path="./$1$2"
+	path="./$1/$2"
+	echo "$path"
 	mkdir -p "$path"
 	mkdir -p "$path/data"
 	mkdir -p "$path/plots"
 	mkdir -p "$path/conf"
+	mv "$path.c" $path
 }
 
-:'
+
 for dir in */; do
 	if [[ $dir == Lezione* ]]
 	then
@@ -22,6 +24,3 @@ for dir in */; do
 		done
 	fi
 done
-'
-
-create_dirs LezioneTest test.c
