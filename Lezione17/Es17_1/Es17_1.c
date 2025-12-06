@@ -5,7 +5,7 @@
 #include "comp_physics.h"
 
 #define MAX_NODE_POWER 10
-#define DO_ALL true
+#define DO_ALL false
 
 double f1( double x, void * unused )
 {

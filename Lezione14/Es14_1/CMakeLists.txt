@@ -1,0 +1,5 @@
+set(EXERCISE_SOURCES Es14_1.c)
+add_executable(Es14_1 ${EXERCISE_SOURCES})
+target_link_libraries(Es14_1 PRIVATE cp_library m)
+target_include_directories(Es14_1 PRIVATE ${CMAKE_SOURCE_DIR}/Libraries/header)
+set_target_properties(Es14_1 PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/Lezione14/Es14_1")

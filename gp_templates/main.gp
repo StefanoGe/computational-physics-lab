@@ -1,10 +1,11 @@
-load "style_common.gp"
+load sprintf("%s/style_common.gp", TMP_PATH)
 
-if( MODE == "one_datafile" ){load "one.gp"}
+
+if( MODE eq "one" ){load sprintf("%s/one.gp", TMP_PATH)}
 
 exec_mode = "default"
 if( exists("MY_TERMINAL") ){ exec_mode = "custom" }
 
-if (exec_mode eq "custom"){ load "terminal_custom.gp"}
+if (exec_mode eq "custom"){ load sprintf("%s/terminal_custom.gp", TMP_PATH) }
 
-if(exec_mode eq "default"){ load "terminal_default.gp"}
+if(exec_mode eq "default"){ load sprintf("%s/terminal_default.gp", TMP_PATH)}

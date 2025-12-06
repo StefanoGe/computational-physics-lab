@@ -4,9 +4,9 @@
 
 #define DOMAIN_PLOT_SIZE 1000
 
-double f1( double x, double * xx )
+double f1( double x, void * unused )
 {
-	UNUSED(xx);
+	UNUSED(unused);
 	return x + 1;
 }
 
@@ -20,9 +20,9 @@ void test1()
 	printf("%lf", root_bis( fnc_obj, -2.5, 0, 1e-10 , NULL) );
 }
 
-double f2(double x, double *xx)
+double f2(double x, void * unused)
 {
-	UNUSED(xx);
+	UNUSED(unused);
 	return x*x*x - 7*x*x + 14*x -6;
 }
 

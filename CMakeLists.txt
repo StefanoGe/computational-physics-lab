@@ -9,8 +9,8 @@ set(CMAKE_C_STANDARD_REQUIRED ON)
 # common flags
 add_compile_options(-Wall -Wextra -Werror -pedantic-errors -Wconversion -Wno-sign-conversion -O0 -lm)
 
-set(LAB_BIN_DIR ${CMAKE_SOURCE_DIR}/bin)
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${LAB_BIN_DIR})
+#set(LAB_BIN_DIR ${CMAKE_SOURCE_DIR}/bin)
+#set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${LAB_BIN_DIR})
 
 # include headers
 include_directories(${CMAKE_SOURCE_DIR}/Libraries/header)
@@ -49,3 +49,5 @@ add_subdirectory(Lezione8/Es8_2/)
 add_subdirectory(Lezione8/Es8_3/)
 add_subdirectory(Lezione9/Es9_1/)
 add_subdirectory(Lezione9/Es9_2/)
+add_subdirectory(Lezione19/Es19_1/)
+add_subdirectory(Lezione14/Es14_1/)

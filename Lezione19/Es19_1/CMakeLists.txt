@@ -1,0 +1,5 @@
+set(EXERCISE_SOURCES gauss_legendre_integrals.c)
+add_executable(gauss_legendre_integrals ${EXERCISE_SOURCES})
+target_link_libraries(gauss_legendre_integrals PRIVATE cp_library m)
+target_include_directories(gauss_legendre_integrals PRIVATE ${CMAKE_SOURCE_DIR}/Libraries/header)
+set_target_properties(gauss_legendre_integrals PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/Lezione19/Es19_1")

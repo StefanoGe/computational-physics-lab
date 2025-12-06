@@ -255,22 +255,25 @@ void two_carr_to_file( const char * filename, const VectorD * vec1, const Vector
 
 void tmplot_2vecs( const char * cfg_name, const VectorD * xaxis, const VectorD * yaxis)
 {
-	char command [1000] = "gnuplot -e \"";
+	char command [2000];
+	char parsed_cfg[1000];
 	
-	char cfg_path[100] = "conf/";
-	strcat(cfg_path, cfg_name);
-	strcat( cfg_path, ".cfg" );
+	char cfg_path[100];
+	sprintf(cfg_path, "conf/%s.cfg", cfg_name);
 	
-	char data_path[100] = "data/";
-	strcat(data_path, cfg_name);
-	strcat(data_path, ".dat");
+	char data_path[100];
+	sprintf( data_path, "data/%s.dat", cfg_name);
 
-	config_parser( cfg_path, strchr( command, '\0' ) );
+	const char * tmp_path = "../../gp_templates";
+
+	config_parser( cfg_path, parsed_cfg );
 	
 	two_carr_to_file( data_path, xaxis, yaxis );
 	
-	sprintf( strchr(command, '\0'), "MY_DATAFILE=\'%s\'\" ../../gp_templates/general_template.gp", data_path );
-	printf(command);
+	sprintf( command,"gnuplot -e \"%sMY_DATAFILE=\'%s\'; MODE=\'one\'; "
+			"TMP_PATH=\'%s\'\" ../../gp_templates/main.gp", 
+			parsed_cfg, data_path, tmp_path );
+//	printf(command);
 	system(command);
 }
 

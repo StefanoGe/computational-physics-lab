@@ -14,6 +14,8 @@ create_dirs(){
 create_cmake(){
 	cfile="$1"
 	path="$2"
+	betterpath="${path/\/\//\/}"
+	betterpath="${betterpath%/}"
 	cfile="${cfile#*//}"
 	cfile="${cfile#*//}"
 	cfile="${cfile%.c}"
@@ -22,8 +24,7 @@ create_cmake(){
 	echo "add_executable($cfile \${EXERCISE_SOURCES})" >> "$path/CMakeLists.txt"
 	echo "target_link_libraries($cfile PRIVATE cp_library m)" >> "$path/CMakeLists.txt"
 	echo "target_include_directories($cfile PRIVATE \${CMAKE_SOURCE_DIR}/Libraries/header)" >> "$path/CMakeLists.txt"
-	echo "set_target_properties(\${EXEC_NAME} PROPERTIES" >> "$path/CMakeLists.txt"
-	echo "    RUNTIME_OUTPUT_DIRECTORY \"\${CMAKE_BINARY_DIR}/$path\")" >> "$path/CMakeLists.txt"
+	echo "set_target_properties($cfile PROPERTIES RUNTIME_OUTPUT_DIRECTORY \"\${CMAKE_SOURCE_DIR}/$betterpath\")" >> "$path/CMakeLists.txt"
 	echo "done"
 	echo "$path/CMakeLists.txt"
 }
@@ -69,7 +70,6 @@ for lezdir in */; do
 		
 	fi
 done
-
 
 
 
