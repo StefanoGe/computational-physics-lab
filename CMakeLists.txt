@@ -22,7 +22,6 @@ target_include_directories(cp_library PUBLIC ${CMAKE_SOURCE_DIR}/Libraries/heade
 
 add_subdirectory(LezioneTest/es_test/)
 add_subdirectory(LezioneTest/test/)
-add_subdirectory(Lezione1/Approssimazione_Esponenziali/)
 add_subdirectory(Lezione10/Es10_1/)
 add_subdirectory(Lezione11/Es11_1/)
 add_subdirectory(Lezione12/Es12_1/)
@@ -51,3 +50,4 @@ add_subdirectory(Lezione9/Es9_1/)
 add_subdirectory(Lezione9/Es9_2/)
 add_subdirectory(Lezione19/Es19_1/)
 add_subdirectory(Lezione14/Es14_1/)
+add_subdirectory(Lezione1/Es1_1/)

@@ -1,0 +1,5 @@
+set(EXERCISE_SOURCES exponential_approximation.c)
+add_executable(exponential_approximation ${EXERCISE_SOURCES})
+target_link_libraries(exponential_approximation PRIVATE cp_library m)
+target_include_directories(exponential_approximation PRIVATE ${CMAKE_SOURCE_DIR}/Libraries/header)
+set_target_properties(exponential_approximation PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/Lezione1/Es1_1")

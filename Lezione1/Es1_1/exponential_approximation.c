@@ -7,29 +7,21 @@
 
 #define MAX_N 10
 #define N_INTERVALS 100
-
-int fact[MAX_N * 2];
+#define MAX_FACTORIAL 1000
 
 int factorial( int n )
 {
-	if (n==0)
-		return 1;
-		
-	return factorial(n-1) * n;
-}
-
-void initFact()
-{
-	for(int i= 0; i <= MAX_N; i++)
-		fact[i] = factorial(i);
-}
-
-double powInt( double x, int n)
-{
-	if (n == 0)
-		return 1;
-		
-	return x * powInt(x, n -1);
+	static int stored_values[MAX_FACTORIAL] = {1};
+	static int count = 2;
+	
+	if(n >= MAX_FACTORIAL)
+		raiseErr("Maximum that can be evaluated is set to %d", MAX_FACTORIAL);
+	
+	if ( n >= count)
+		for(int i = count; i<=n; i++ )
+			stored_values[i] = stored_values[i-1]*i;
+	
+	return stored_values[n];
 }
 
 double basicExp( double x, int N )
@@ -37,7 +29,7 @@ double basicExp( double x, int N )
 	double sum = 0;
 	
 	for(int i=0; i<=N; i++)
-		sum += powInt(x, i) / fact[i];
+		sum += pown(x, i) / factorial(i);
 		
 	return sum;
 }
@@ -106,8 +98,8 @@ void analysis ( int max_N, int n_intervals )
 	for( int i = 1; i <= max_N; i++ )
 		for(int j = 1; j < n_xvalues; j++)
 			relErrValues.val[i][j] 
-			= absErrMatrix.val[i][j]*fact[i +1]
-			/powInt( absErrMatrix.val[0][j], i + 1 );
+			= absErrMatrix.val[i][j]*factorial(i +1)
+			/pown( absErrMatrix.val[0][j], i + 1 );
 	
 	printDatMatD( absErrMatrix, "e_approx.dat",   "%.14lf ", true);
 	printDatMatD( relErrValues, "rel_errors.dat", "%.14lf ", true);
@@ -118,7 +110,6 @@ void analysis ( int max_N, int n_intervals )
 
 int main()
 {
-	initFact();
 	analysis(MAX_N, N_INTERVALS);
 	
 	return 0;

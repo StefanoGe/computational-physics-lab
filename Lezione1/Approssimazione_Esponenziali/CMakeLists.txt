@@ -1,5 +1,0 @@
-set(EXERCISE_SOURCES Approssimazione_Esponenziali.c)
-add_executable(Approssimazione_Esponenziali ${EXERCISE_SOURCES})
-target_link_libraries(Approssimazione_Esponenziali PRIVATE cp_library m)
-target_include_directories(Approssimazione_Esponenziali PRIVATE ${CMAKE_SOURCE_DIR}/Libraries/header)
-set_target_properties(Approssimazione_Esponenziali PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/Lezione1/Approssimazione_Esponenziali")
