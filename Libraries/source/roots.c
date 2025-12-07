@@ -6,7 +6,7 @@
 #define max(a,b) (( a < b ) ? b : a)
 
 #define DEFAULT_TOLERANCE DBL_EPSILON
-#define MAX_ITERATION 10000
+#define MAX_ITERATION 100'000
 
 // da sistemare tenendo conto della machine precision
 static inline int sign( double x )
@@ -64,10 +64,10 @@ static inline void init_debug( VectorD * debug )
 static inline void newt_next_step( const Par_Func * fnc, const Par_Func * derivative,
 							double * prev_x, double * curr_x, VectorD * debug )
 {
-	static int count = 0;
-	count++;
+//	static int count = 0;
+//	count++;
 //	if( (count%100) == 0 )
-		eprint("%d\n", count);
+//		eprint("%d\n", count);
 	
 	*prev_x = *curr_x;
 	*curr_x -= evaluate( fnc, *curr_x ) / evaluate( derivative, *curr_x );

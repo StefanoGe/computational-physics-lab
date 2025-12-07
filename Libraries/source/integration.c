@@ -40,63 +40,37 @@ double int_simp( const Par_Func * fnc, double x1, double x2, int n_subint )
 	
 	return integral;	
 }
-// scales bad with degree
-static inline double legendre_naive( double x, int degree )
-{
-	if(degree == 0)
-		return 1;
-	if(degree == 1)
-		return x;
-		
-	const double first_addend = ( 2 * degree - 1 ) * x * legendre_naive( x, degree - 1 );
-	const double second_addend = ( 1 - degree ) * legendre_naive( x, degree - 2 );
-	
-	return (first_addend + second_addend) / degree;
-}
 
-static inline void leg_smart_reset( int * length, double * curr_x, double new_x  )
+static inline void update_values( double x, int degree, double *values, 
+									int length )
 {
-	*length = 0;
-	*curr_x = new_x;
-}
-
-static inline double legendre_smart( double x, int degree );
-
-static inline void update_values( double x, int degree, double * values )
-{
-	if(degree == 0)
-		values[degree] = 1;
-	
-	else if(degree == 1)
-		values[degree] = x;
-	
-	else
+	for( int next_n = length; next_n<degree; next_n++ )
 	{
-		const double first_addend = ( 2 * degree - 1 ) * x * legendre_smart( x, degree - 1 );
-		const double second_addend = ( 1 - degree ) * legendre_smart( x, degree - 2 );
-		
-		values[degree] = (first_addend + second_addend) / degree;
+		const double first_addend = ( 2 * next_n - 1 ) * x * values[ next_n - 1 ];
+		const double second_addend = ( 1 - next_n ) * values[ next_n - 2 ];
+		values[next_n] = (first_addend + second_addend) / next_n;
 	}
 }
 
-// scales as O(degree)
-static inline double legendre_smart( double x, int degree )
+double legendre( double x, int degree )
 {
-	static double values[MAX_LEG];
-	static int length = 0;
+	static double values[MAX_LEG]={1};
+	static int length = 1;
 	static double curr_x = NAN;
 	
 	if( x != curr_x)
-		leg_smart_reset( &length, &curr_x, x );
+	{
+		values[1] = x;
+		length = 2;
+		curr_x = x;
+	}
 		
 	if( degree >= length )
-		update_values( x, degree, values );
+		update_values( x, degree, values, length );
 	
 	return values[degree];
 }
 
-
-double legendre(double x, int degree){return legendre_naive(x, degree);}
 
 double legendre_par(double x, void *degree) {
     int d = *(int *)degree;
@@ -123,11 +97,12 @@ static inline double initial_point( int degree, int root_index )
 
 double legendre_root( int degree, int root_index )
 {
+	eprint("asked for degree %d and index %d", degree, root_index);
 	Par_Func leg_par = {legendre_par, &degree, 1};
 	Par_Func leg_der_par = {legendre_der_par, &degree, 1};
 	
 	return root_newt( &leg_par, &leg_der_par, initial_point( degree, root_index), 
-				DBL_EPSILON*10, DBL_EPSILON*10, nullptr );
+				10*DBL_EPSILON, 10*DBL_EPSILON, nullptr );
 }
 
 static inline double gauss_legendre_weight( double x, int n )
@@ -144,6 +119,7 @@ double int_gauss_legendre( Par_Func * fnc, int order )
 	double curr_root = NAN;
 	for( int i = 1; i <= order; i++)
 	{
+		
 		curr_root = legendre_root( order, i );
 		eprint( "root ok" );
 		const double curr_weight = gauss_legendre_weight( curr_root, order );
