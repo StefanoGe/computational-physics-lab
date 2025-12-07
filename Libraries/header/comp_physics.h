@@ -394,4 +394,9 @@ double legendre_root( int degree, int root_index );
 
 double int_gauss_legendre( Par_Func *, int order );
 
+// tmpplot.c
+
+void tmplot_carrs( const char *cfg_name, const double *xaxis, 
+							double **yaxes, int length, int num_yaxes);
+
 #endif

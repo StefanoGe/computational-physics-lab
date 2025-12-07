@@ -10,6 +10,6 @@ do for [i=2:N]{
 	if (i == 2) {
 	plot_command = "plot " . entry
 	} else {
-	plot_cmd = plot_cmd . ", " . entry
+	plot_command = plot_command . ", " . entry
 	}
 }

@@ -6,7 +6,7 @@
 #include "comp_physics.h"
 
 #define MAX_N 4
-#define N_INTERVALS 100
+#define N_INTERVALS 10
 #define MAX_FACTORIAL 1000
 
 int factorial( int n )
@@ -51,7 +51,6 @@ double absoluteError( double x, int N )
 	return fabs( smartExp( x, N ) - exp( x ) );
 }
 
-
 void analysis ( int max_N, int n_intervals )
 {
 	const int n_xvalues = n_intervals + 1;
@@ -61,14 +60,17 @@ void analysis ( int max_N, int n_intervals )
 	// We compute the relative error matrix.
 	for( int i = 1; i <= max_N; i++ )
 		for(int j = 1; j < n_xvalues; j++)
-			errs.val[i][j] = absoluteError( smartExp(xAxis.val[j], i), i);
+		{
+			errs.val[i-1][j] = absoluteError( xAxis.val[j], i);
+			printf("x = %lf - exp = %lf - err = %lf\n", 
+				xAxis.val[j], smartExp(xAxis.val[j], i), errs.val[i-1][j]);
 			
+		}
+
 	// Plot
-	
-	
+	tmplot_carrs( "plot1", xAxis.val, errs.val, n_xvalues, max_N );
 	freeArrD(xAxis);
-	
-	freeAllMatD(errs);
+	freeAllMatD(errs, NULL_MAT);
 }
 
 

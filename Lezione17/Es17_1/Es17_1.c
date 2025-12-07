@@ -103,7 +103,7 @@ void integration_study( const Par_Func * fnc, double x1, double x2, double true_
 		appendD( &n_node_list, (double) n_nodes );
 		printf( "n_nodes: %6d. Error: %e.\n", n_nodes, error );
 	}
-	
+	eprint("ok before tmp");
 	tmplot_2vecs( "trap_rule_plot", &n_node_list, &errors );
 	
 	free_vecD(&errors, &n_node_list);
