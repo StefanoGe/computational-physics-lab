@@ -65,17 +65,12 @@ typedef struct
 	int length;
 } ArrayDouble;
 
-typedef struct MatrixDouble MatrixDouble;
-
-// double * __m_get( MatrixDouble * mat, int nrow, int ncol );
-
-struct MatrixDouble
+typedef struct MatrixDouble
 {
 	double ** val;
 	int nrows;
 	int ncols;
-	//double * (*get)( MatrixDouble * self, int nrow, int ncol );
-};
+}MatrixDouble;
 
 double pown( double x, int n );
 

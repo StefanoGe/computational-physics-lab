@@ -3,6 +3,8 @@ load sprintf("%s/style_common.gp", TMP_PATH)
 
 if( MODE eq "one" ){load sprintf("%s/one.gp", TMP_PATH)}
 
+if(MODE eq "multi"){load sprintf("%s/one.gp", TMP_PATH)}
+
 exec_mode = "default"
 if( exists("MY_TERMINAL") ){ exec_mode = "custom" }
 

@@ -6,9 +6,14 @@
 #include <stdbool.h>
 #include <string.h>
 
+#define ALL_GOOD 1
+#define REACHED_EOF 2
+#define FOUND_NEWLINE 3
+#define FOUND_HASH 4
+
 static inline void append_and_advance( char **dest, char c ){ **dest = c; ++*dest; }
 
-static inline bool is_c_fine( char c, char stop )
+static inline bool is_c_fine( char c, char stop, int *state )
 {
 	return c != stop && c != EOF;
 }
@@ -16,9 +21,20 @@ static inline bool is_c_fine( char c, char stop )
 static inline bool read_until_char( FILE * file, char stop, char ** dest )
 {
 	char c;
-	while( is_c_fine( c = (char)getc(file), stop ) )
+	int state=ALL_GOOD;
+	if( c == '\n' )
+		return true;
+	if( c == '#')
+	{
+		while( c!= '\n' || c != EOF)
+		{
+			
+		}
+	}
+	
+	while( is_c_fine( c = (char)getc(file), stop, &state ) )
 		append_and_advance( dest, c );
-		
+	
 	if (c == EOF)
 		return true;
 		
@@ -62,32 +78,48 @@ static inline bool are_same_length(const VectorD * vecs[], int num_vecs)
 	return true;
 }
 
-static inline void carrs_to_file( FILE * file, const VectorD * vecs[], int num_vecs )
-{
-	if( !are_same_length(vecs, num_vecs) )
-		raiseErr("vecs are not all same length.");
-	
-	const int vec_length = vecs[0]->length;
-	
-	for( int i = 0; i < vec_length; i++ )
+static inline void carrs_to_file( FILE *file, const double **carrs, int num_carrs,
+									int length )
+{	
+	for( int i = 0; i < length; i++ )
 	{
-		for( int j = 0; j < num_vecs; j++ )
+		for( int j = 0; j < num_carrs; j++ )
 		{
-			fprintf( file, "%16g ", vecs[j]->val[i]);
+			fprintf( file, "%16g ", carrs[i][j]);
 		}
 		putc('\n', file);
 	}
 }
 
-void two_carr_to_file( const char * filename, const VectorD * vec1, const VectorD * vec2 )
+static inline void carrs_to_filename( const char *filename, const double **carrs,
+										int length, int num_carrs)
 {
 	FILE * data = openFile( filename, "w" );
-	const VectorD * vecs[2] = { vec1, vec2 };
-	vecs_to_file( data, vecs, 2 );
+	carrs_to_file( data, carrs, num_carrs, length );
 	fclose(data);
 }
 
-void tmplot_2carr( const char *cfg_name, double *xaxis, double *yaxis, int length)
+static inline void two_vecs_to_filename( const char *filename, const VectorD *vec1, const VectorD *vec2 )
+{
+	if( vec1->length != vec2->length )
+		raiseErr("vecs are not all same length.");
+	FILE * data = openFile( filename, "w" );
+	const double * vecs[2] = { vec1->val, vec2->val };
+	carrs_to_file( data, vecs, 2, vec1->length );
+	fclose(data);
+}
+
+static inline void two_carr_to_filename( const char *filename, const double *carr1, 
+					const double *carr2, int length )
+{
+	FILE * data = openFile( filename, "w" );
+	const double *carrs[2] = { carr1, carr2 };
+	carrs_to_file( data, carrs, 2, length );
+	fclose(data);
+}
+
+void tmplot_2carr( const char *cfg_name, const double *xaxis, 
+							const double *yaxis, int length)
 {
 	char command [2000];
 	char parsed_cfg[1000];
@@ -102,7 +134,7 @@ void tmplot_2carr( const char *cfg_name, double *xaxis, double *yaxis, int lengt
 
 	config_parser( cfg_path, parsed_cfg );
 	
-	two_carr_to_file( data_path, xaxis, yaxis );
+	two_carr_to_filename( data_path, xaxis, yaxis, length );
 	
 	sprintf( command,"gnuplot -e \"%sMY_DATAFILE=\'%s\'; MODE=\'one\'; "
 			"TMP_PATH=\'%s\'\" ../../gp_templates/main.gp", 
@@ -126,7 +158,7 @@ void tmplot_2vecs( const char * cfg_name, const VectorD * xaxis, const VectorD *
 
 	config_parser( cfg_path, parsed_cfg );
 	
-	two_carr_to_file( data_path, xaxis, yaxis );
+	two_vecs_to_filename( data_path, xaxis, yaxis );
 	
 	sprintf( command,"gnuplot -e \"%sMY_DATAFILE=\'%s\'; MODE=\'one\'; "
 			"TMP_PATH=\'%s\'\" ../../gp_templates/main.gp", 
@@ -135,7 +167,37 @@ void tmplot_2vecs( const char * cfg_name, const VectorD * xaxis, const VectorD *
 	system(command);
 }
 
+void tmplot_carrs( const char *cfg_name, const double *xaxis, 
+							const double **yaxes, int length, int num_yaxes)
+{
+	char command [2000];
+	char parsed_cfg[1000];
+	
+	char cfg_path[100];
+	sprintf(cfg_path, "conf/%s.cfg", cfg_name);
+	
+	char data_path[100];
+	sprintf( data_path, "data/%s.dat", cfg_name);
 
+	const char *tmp_path = "../../gp_templates";
+
+	config_parser( cfg_path, parsed_cfg );
+	
+	const int num_carrs = num_yaxes+1;
+	const double **all_carrs = malloc( sizeof(double*) * num_carrs);
+	all_carrs[0]=xaxis;
+	for(int i = 1; i<=num_carrs; i++)
+		all_carrs[i] = yaxes[i-1];
+	
+	carrs_to_filename( data_path, all_carrs, length, num_carrs );
+	free(all_carrs);
+	
+	sprintf( command,"gnuplot -e \"%sMY_DATAFILE=\'%s\'; MODE=\'multi\'; "
+			"TMP_PATH=\'%s\'\" ../../gp_templates/main.gp", 
+			parsed_cfg, data_path, tmp_path );
+//	printf(command);
+	system(command);
+}
 
 
 
