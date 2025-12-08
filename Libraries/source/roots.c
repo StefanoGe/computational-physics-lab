@@ -5,7 +5,8 @@
 
 #define max(a,b) (( a < b ) ? b : a)
 
-#define DEFAULT_TOLERANCE DBL_EPSILON
+#define DEFAULT_XTOLERANCE DBL_EPSILON * 100
+#define DEFAULT_FTOLERANCE DBL_EPSILON * 10'000
 #define MAX_ITERATION 100'000
 
 // da sistemare tenendo conto della machine precision
@@ -46,10 +47,10 @@ double root_bis( Par_Func fnc, double x1, double x2, double tol, VectorD * debug
 static inline void set_default_tolerance_if_requested( double * xtol, double * ftol)
 {
 	if( *xtol == DEF_TOL )
-		*xtol = DEFAULT_TOLERANCE;
+		*xtol = DEFAULT_XTOLERANCE;
 		
 	if( *ftol == DEF_TOL )
-		*ftol = DEFAULT_TOLERANCE;
+		*ftol = DEFAULT_FTOLERANCE;
 }
 
 static inline void init_debug( VectorD * debug )
@@ -100,10 +101,13 @@ double root_newt( const Par_Func * fnc, const Par_Func * derivative,
 					&& fabs( evaluate( fnc, curr_x ) ) <= ftol;
 	}
 	
-	printf("%d\n", i);
+//	printf("%d\n", i);
 	
 	if( !found_root )
-		raiseErr( "Loop did not stop after %d iterations", MAX_ITERATION );
+	{
+		eprint( "Loop did not stop after %d iterations", MAX_ITERATION );
+		curr_x = NAN;
+	}
 	
 	return curr_x;
 }

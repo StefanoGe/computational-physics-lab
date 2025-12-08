@@ -3,7 +3,7 @@
 #include <math.h>
 #include <float.h>
 
-#define MAX_LEG 100
+#define MAX_LEG 10'000
 
 double int_trap( const Par_Func * fnc, double x1, double x2, int n_subint )
 {
@@ -99,14 +99,14 @@ double cheb_roots( int degree, int root_index )
 	return cos(cos_arg);
 }
 
-double legendre_root( int degree, int root_index )
+double legendre_root( int degree, int root_index, VectorD *debug )
 {
-	eprint("asked for degree %d and index %d", degree, root_index);
+//	eprint("asked for degree %d and index %d", degree, root_index);
 	Par_Func leg_par = {legendre_par, &degree, 1};
 	Par_Func leg_der_par = {legendre_der_par, &degree, 1};
 	
 	return root_newt( &leg_par, &leg_der_par, cheb_roots( degree, root_index), 
-				10*DBL_EPSILON, 10*DBL_EPSILON, nullptr );
+				DBL_EPSILON, 1000*DBL_EPSILON, debug );
 }
 
 static inline double gauss_legendre_weight( double x, int n )
@@ -117,19 +117,22 @@ static inline double gauss_legendre_weight( double x, int n )
 	return 2 * num / den1 / den2;
 }
 
-double int_gauss_legendre( Par_Func * fnc, int order )
+double int_gauss_legendre( Par_Func * fnc, int order, double x1, double x2 )
 {
 	double sum = 0;
 	double curr_root = NAN;
+	const double half_interval = (x2 - x1)/2;
+	const double mid_interval = (x1 + x2)/2;
 	for( int i = 1; i <= order; i++)
 	{
-		
-		curr_root = legendre_root( order, i );
+		curr_root = legendre_root( order, i, NULL );
 		const double curr_weight = gauss_legendre_weight( curr_root, order );
-		const double fnc_value = evaluate( fnc, curr_root );
+		
+		const double transformed_root = half_interval * curr_root + mid_interval;
+		const double fnc_value = evaluate( fnc, transformed_root );
 		sum += curr_weight * fnc_value;
 	}
-	return sum;
+	return sum * half_interval;
 }
 
 

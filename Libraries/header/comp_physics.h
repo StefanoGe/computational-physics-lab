@@ -390,9 +390,9 @@ double int_simp( const Par_Func *, double x1, double x2, int n_subint );
 
 double legendre(double x, int degree);
 
-double legendre_root( int degree, int root_index );
+double legendre_root( int degree, int root_index, VectorD *debug );
 
-double int_gauss_legendre( Par_Func *, int order );
+double int_gauss_legendre( Par_Func * fnc, int order, double x1, double x2 );
 
 double cheb_roots( int degree, int root_index );
 

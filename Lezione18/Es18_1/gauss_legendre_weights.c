@@ -1,7 +1,7 @@
 #include "comp_physics.h"
 #include <math.h>
 
-#define MAX_DEGREE_TEST 10
+#define MAX_DEGREE_TEST 80
 
 double leg2roots[2];
 double leg3roots[3];
@@ -24,20 +24,26 @@ void setup_leg_roots(){
 
 void test_roots(){
 	
+	VectorD debug;
+	
 	for( int deg = 1; deg <= MAX_DEGREE_TEST; deg++ )
 	{
-		printf("n = %d\n", deg);
+		printf(" n = %d\n", deg);
 		for( int root = 1; root <= deg; root++ )
 		{
-			double curr_root = legendre_root(deg, root);
-			printf( "k = %2d: %16g\n", root, curr_root );
+			double curr_root = legendre_root(deg, root, &debug);
+			printf( " k = %2d: %.16g\n", root, curr_root );
 			if( 2 <=deg && deg <=4 )
-				printf("diff = %16g\n", fabs(curr_root-leg_roots[deg-2][root-1]) );
+				printf(" diff = %16g\n", fabs(curr_root-leg_roots[deg-2][root-1]) );
+			printf("steps to find the root:\n");
+			for( int i = 0; i < 100 && i < debug.length; i++) 
+				printf( "%.20g  ", debug.val[i] );
+			printf("\n");
 		}
-		printf("-------------------------------------\n");
+		printf(" -------------------------------------\n");
 	}
 	
-	
+	free_vecD(&debug);
 }
 
 void plot_polynomials()
@@ -68,7 +74,6 @@ void plot_polynomials24()
 	{
 		double x = xaxis.val[i];
 		yvalues.val[0][i] = legendre( x, 24 );
-		yvalues.val[1][i] = cheb_roots(24, i);
 	}
 	
 	tmplot_carrs( "plot_pol", xaxis.val, yvalues.val, n_points, 1 );
@@ -77,12 +82,16 @@ void plot_polynomials24()
 	free_vecD(&xaxis);
 }
 
+// Remark: it was necessary to set 1000 DBL epsilon in ftol. A safer 
+// implementation would set them higher. 
+// Remark: legendre memoization
+
 int main()
 {
 	setup_leg_roots();
-
-	plot_polynomials24();
-	
+//	eprint("setup ok");
+//	plot_polynomials24();
+//	eprint("plot ok");
 	test_roots();
 
 	
