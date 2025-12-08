@@ -10,7 +10,7 @@ Par_Func f1_p = { f1, 0, 0 };
 int main()
 {
 	for( int n = 4; n<=40; n+=4 )
-		fprintf(stderr, "%16g\n%16g\n", int_gauss_legendre( &f1_p, n ), sinh( 4 )/2 );
+		fprintf(stderr, "%.17g\n%.17g\n", int_gauss_legendre( &f1_p, n ), sinh( 4 )/2 );
 	
 	return 0;
 }

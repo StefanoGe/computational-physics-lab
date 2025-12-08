@@ -44,7 +44,7 @@ double int_simp( const Par_Func * fnc, double x1, double x2, int n_subint )
 static inline void update_values( double x, int degree, double *values, 
 									int length )
 {
-	for( int next_n = length; next_n<degree; next_n++ )
+	for( int next_n = length; next_n<=degree; next_n++ )
 	{
 		const double first_addend = ( 2 * next_n - 1 ) * x * values[ next_n - 1 ];
 		const double second_addend = ( 1 - next_n ) * values[ next_n - 2 ];
@@ -66,7 +66,11 @@ double legendre( double x, int degree )
 	}
 		
 	if( degree >= length )
+	{
 		update_values( x, degree, values, length );
+		length = degree + 1;
+	}
+
 	
 	return values[degree];
 }
@@ -89,7 +93,7 @@ double legendre_der_par(double x, void *degree) {
     return legendre_der(x, d);
 }
 
-static inline double initial_point( int degree, int root_index )
+double cheb_roots( int degree, int root_index )
 {
 	const double cos_arg = PI*( 4*root_index - 1 )/( 4*degree + 2);
 	return cos(cos_arg);
@@ -101,7 +105,7 @@ double legendre_root( int degree, int root_index )
 	Par_Func leg_par = {legendre_par, &degree, 1};
 	Par_Func leg_der_par = {legendre_der_par, &degree, 1};
 	
-	return root_newt( &leg_par, &leg_der_par, initial_point( degree, root_index), 
+	return root_newt( &leg_par, &leg_der_par, cheb_roots( degree, root_index), 
 				10*DBL_EPSILON, 10*DBL_EPSILON, nullptr );
 }
 
@@ -121,11 +125,8 @@ double int_gauss_legendre( Par_Func * fnc, int order )
 	{
 		
 		curr_root = legendre_root( order, i );
-		eprint( "root ok" );
 		const double curr_weight = gauss_legendre_weight( curr_root, order );
-		eprint("weight ok");
 		const double fnc_value = evaluate( fnc, curr_root );
-		eprint("fnc_value ok");
 		sum += curr_weight * fnc_value;
 	}
 	return sum;

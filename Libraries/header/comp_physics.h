@@ -394,6 +394,8 @@ double legendre_root( int degree, int root_index );
 
 double int_gauss_legendre( Par_Func *, int order );
 
+double cheb_roots( int degree, int root_index );
+
 // tmpplot.c
 
 void tmplot_carrs( const char *cfg_name, const double *xaxis, 

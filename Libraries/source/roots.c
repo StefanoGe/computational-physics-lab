@@ -91,12 +91,16 @@ double root_newt( const Par_Func * fnc, const Par_Func * derivative,
 	double curr_x = start;
 	bool found_root = false;
 	
-	for( int i = 0; i < MAX_ITERATION && !found_root; i++ )
+	int i = 0;
+	
+	for( ; i < MAX_ITERATION && !found_root; i++ )
 	{
 		newt_next_step( fnc, derivative, &prev_x, &curr_x, debug );
 		found_root = fabs( prev_x - curr_x ) <= xtol 
 					&& fabs( evaluate( fnc, curr_x ) ) <= ftol;
 	}
+	
+	printf("%d\n", i);
 	
 	if( !found_root )
 		raiseErr( "Loop did not stop after %d iterations", MAX_ITERATION );
