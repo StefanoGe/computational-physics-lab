@@ -1,0 +1,5 @@
+set(EXERCISE_SOURCES feuler_first_order.c)
+add_executable(feuler_first_order ${EXERCISE_SOURCES})
+target_link_libraries(feuler_first_order PRIVATE cp_library m)
+target_include_directories(feuler_first_order PRIVATE ${CMAKE_SOURCE_DIR}/Libraries/header)
+set_target_properties(feuler_first_order PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/Lezione21/Es21_1")

@@ -254,14 +254,29 @@ void tmplot_carrs( const char *cfg_name, const double *xaxis,
 	
 	plot_command( parsed_cfg, data_path, tmp_path, "multi" );
 }
+/*
+DatasetDesc datadesc_init(const char *file, const char *style, const char *label,
+	const char *color)
+{
+	DatasetDesc d = {
+		.file = file,
+		.style = style,
+		.label = label,
+		.color = color
+	};
+	return d;
+}
+*/
+/*
+void tmplot_multi_data( double **xaxes, double **yaxes, const DatasetDesc *descs,
+								int *lengths, int num_plots )
+{
+	
+	
+	
+}
 
-
-
-
-
-
-
-
+*/
 
 
 

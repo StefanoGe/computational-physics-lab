@@ -397,20 +397,20 @@ double int_gauss_legendre( Par_Func * fnc, int order, double x1, double x2 );
 double cheb_roots( int degree, int root_index );
 
 // tmpplot.c
-
+/*
 typedef struct{
 	const char *file;
 	const char *style;
 	const char *label;
 	const char *color;
 } DatasetDesc;
-
+*/
 void tmplot_carrs( const char *cfg_name, const double *xaxis, 
 							double **yaxes, int length, int num_yaxes);
-
+/*
 DatasetDesc datadesc_init(const char *file, const char *style, const char *label,
 	const char *color);
-
+*/
 
 
 #endif
