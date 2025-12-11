@@ -1,3 +1,6 @@
+#ifndef MATRIX_H
+#define MATRIX_H
+
 #define MAT(A,r,c) ((A).rows[(r)][(c)])
 #define MATP(A,r,c) ((A)->rows[(r)][(c)])
 
@@ -13,4 +16,6 @@ void mat_init(Matrix *mat, int nrows, int ncols);
 
 void mat_free( Matrix *mat );
 
-double *mat_getr_ptr(const Matrix *mat, int row);
+//double *mat_getr_ptr(const Matrix *mat, int row);
+
+#endif

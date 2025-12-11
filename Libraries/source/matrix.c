@@ -6,6 +6,7 @@ void mat_init(Matrix *mat, int nrows, int ncols)
 	mat_free(mat);
 	mat->data = malloc(sizeof(double) * nrows * ncols);
 	if(!mat->data) raiseErr("Error in memory allocation");
+	mat->rows = malloc(sizeof(double*)*nrows);
 	for(int i=0; i<nrows; i++)
 		mat->rows[i]=mat->data+i*ncols;
 	mat->nrows = nrows;
@@ -16,10 +17,10 @@ void mat_init(Matrix *mat, int nrows, int ncols)
 void mat_free( Matrix *mat )
 {	
 	if(mat->owns_data)
+	{
 		free(mat->data);
-	mat->data=nullptr;
-	for(int i=0; i<mat->nrows; i++)
-		mat->rows[i]=nullptr;
+		free(mat->rows);
+	}
 	mat->nrows=0;
 	mat->ncols=0;
 }

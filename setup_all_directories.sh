@@ -5,9 +5,16 @@ create_dirs(){
 	echo "$path"
 	mkdir -p "$path"
 	mkdir -p "$path/data"
-	mkdir -p "$path/plots"
-	mkdir -p "$path/conf"
+	mkdir -p "$path/plot"
+	mkdir -p "$path/script"
 	mv "$path.c" $path
+}
+
+update_dirs(){
+	path="$1"
+	mkdir -p "$path/data"
+	mkdir -p "$path/plot"
+	mkdir -p "$path/script"
 }
 
 
@@ -33,11 +40,11 @@ create_cmake(){
 create_subdirectories(){
 	dir=$1
 	for cfile in $dir/*.c; do
-	[ -f "$cfile" ] || break
-	cfile="${cfile#*//}"
-	cfile="${cfile%.c}"
-#			echo "$cfile"
-	create_dirs $dir $cfile
+		[ -f "$cfile" ] || break
+		cfile="${cfile#*//}"
+		cfile="${cfile%.c}"
+	#			echo "$cfile"
+		create_dirs $dir $cfile
 	done
 }
 
@@ -51,7 +58,7 @@ for lezdir in */; do
 				[ -f "$cfile" ] || break
 #				echo "$cfile"
 				create_cmake $cfile $esdir
-
+				update_dirs $esdir
 				s="$esdir"
 				s="${s/\/\//\/}"
 				echo "$s"

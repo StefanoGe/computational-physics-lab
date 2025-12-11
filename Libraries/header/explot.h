@@ -1,3 +1,6 @@
+#ifndef EXPLOT_H
+#define EXPLOT_H
+
 #include "comp_physics.h"
 
 typedef struct {
@@ -16,11 +19,19 @@ typedef struct{
 	char *color;
 } DatasetDesc;
 
-bool eplot_set_common(FILE *gp);
+static const Global NULL_GLOBAL_SETTINGS={nullptr, nullptr, nullptr, nullptr, nullptr, nullptr};
+
+static const DatasetDesc NULL_DATADESC={nullptr, nullptr, nullptr, nullptr};
+
+void eplot_set_common(FILE *gp);
 
 Global null_global_settings();
 
-void eplot_set_global(const Global *settings, FILE *gp);
+DatasetDesc null_datadesc();
+
+void eplot_set_global( FILE *gp, const Global *settings);
 
 void eplot_2carr(double *xaxis, double *yaxis, int size, const Global *gb_settings,
 					const DatasetDesc *data_settings);
+
+#endif

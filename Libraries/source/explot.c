@@ -2,9 +2,10 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include <string.h>
+#include "explot.h"
+#include "comp_physics.h"
 
-
-bool eplot_set_common(FILE *gp)
+void eplot_set_common(FILE *gp)
 {
 	const char * s = "set encoding utf8\n"
 		"set mxtics 1\n"
@@ -16,15 +17,20 @@ bool eplot_set_common(FILE *gp)
 // global line presets	
 	
 		"set style line 1 lc rgb '#66C2A5' lw 3 pt 7 ps 1.5\n";
-	if(fputs(s, gp)!=EOF)
-		return false;
-	return true;
+	if(fputs(s, gp)==EOF)
+		raiseErr("could not write common settings");
 }
 
 Global null_global_settings()
 {
-	Global settings = {nullptr, nullptr, nullptr, nullptr, nullptr};
+	Global settings = {nullptr, nullptr, nullptr, nullptr, nullptr, nullptr};
 	return settings;
+}
+
+DatasetDesc null_datadesc()
+{
+	DatasetDesc desc={nullptr, nullptr, nullptr, nullptr};
+	return desc;
 }
 
 void eplot_set_global(FILE *gp, const Global *settings )
@@ -33,41 +39,43 @@ void eplot_set_global(FILE *gp, const Global *settings )
 		fprintf(gp, "set title \'%s\' font \',20\'\n", settings->title);
 	
 	if(settings->xlabel)
-		fprintf(gp, "set xlabel \'%s\'\n");
+		fprintf(gp, "set xlabel \'%s\'\n", settings->xlabel);
 	else
-		fprintf(gp, "set xlabel \'x\'\n", settings->xlabel);
+		fprintf(gp, "set xlabel \'x\'\n");
 		
 	if(settings->ylabel)
 		fprintf(gp, "set ylabel \'%s\'\n", settings->ylabel);
 	else
-		fprintf(gp, "set xlabel \'y\'\n");
+		fprintf(gp, "set ylabel \'y\'\n");
 	
 	if(settings->logscale)
 		fprintf(gp, "set logscale %s\n", settings->logscale);
 }
 
-void eplot_set_terminal_and_plot(FILE *gp, char *plot_command, char *output_name)
+void eplot_set_terminal_and_plot(FILE *gp, char *plot_command, const char *output_name)
 {
-	char *qt[10'000];
-	sprintf(
+	char qt[5'000];
+	sprintf(qt,
 		"set terminal qt font \'CMU Serif, 12\' enhanced\n"
 		"%s\n"
 		"pause mouse close\n", plot_command);
+	fputs(qt, gp);
 	
 	if(output_name!=nullptr)
 	{
-		char *pdfcairo[5'000];
-		sprintf(
+		char pdfcairo[5'000];
+		char output_path[100];
+		sprintf(output_path, "\'plot/%s.pdf\'", output_name);
+		sprintf(pdfcairo,
 			"set terminal pdfcairo font \"CMU Serif,12\" enhanced\n"
 			"set output %s\n"
-			"%s"
-			"unset output\n", output_name, plot_command );
-		strcat(qt, pdfcairo);
+			"%s\n"
+			"unset output\n", output_path, plot_command );
+		fputs(pdfcairo, gp);
 	}
-	fputs(qt, gp);
 }
 
-static inline void carrs_to_file( FILE *file, const double **carrs, int num_carrs,
+static inline void carrs_to_file( FILE *file, double **carrs, int num_carrs,
 									int length )
 {	
 	for( int i = 0; i < length; i++ )
@@ -80,7 +88,7 @@ static inline void carrs_to_file( FILE *file, const double **carrs, int num_carr
 	}
 }
 
-static inline void carrs_to_filename( const char *filename, const double **carrs,
+static inline void carrs_to_filename( const char *filename, double **carrs,
 										int length, int num_carrs)
 {
 	FILE *data = openFile( filename, "w" );
@@ -104,30 +112,33 @@ static inline void plot_command_helper_2carr(char *plot_command,
 void eplot_2carr(double *xaxis, double *yaxis, int size, const Global *gb_settings,
 					const DatasetDesc *data_settings)
 {
-	char *build=(gb_settings->build_name) ? gb_settings->build_name :"my_plot";
+	char *build_name=(gb_settings->build_name) ? gb_settings->build_name :"my_plot";
 	
-	char *gp_filename[100]; 
-	sprintf(gp_filename, "conf/%s.gp", build);
-	FILE *gp=openFile(gp_filename, "w");
+	char script_path[100]; 
+	sprintf(script_path, "script/%s.gp", build_name);
+	FILE *gp=openFile(script_path, "w");
 	
 	eplot_set_common(gp);
 	
 	eplot_set_global(gp, gb_settings);
-	
-	char *data_filename[100];
-	sprintf(data_filename, "data/%s.dat", build);
+
+	char data_path[100];
+	sprintf(data_path, "data/%s.dat", build_name);
 	double *carrs[2]={xaxis,yaxis};
-	carrs_to_filename(data_filename, carrs, size, 2);
-	
-	char *plot_command[2'000];
-	plot_command_helper_2carr(plot_command, data_settings, data_filename);
-	fputs(plot_command, gp);
-	
+	carrs_to_filename(data_path, carrs, size, 2);
+
+	char plot_command[2'000];
+	plot_command_helper_2carr(plot_command, data_settings, data_path);
+//	fputs(plot_command, gp);
+
+	eprint("%s", plot_command);
 	eplot_set_terminal_and_plot(gp, plot_command, gb_settings->output_name);
+
 	fflush(gp);
 	fclose(gp);
-	char *shell_command[100];
-	sprintf("gnuplot %s", gp_filename)
+
+	char shell_command[200];
+	sprintf(shell_command, "gnuplot %s", script_path);
 	system(shell_command);
 }
 

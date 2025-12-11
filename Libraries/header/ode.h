@@ -1,3 +1,6 @@
+#ifndef ODE_H
+#define ODE_H
+
 #include "array.h"
 #include "matrix.h"
 
@@ -12,3 +15,5 @@ typedef struct{
 void ode_feuler( double init_time, double final_time, const Array *init_value, 
 				const Derivative *ders, 
 				int sys_size, int nsteps, Array *t_output, Matrix *f_output );
+
+#endif
