@@ -1,6 +1,7 @@
 typedef struct {
 	double *data;
 	int size;
+	bool owns_data;
 } Array;
 
 void arr_init( Array *arr, int size );

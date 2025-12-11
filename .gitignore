@@ -9,3 +9,5 @@ gihub.pub
 *.fls
 *.fdb_latexmk
 *.toc
+*data
+*script

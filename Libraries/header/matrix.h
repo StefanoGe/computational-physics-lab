@@ -16,6 +16,8 @@ void mat_init(Matrix *mat, int nrows, int ncols);
 
 void mat_free( Matrix *mat );
 
+void mat_build_rows(Matrix *mat);
+
 //double *mat_getr_ptr(const Matrix *mat, int row);
 
 #endif

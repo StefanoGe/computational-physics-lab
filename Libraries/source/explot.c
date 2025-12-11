@@ -5,6 +5,8 @@
 #include "explot.h"
 #include "comp_physics.h"
 
+static int gb_counter=0;
+
 void eplot_set_common(FILE *gp)
 {
 	const char * s = "set encoding utf8\n"
@@ -107,16 +109,22 @@ static inline void plot_command_helper_2carr(char *plot_command,
 				style, label);
 }
 
+static inline char *get_build_name(const Global *gb_settings)
+{return (gb_settings->build_name) ? gb_settings->build_name :"my_plot";}
 
+static inline FILE *set_and_open_script(char *build_name, char *script_path){
+	sprintf(script_path, "script/%s.gp", build_name);
+	FILE *gp=openFile(script_path, "w");
+	return gp;
+}
 
 void eplot_2carr(double *xaxis, double *yaxis, int size, const Global *gb_settings,
 					const DatasetDesc *data_settings)
 {
-	char *build_name=(gb_settings->build_name) ? gb_settings->build_name :"my_plot";
+	char *build_name=get_build_name(gb_settings);
 	
 	char script_path[100]; 
-	sprintf(script_path, "script/%s.gp", build_name);
-	FILE *gp=openFile(script_path, "w");
+	FILE *gp=set_and_open_script(build_name, script_path);
 	
 	eplot_set_common(gp);
 	
@@ -143,5 +151,55 @@ void eplot_2carr(double *xaxis, double *yaxis, int size, const Global *gb_settin
 }
 
 
+
+void multi_data_plt_command_helper(const SeriesSpec *series, char *plot_command,
+										const char *build_name, int i)
+{
+	char data_path[100];
+	sprintf(data_path, "data/%s%d_%d.dat", build_name, gb_counter, i);
+	double *carrs[2]={series->x,series->y};
+	carrs_to_filename(data_path, carrs, series->size, 2);
+	
+	char *label=(series->label) ? series->label : "";
+	char *style=(series->style) ? series->style : "lp";
+	
+	char plot_line[300];
+	sprintf(plot_line, "'%s' with %s ls 1 title '%s'", data_path,
+				style, label);
+	strcat(plot_command, plot_line);
+}
+
+void eplot_multi(const SeriesSpec *series, int count, const Global *gb_settings)
+{
+	char *build_name=get_build_name(gb_settings);
+	
+	char script_path[100]; 
+	FILE *gp=set_and_open_script(build_name, script_path);
+	
+	eplot_set_common(gp);
+	
+	eplot_set_global(gp, gb_settings);
+	
+	char plot_command[2'000];
+	strcat(plot_command, "plot ");
+	
+	for(int i=0; i<count; i++)
+	{	
+		multi_data_plt_command_helper(series+i, plot_command, build_name, i);
+		strcat(plot_command, (i==count-1)?"\n":", \\\n");
+	}
+	
+	eprint("%s", plot_command);
+	eplot_set_terminal_and_plot(gp, plot_command, gb_settings->output_name);
+
+	fflush(gp);
+	fclose(gp);
+
+	char shell_command[200];
+	sprintf(shell_command, "gnuplot %s", script_path);
+	system(shell_command);
+	
+	gb_counter++;
+}
 
 

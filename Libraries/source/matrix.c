@@ -3,25 +3,60 @@
 
 void mat_init(Matrix *mat, int nrows, int ncols)
 {
-	mat_free(mat);
+    if (mat->owns_data) {
+        free(mat->data);
+    }
+	free(mat->rows);
+	
 	mat->data = malloc(sizeof(double) * nrows * ncols);
 	if(!mat->data) raiseErr("Error in memory allocation");
-	mat->rows = malloc(sizeof(double*)*nrows);
-	for(int i=0; i<nrows; i++)
-		mat->rows[i]=mat->data+i*ncols;
+	
 	mat->nrows = nrows;
 	mat->ncols = ncols;
 	mat->owns_data=true;
+	mat_build_rows(mat);
 }
 
 void mat_free( Matrix *mat )
 {	
+	free(mat->rows);
 	if(mat->owns_data)
 	{
 		free(mat->data);
-		free(mat->rows);
 	}
 	mat->nrows=0;
 	mat->ncols=0;
+	mat->data=nullptr;
+	mat->rows=nullptr;
+	mat->owns_data=false;
+}
+
+void mat_build_rows(Matrix *mat)
+{
+	mat->rows=malloc(sizeof(double*)*mat->nrows);
+	if(!mat->rows) raiseErr("Error in memory allocation");
+	for(int i=0; i<mat->nrows; i++)
+		mat->rows[i]=mat->data+i*mat->ncols;
+}
+
+void mat_transpose(Matrix *source, Matrix *dest)
+{
+	const int new_nrows=source->ncols;
+	const int new_ncols=source->nrows;
+	double *new_data_ptr=malloc(sizeof(double)*new_ncols*new_nrows);
+	if (!new_data_ptr) raiseErr("Error in memory allocation");
+	
+	for(int i=0; i<new_nrows; i++)
+		for(int j=0; j<new_ncols; j++)
+			new_data_ptr[i*new_ncols+j]=MATP(source,j,i);
+	
+	free(dest->rows);
+	if(dest->owns_data)
+		mat_free(dest);
+	dest->data=new_data_ptr;
+	dest->nrows=new_nrows;
+	dest->ncols=new_ncols;
+	dest->owns_data=true;
+	mat_build_rows(dest);
 }
 
