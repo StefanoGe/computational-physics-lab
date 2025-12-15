@@ -16,49 +16,64 @@ void eplot_set_common(FILE *gp)
 		"set border 3 lw 0.5 lc rgb \"black\"\n"
 		"set xtics nomirror scale 1\n"
 		"set ytics nomirror scale 1\n"
-// global line presets	
-	
-		"set style line 1 lc rgb '#66C2A5' lw 3 pt 7 ps 1.5\n";
+		"set key box lw 0.5 lc rgb \'black\' textcolor rgb \'black\' "
+		"spacing 1.5 opaque width 0.5\n"
+		// global line presets	
+		"set for [i=1:8] linetype i lw 3 pt 7 ps 1.5\n"
+		"set linetype 1 lc rgb \"#66C2A5\"\n"
+		"set linetype 2 lc rgb \"#FC8D62\"\n"
+		"set linetype 3 lc rgb \"#8DA0CB\"\n"
+		"set linetype 4 lc rgb \"#E78AC3\"\n"
+		"set linetype 5 lc rgb \"#A6D854\"\n"
+		"set linetype 6 lc rgb \"#FFD92F\"\n"
+		"set linetype 7 lc rgb \"#E5C494\"\n"
+		"set linetype 8 lc rgb \"#B3B3B3\"\n";
 	if(fputs(s, gp)==EOF)
 		raiseErr("could not write common settings");
 }
 
+//lc rgb '#66C2A5'
+
 Global null_global_settings()
 {
-	Global settings = {nullptr, nullptr, nullptr, nullptr, nullptr, nullptr};
+	Global settings = {nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
+			nullptr};
 	return settings;
 }
 
 DatasetDesc null_datadesc()
 {
-	DatasetDesc desc={nullptr, nullptr, nullptr, nullptr};
+	DatasetDesc desc={nullptr, nullptr, nullptr};
 	return desc;
 }
 
 void eplot_set_global(FILE *gp, const Global *settings )
 {
 	if(settings->title)
-		fprintf(gp, "set title \'%s\' font \',20\'\n", settings->title);
+		fprintf(gp, "set title \"%s\" font \',20\'\n", settings->title);
 	
 	if(settings->xlabel)
-		fprintf(gp, "set xlabel \'%s\'\n", settings->xlabel);
+		fprintf(gp, "set xlabel \"%s\"\n", settings->xlabel);
 	else
-		fprintf(gp, "set xlabel \'x\'\n");
+		fprintf(gp, "set xlabel \"x\"\n");
 		
 	if(settings->ylabel)
-		fprintf(gp, "set ylabel \'%s\'\n", settings->ylabel);
+		fprintf(gp, "set ylabel \"%s\"\n", settings->ylabel);
 	else
-		fprintf(gp, "set ylabel \'y\'\n");
+		fprintf(gp, "set ylabel \"y\"\n");
 	
 	if(settings->logscale)
 		fprintf(gp, "set logscale %s\n", settings->logscale);
+	
+	if(settings->key)
+		fprintf(gp, "set key %s\n", settings->key);
 }
 
 void eplot_set_terminal_and_plot(FILE *gp, char *plot_command, const char *output_name)
 {
 	char qt[5'000];
 	sprintf(qt,
-		"set terminal qt font \'CMU Serif, 12\' enhanced\n"
+		"set terminal qt size 800,500 font \'CMU Serif, 12\' enhanced\n"
 		"%s\n"
 		"pause mouse close\n", plot_command);
 	fputs(qt, gp);
@@ -131,7 +146,7 @@ void eplot_2carr(double *xaxis, double *yaxis, int size, const Global *gb_settin
 	eplot_set_global(gp, gb_settings);
 
 	char data_path[100];
-	sprintf(data_path, "data/%s.dat", build_name);
+	sprintf(data_path, "data/%s_%d_0.dat", build_name, gb_counter);
 	double *carrs[2]={xaxis,yaxis};
 	carrs_to_filename(data_path, carrs, size, 2);
 
@@ -148,6 +163,7 @@ void eplot_2carr(double *xaxis, double *yaxis, int size, const Global *gb_settin
 	char shell_command[200];
 	sprintf(shell_command, "gnuplot %s", script_path);
 	system(shell_command);
+	gb_counter++;
 }
 
 
@@ -156,15 +172,15 @@ void multi_data_plt_command_helper(const SeriesSpec *series, char *plot_command,
 										const char *build_name, int i)
 {
 	char data_path[100];
-	sprintf(data_path, "data/%s%d_%d.dat", build_name, gb_counter, i);
+	sprintf(data_path, "data/%s_%d_%d.dat", build_name, gb_counter, i);
 	double *carrs[2]={series->x,series->y};
 	carrs_to_filename(data_path, carrs, series->size, 2);
 	
 	char *label=(series->label) ? series->label : "";
 	char *style=(series->style) ? series->style : "lp";
 	
-	char plot_line[300];
-	sprintf(plot_line, "'%s' with %s ls 1 title '%s'", data_path,
+	char plot_line[400];
+	sprintf(plot_line, "\"%s\" with %s title \"%s\"", data_path,
 				style, label);
 	strcat(plot_command, plot_line);
 }
@@ -180,13 +196,13 @@ void eplot_multi(const SeriesSpec *series, int count, const Global *gb_settings)
 	
 	eplot_set_global(gp, gb_settings);
 	
-	char plot_command[2'000];
+	char plot_command[2'000]={0};
 	strcat(plot_command, "plot ");
 	
 	for(int i=0; i<count; i++)
 	{	
 		multi_data_plt_command_helper(series+i, plot_command, build_name, i);
-		strcat(plot_command, (i==count-1)?"\n":", \\\n");
+		strcat(plot_command, (i==count-1)?"\n":", \\" "\n");
 	}
 	
 	eprint("%s", plot_command);

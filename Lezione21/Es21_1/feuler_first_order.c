@@ -1,6 +1,8 @@
 #include "comp_physics.h"
 #include "ode.h"
 #include "explot.h"
+#include "array.h"
+#include "matrix.h"
 #include <math.h>
 
 void mypause ( void ) 
@@ -49,14 +51,20 @@ void solve_and_plot(Derivative eq, double t0, double tf, double in_value,
 {
 	Matrix f_output={0};
 	Array t_output={0};
-	Array initial_value=arr_asarr(&in_value, 1);
-	static int counter=0;
-	counter++;	
+	// Static counter to keep track of function calls, for easier file management.
+	static int counter=0; counter++;	
+	// Call of Euler's method.
+	ode_feuler( t0, tf, &in_value, &eq, nullptr, 1, nsteps, &t_output, &f_output );
+	// Evaluation of function values of the exact solution.
+	Array true_values=arr_new(nsteps+1);
+	for(int i=0; i<nsteps+1; i++)
+		true_values.data[i]=func(t_output.data[i]);
 
+	// Plot setup --- global settings
 	char title[1000];
 	char build_name[100];
 	char output_name[100];
-	sprintf(title, "Numerical solution of du/dt(t) = %s, u(%.0f)=%.0lf", 
+	sprintf(title, "Numerical solution of u\'(t) = %s, u(%.0f)=%.0lf", 
 							fnc_name, t0, in_value);
 	sprintf(build_name, "euler_test%d", counter);
 	sprintf(output_name, "euler_test%d", counter);
@@ -69,14 +77,7 @@ void solve_and_plot(Derivative eq, double t0, double tf, double in_value,
 		.build_name=build_name,
 		.output_name=output_name
 	};
-
-	ode_feuler( t0, tf, &initial_value, &eq, 1, nsteps, &t_output, &f_output );
-
-	Array true_values={0};
-	arr_init(&true_values, nsteps+1);
-	for(int i=0; i<nsteps+1; i++)
-		true_values.data[i]=func(t_output.data[i]);
-
+	// Values of exact solution at timesteps
 	SeriesSpec data_desc_true={
 		.x=t_output.data,
 		.y=true_values.data,
@@ -85,7 +86,7 @@ void solve_and_plot(Derivative eq, double t0, double tf, double in_value,
 		.label="Exact function",
 		.color=nullptr
 	};
-	
+	// Values of numerical solution at timesteps
 	SeriesSpec data_desc_est={
 		.x=t_output.data,
 		.y=f_output.data,
@@ -96,10 +97,7 @@ void solve_and_plot(Derivative eq, double t0, double tf, double in_value,
 	};
 	
 	SeriesSpec specs[2]={data_desc_est, data_desc_true};
-
 	eplot_multi(specs, 2, &gb_settings);
-
-
 	
 	mat_free(&f_output);
 	arr_free(&t_output);
@@ -117,43 +115,53 @@ double compute_error(double *true_arr, double *estimate, int length)
 			max=temp;
 //		eprint("True value: %.6lf ; Estimate: %.6lf; max = %lf", true_arr[i], estimate[i], max);
 	}
+//	mypause();
 	return max;
 }
 
 void error_study(Derivative eq, double t0, double tf, double in_value,
 	const char *fnc_name, int max_k, TrueFunc fnc)
 {
+	// Variables passed to ode euler solver
 	Matrix f_output={0};
 	Array t_output={0};
-	const Array initial_value=arr_asarr(&in_value, 1);
+	// Variables for error analysis
 	VectorD errors=init_vecD();
+	VectorD errorsf=init_vecD();
 	VectorD nsteps_vec=init_vecD();
+	VectorD approx_stepsize=init_vecD();
+	Array true_values={0};
+	// Static counter to keep track of function calls, for easier file management.
 	static int counter=0;
 	counter++;
-	Array true_values={0};
 	
 	for(int i=0; i<=max_k-2; i++)
 	{
+		// Number of steps per Euler's method call
 		int nsteps=10*powint(2,i+2);
 		appendD(&nsteps_vec, (double)nsteps);
+		appendD(&approx_stepsize, 1/(double)nsteps);
 		
-		ode_feuler( t0, tf, &initial_value, &eq, 1, nsteps, &t_output, &f_output );
+		// Call of Euler's method
+		ode_feuler( t0, tf, &in_value, &eq, nullptr,
+						1, nsteps, &t_output, &f_output );
 		
 		// Error computation
 		arr_init(&true_values, nsteps+1);
 		for(int j=0; j<nsteps+1; j++)
-			true_values.data[j]=fnc(t_output.data[j]);
-		appendD(&errors,compute_error(true_values.data, f_output.data,nsteps+1) );
+			ARR(true_values,j)=fnc(t_output.data[j]);
+		appendD(&errors,  compute_error(true_values.data, f_output.data,nsteps+1) );
+		appendD(&errorsf, fabs( ARR(f_output,nsteps) - true_values.data[nsteps]) );
 		
 		arr_free(&t_output);
 		mat_free(&f_output);
 	}
 	
-	// Plot setup
+	// Plot setup --- global settings
 	char title[1000];
 	char build_name[100];
 	char output_name[100];
-	sprintf(title, "Convergence of Euler method for u(t)=%s, %.0lf=%.0lf", 
+	sprintf(title, "Convergence of Euler method for u(t)=%s, u(%.0lf)=%.0lf", 
 							fnc_name, t0, in_value);
 	sprintf(build_name, "euler_conv_study%d", counter);
 	sprintf(output_name, "euler_conv_study%d", counter);
@@ -166,18 +174,38 @@ void error_study(Derivative eq, double t0, double tf, double in_value,
 		.build_name=build_name,
 		.output_name=output_name
 	};
-
-	DatasetDesc data_desc={
-		.file=nullptr,
-		.style="lp",
-		.label="",
+	// Max error over whole vs nsteps plot 
+	SeriesSpec error_overall={
+		.x=nsteps_vec.val,
+		.y=errors.val,
+		.size=max_k-1,
+		.style="lp pt 2",
+		.label="||u-v||_{" GP_INFINITY "}",
 		.color=nullptr
 	};
-
-	eplot_2carr(nsteps_vec.val, errors.val, max_k-1, &gb_settings,
-			&data_desc);
+	// Error over last timestep vs nsteps plot 
+	SeriesSpec error_final={
+		.x=nsteps_vec.val,
+		.y=errorsf.val,
+		.size=max_k-1,
+		.style="lp pt 1",
+		.label="Error at last time timestep",
+		.color=nullptr
+	};
+	// Reference line for first order convergence
+	SeriesSpec ref_line={
+		.x=nsteps_vec.val,
+		.y=approx_stepsize.val,
+		.size=max_k-1,
+		.style="lp",
+		.label="First order convergence reference line",
+		.color=nullptr
+	};
+	
+	SeriesSpec series[]={error_overall, error_final, ref_line};
+	eplot_multi(series, 3, &gb_settings);
 			
-	free_vecD(&errors, &nsteps_vec);
+	free_vecD(&errors, &nsteps_vec, &errorsf, &approx_stepsize);
 }
 
 	
@@ -193,8 +221,10 @@ int main()
 {
 	
 	test_feuler(eq1, 0, 2, 2, "-2tu", true1);
-	test_feuler(eq2, 0, 1, 2, "u+t", true2);
-	test_feuler(eq3, 0, 3, 1, "", true3);
+	test_feuler(eq2, 0, 1, 2, "u+t", true2); 
+	// Remark: inf error is the same as error on final timestep. The error
+	// then grows steadily.
+	test_feuler(eq3, 0, 3, 1, "t^2 / u(1+t^3)", true3);
 	
 	return 0;
 }

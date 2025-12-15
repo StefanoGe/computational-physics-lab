@@ -1,0 +1,5 @@
+set(EXERCISE_SOURCES rk_nonlinear.c)
+add_executable(rk_nonlinear ${EXERCISE_SOURCES})
+target_link_libraries(rk_nonlinear PRIVATE cp_library m)
+target_include_directories(rk_nonlinear PRIVATE ${CMAKE_SOURCE_DIR}/Libraries/header)
+set_target_properties(rk_nonlinear PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/Lezione22/rk_nonlinear")

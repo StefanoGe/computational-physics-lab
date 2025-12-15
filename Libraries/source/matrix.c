@@ -50,13 +50,21 @@ void mat_transpose(Matrix *source, Matrix *dest)
 		for(int j=0; j<new_ncols; j++)
 			new_data_ptr[i*new_ncols+j]=MATP(source,j,i);
 	
-	free(dest->rows);
-	if(dest->owns_data)
-		mat_free(dest);
+
+	mat_free(dest);
 	dest->data=new_data_ptr;
 	dest->nrows=new_nrows;
 	dest->ncols=new_ncols;
 	dest->owns_data=true;
 	mat_build_rows(dest);
 }
+
+Matrix mat_new(int nrows, int ncols)
+{
+	Matrix m={0};
+	mat_init(&m, nrows, ncols);
+	return m;
+}
+
+
 

@@ -1,0 +1,5 @@
+set(EXERCISE_SOURCES runge_kutta_test.c)
+add_executable(runge_kutta_test ${EXERCISE_SOURCES})
+target_link_libraries(runge_kutta_test PRIVATE cp_library m)
+target_include_directories(runge_kutta_test PRIVATE ${CMAKE_SOURCE_DIR}/Libraries/header)
+set_target_properties(runge_kutta_test PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/Lezione22/Es22_1")

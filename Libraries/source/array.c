@@ -32,4 +32,25 @@ Array arr_asarr(double *data, int size)
 	return arr;
 }
 
+Array arr_new(int size)
+{
+	Array arr={0};
+	arr_init(&arr, size);
+	return arr;
+}
+
+Array arr_map( const Array *x, ScalarFunc f )
+{
+	Array arr=arr_new(x->size);
+	for(int i=0; i<x->size; i++)
+		ARR(arr,i)=f(ARRP(x,i));
+	return arr;
+}
+
+void arr_free_many(Array **arrs, int n)
+{
+    for (int i = 0; i < n; i++)
+        arr_free(arrs[i]);
+}
+
 

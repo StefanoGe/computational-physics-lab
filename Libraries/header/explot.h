@@ -3,6 +3,8 @@
 
 #include "comp_physics.h"
 
+#define GP_INFINITY "{/Symbol oo}"
+
 typedef struct {
 	char *title;
 	char *xlabel;
@@ -10,10 +12,10 @@ typedef struct {
 	char *logscale;
 	char *build_name;
 	char *output_name;
+	char *key;
 }Global;
 
 typedef struct{
-	char *file;
 	char *style;
 	char *label;
 	char *color;
@@ -28,9 +30,10 @@ typedef struct{
 	char *color;
 } SeriesSpec;
 
-static const Global NULL_GLOBAL_SETTINGS={nullptr, nullptr, nullptr, nullptr, nullptr, nullptr};
+static const Global NULL_GLOBAL_SETTINGS={nullptr, nullptr, nullptr, nullptr, 
+				nullptr, nullptr, nullptr};
 
-static const DatasetDesc NULL_DATADESC={nullptr, nullptr, nullptr, nullptr};
+static const DatasetDesc NULL_DATADESC={nullptr, nullptr, nullptr};
 
 void eplot_set_common(FILE *gp);
 
