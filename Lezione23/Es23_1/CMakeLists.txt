@@ -1,0 +1,5 @@
+set(EXERCISE_SOURCES schroedinger_gaussian1.c)
+add_executable(schroedinger_gaussian1 ${EXERCISE_SOURCES})
+target_link_libraries(schroedinger_gaussian1 PRIVATE cp_library m)
+target_include_directories(schroedinger_gaussian1 PRIVATE ${CMAKE_SOURCE_DIR}/Libraries/header)
+set_target_properties(schroedinger_gaussian1 PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/Lezione23/Es23_1")

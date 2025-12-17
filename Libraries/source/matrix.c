@@ -66,5 +66,9 @@ Matrix mat_new(int nrows, int ncols)
 	return m;
 }
 
-
+void mat_free_many(Matrix **mats, int n)
+{
+    for (int i = 0; i < n; i++)
+        mat_free(mats[i]);
+}
 

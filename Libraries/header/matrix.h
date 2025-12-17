@@ -22,6 +22,6 @@ Matrix mat_new(int nrows, int ncols);
 
 void mat_transpose(Matrix *source, Matrix *dest);
 
-//double *mat_getr_ptr(const Matrix *mat, int row);
+void mat_free_many(Matrix **mats, int n);
 
 #endif
