@@ -1,8 +1,14 @@
 #ifndef ARRAY_H
 #define ARRAY_H
 
+
+#ifndef ARR_ACCESS
+#define ARR_ACCESS
+
 #define ARR(A,i) ((A).data[(i)])
 #define ARRP(A,i) ((A)->data[(i)])
+
+#endif
 
 typedef double(ScalarFunc)(double);
 
@@ -23,5 +29,7 @@ Array arr_new(int size);
 Array arr_map( const Array *x, ScalarFunc f );
 
 void arr_free_many(Array **arrs, int n);
+
+Array arr_linspace (double start, double end, int num_values );
 
 #endif

@@ -1,0 +1,5 @@
+set(EXERCISE_SOURCES lotka_volterra.c)
+add_executable(lotka_volterra ${EXERCISE_SOURCES})
+target_link_libraries(lotka_volterra PRIVATE cp_library m)
+target_include_directories(lotka_volterra PRIVATE ${CMAKE_SOURCE_DIR}/Libraries/header)
+set_target_properties(lotka_volterra PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/Lezione22/Es22_3")

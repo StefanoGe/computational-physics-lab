@@ -1,10 +1,10 @@
 // ode.c
 #include "ode.h"
-#include "comp_physics.h"
+#include "genutil.h"
 
 // Common helper functions
 
-void init_output(int sys_size, int nsteps, Array *t_output, Matrix *f_output)
+static void init_output(int sys_size, int nsteps, Array *t_output, Matrix *f_output)
 {
 	if(t_output->size!=nsteps+1)
 		arr_init(t_output, nsteps+1);
@@ -13,7 +13,7 @@ void init_output(int sys_size, int nsteps, Array *t_output, Matrix *f_output)
 		mat_init(f_output, nsteps+1, sys_size);
 }
 
-void init_starting_values(double step_size, int sys_size, int nsteps, 
+static void init_starting_values(double step_size, int sys_size, int nsteps, 
 					Array *t_output, Matrix *f_output,double init_time,
 							const double init_value[])
 {
@@ -24,7 +24,7 @@ void init_starting_values(double step_size, int sys_size, int nsteps,
 		MATP(f_output,0,j) = init_value[j];	
 }
 
-void **setup_parameters( int sys_size, void **f_parameters )
+static void **setup_parameters( int sys_size, void **f_parameters )
 {
 	void **parameters=malloc(sizeof(void*)*sys_size);
 	for(int i=0; i<sys_size;i++)
@@ -151,10 +151,10 @@ void ode_rk4( double init_time, double final_time, const double init_value[],
 		for(int j=0; j<sys_size; j++ )
 		{		
 			MATP(f_output,t+1,j)=-MATP(f_output,t,j)/3+ARR(step1,j)/3
-				+ARR(step2,j)*2/3+ARR(step3,j)/3+
+				+ARR(step2,j)*2/3+ARR(step3,j)/3
 				+step_size*ders[j](t_step4, step3.data, parameters[j])/6;
-			/*if(t<100)
-				eprint("component %d at time %d: %lf", j, t+1,MATP(f_output,t+1,j));*/
+			if(t<100)
+				eprint("component %d at time %d: %lf", j, t+1,MATP(f_output,t+1,j));
 		}
 	}
 	Array *arr_to_free[]={&step1, &step2, &step3};

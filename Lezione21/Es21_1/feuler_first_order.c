@@ -1,16 +1,10 @@
-#include "comp_physics.h"
+#include "genutil.h"
 #include "ode.h"
 #include "explot.h"
 #include "array.h"
 #include "matrix.h"
 #include <math.h>
-
-void mypause ( void ) 
-{ 
-  printf ( "Press [Enter] to continue . . ." );
-  fflush ( stdout );
-  getchar();
-} 
+#include "comp_physics.h"
 
 double eq1(double t, double *u, [[maybe_unused]]void *unused )
 {return -2*t**u;}

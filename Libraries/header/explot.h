@@ -1,8 +1,6 @@
 #ifndef EXPLOT_H
 #define EXPLOT_H
 
-#include "comp_physics.h"
-
 #define GP_INFINITY "{/Symbol oo}"
 
 typedef struct {

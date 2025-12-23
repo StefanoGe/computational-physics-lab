@@ -15,6 +15,9 @@
 #define NULL_MAT (MatrixDouble){NULL, 0,0}
 #define NULL_INFO (PlotInfo){NULL, NULL,0}
 
+#ifndef GENUTIL_H
+#define GENUTIL_H
+
 #define UNUSED(expr) do { (void)(expr); } while(0)
 
 #define raiseErr( msg, ...) \
@@ -25,6 +28,10 @@
 	} while (0)
 
 #define eprint(a, ...) fprintf( stderr, a "\n" __VA_OPT__(,) __VA_ARGS__ )
+
+FILE * openFile( const char * fileName, const char * mode );
+
+#endif
 
 typedef double(*Func_Ptr)(double);
 
@@ -37,8 +44,6 @@ typedef struct {
 } Par_Func;
 
 double evaluate( const Par_Func * self, double x );
-
-FILE * openFile( const char * fileName, const char * mode );
 
 typedef struct _arrayInt
 {

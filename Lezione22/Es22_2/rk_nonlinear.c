@@ -162,6 +162,9 @@ void solve_eq2(int nsteps)
 int main()
 {
 	// Problem: how to determine the number of steps more accurately?
+	// Scelgo valori sempre più alti, poi confronto le differenze di errori globali
+	// - Posso scegliere la "norma" che fa la differenza nel punto finale
+	// - Scelgo ogni volta un numero di steps multiplo
 	// Reminder: add plot of the circles
 	// Idea: add maybe a keep scaling of the axes?
 	solve_eq1(1000);

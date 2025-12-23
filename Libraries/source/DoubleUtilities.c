@@ -28,15 +28,6 @@ double * __m_get( MatrixDouble * mat, int nrow, int ncol )
 }
 */
 
-double pown( double x, int n )
-{
-	double product = 1.0;
-	for( int i = 0; i < n; i++ )
-		product *=x;
-	
-	return product;
-}
-
 
 ArrayDouble allocArrD ( int length)
 {

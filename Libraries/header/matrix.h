@@ -1,8 +1,13 @@
 #ifndef MATRIX_H
 #define MATRIX_H
 
+#ifndef MAT_ACCESS
+#define MAT_ACCESS
+
 #define MAT(A,r,c) ((A).rows[(r)][(c)])
 #define MATP(A,r,c) ((A)->rows[(r)][(c)])
+
+#endif
 
 typedef struct {
 	double *data;

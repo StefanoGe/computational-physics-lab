@@ -1,28 +1,13 @@
-// Prova
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
-#include "comp_physics.h"
+#include "genutil.h"
+#include "matrix.h"
+#include "array.h"
+#include "explot.h"
 
 #define MAX_N 4
-#define N_INTERVALS 10
-#define MAX_FACTORIAL 1000
-
-int factorial( int n )
-{
-	static int stored_values[MAX_FACTORIAL] = {1};
-	static int count = 2;
-	
-	if(n >= MAX_FACTORIAL)
-		raiseErr("Maximum that can be evaluated is set to %d", MAX_FACTORIAL);
-	
-	if ( n >= count)
-		for(int i = count; i<=n; i++ )
-			stored_values[i] = stored_values[i-1]*i;
-	
-	return stored_values[n];
-}
+#define N_INTERVALS 100
 
 double naiveExp( double x, int N )
 {
@@ -54,23 +39,111 @@ double absoluteError( double x, int N )
 void analysis ( int max_N, int n_intervals )
 {
 	const int n_xvalues = n_intervals + 1;
-	ArrayDouble xAxis = linspaceD( 0, 1, n_xvalues);
-	MatrixDouble errs = allocMatD(max_N, n_xvalues);
-	
-	// We compute the relative error matrix.
+	Array xAxis = arr_linspace( 0, 1, n_xvalues);
+	Matrix errs = mat_new(max_N, n_xvalues);
+	Matrix ref = mat_new(max_N, n_xvalues);
+
 	for( int i = 1; i <= max_N; i++ )
+	{
 		for(int j = 1; j < n_xvalues; j++)
 		{
-			errs.val[i-1][j] = absoluteError( xAxis.val[j], i);
-			printf("x = %lf - exp = %lf - err = %lf\n", 
-				xAxis.val[j], smartExp(xAxis.val[j], i), errs.val[i-1][j]);
+			MAT(errs, i-1,j)=absoluteError( ARR(xAxis,j), i);
+//			printf("x = %lf - exp = %lf - err = %lf\n", 
+//				ARR(xAxis,j), smartExp(ARR(xAxis,j), i), MAT(errs,i-1,j));
+			MAT(ref,i-1,j-1)=pow(ARR(xAxis,j-1),i+1)/factorial(i+1);
 			
+			//eprint("%lf %d",MAT(ref,i-1,j-1), factorial(i));
 		}
+	}
+		
+	Global gb_settings = {
+		.title="Approximation error of exponential",
+		.xlabel="x",
+		.ylabel="e^x",
+		.logscale="xy",
+		.build_name="approx_exp",
+		.output_name="approx_exp1_0",
+		.key="bottom right"
+	};
 
-	// Plot
-	tmplot_carrs( "plot1", xAxis.val, errs.val, n_xvalues, max_N );
-	freeArrD(xAxis);
-	freeAllMatD(errs, NULL_MAT);
+	SeriesSpec n1={
+		.x=xAxis.data,
+		.y=errs.rows[0],
+		.size=n_xvalues,
+		.style="l",
+		.label="N=1",
+		.color=nullptr
+	};
+	
+	SeriesSpec n2={
+		.x=xAxis.data,
+		.y=errs.rows[1],
+		.size=n_xvalues,
+		.style="l",
+		.label="N=2",
+		.color=nullptr
+	};
+	
+	SeriesSpec n3={
+		.x=xAxis.data,
+		.y=errs.rows[2],
+		.size=n_xvalues,
+		.style="l",
+		.label="N=3",
+		.color=nullptr
+	};
+	
+	SeriesSpec n4={
+		.x=xAxis.data,
+		.y=errs.rows[3],
+		.size=n_xvalues,
+		.style="l",
+		.label="N=4",
+		.color=nullptr
+	};
+
+	SeriesSpec ref1={
+		.x=xAxis.data,
+		.y=ref.rows[0],
+		.size=n_xvalues,
+		.style="l dt 4",
+		.label="x^{2} / 2!",
+		.color=nullptr
+	};
+	
+	SeriesSpec ref2={
+		.x=xAxis.data,
+		.y=ref.rows[1],
+		.size=n_xvalues,
+		.style="l dt 4",
+		.label="x^{3} / 3!",
+		.color=nullptr
+	};
+	
+	SeriesSpec ref3={
+		.x=xAxis.data,
+		.y=ref.rows[2],
+		.size=n_xvalues,
+		.style="l dt 4",
+		.label="x^{4} / 4!",
+		.color=nullptr
+	};
+	
+	SeriesSpec ref4={
+		.x=xAxis.data,
+		.y=ref.rows[3],
+		.size=n_xvalues,
+		.style="l dt 4",
+		.label="x^{5} / 5!",
+		.color=nullptr
+	};
+
+	SeriesSpec series[]={n1,ref1,n2,ref2,n3,ref3,n4,ref4};
+	eplot_multi(series, 8, &gb_settings);
+
+
+	arr_free(&xAxis);
+	mat_free(&errs);
 }
 
 
@@ -80,3 +153,12 @@ int main()
 	
 	return 0;
 }
+
+/* 
+ * Remarks:
+ * the difference between e^x and the approximating series
+ * is e^x - eapprox, which is asymptotic to x^n+1/n+1! as x approaches 0.
+ * So the graphs look almost the same in this limit, but start to diverge when
+ * when approaching 1.
+ */
+

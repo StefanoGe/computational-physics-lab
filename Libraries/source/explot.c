@@ -3,7 +3,7 @@
 #include <stdbool.h>
 #include <string.h>
 #include "explot.h"
-#include "comp_physics.h"
+#include "genutil.h"
 
 static int gb_counter=0;
 
@@ -19,7 +19,6 @@ void eplot_set_common(FILE *gp)
 		"set key box lw 0.5 lc rgb \'black\' textcolor rgb \'black\' "
 		"spacing 1.5 opaque width 0.5\n"
 		// global line presets	
-		"set for [i=1:8] linetype i lw 3 pt 7 ps 1.5\n"
 		"set linetype 1 lc rgb \"#66C2A5\"\n"
 		"set linetype 2 lc rgb \"#FC8D62\"\n"
 		"set linetype 3 lc rgb \"#8DA0CB\"\n"
@@ -50,17 +49,17 @@ DatasetDesc null_datadesc()
 void eplot_set_global(FILE *gp, const Global *settings )
 {
 	if(settings->title)
-		fprintf(gp, "set title \"%s\" font \',20\'\n", settings->title);
+		fprintf(gp, "set title \"%s\" font \',24\'\n", settings->title);
 	
 	if(settings->xlabel)
-		fprintf(gp, "set xlabel \"%s\"\n", settings->xlabel);
+		fprintf(gp, "set xlabel \"%s\" font \',20\'\n", settings->xlabel);
 	else
-		fprintf(gp, "set xlabel \"x\"\n");
+		fprintf(gp, "set xlabel \"x\" font \',20\'\n");
 		
 	if(settings->ylabel)
-		fprintf(gp, "set ylabel \"%s\"\n", settings->ylabel);
+		fprintf(gp, "set ylabel \"%s\" font \',20\'\n", settings->ylabel);
 	else
-		fprintf(gp, "set ylabel \"y\"\n");
+		fprintf(gp, "set ylabel \"y\" font \',20\'\n");
 	
 	if(settings->logscale)
 		fprintf(gp, "set logscale %s\n", settings->logscale);
@@ -73,7 +72,8 @@ void eplot_set_terminal_and_plot(FILE *gp, char *plot_command, const char *outpu
 {
 	char qt[5'000];
 	sprintf(qt,
-		"set terminal qt size 800,500 font \'CMU Serif, 12\' enhanced\n"
+		"set terminal qt size 1020,700 font \'CMU Serif, 16\' enhanced\n"
+		"set for [i=1:8] linetype i lw 5 pt 7 ps 1.5\n"
 		"%s\n"
 		"pause mouse close\n", plot_command);
 	fputs(qt, gp);
@@ -84,7 +84,8 @@ void eplot_set_terminal_and_plot(FILE *gp, char *plot_command, const char *outpu
 		char output_path[100];
 		sprintf(output_path, "\'plot/%s.pdf\'", output_name);
 		sprintf(pdfcairo,
-			"set terminal pdfcairo font \"CMU Serif,12\" enhanced\n"
+			"set terminal pdfcairo size 6.4,4 font \"CMU Serif,16\" enhanced\n"
+			"set for [i=1:8] linetype i lw 4 pt 7 ps 1.5\n"
 			"set output %s\n"
 			"%s\n"
 			"unset output\n", output_path, plot_command );

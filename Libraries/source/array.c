@@ -1,6 +1,6 @@
 #include <stdlib.h>
 #include "array.h"
-#include "comp_physics.h"
+#include "genutil.h"
 
 void arr_init( Array *arr, int size )
 {
@@ -53,4 +53,19 @@ void arr_free_many(Array **arrs, int n)
         arr_free(arrs[i]);
 }
 
+Array arr_linspace (double start, double end, int num_values )
+{
+	if (num_values < 2)
+		raiseErr("You must ask for at least 2 values in function linspaceD");
+		
+	Array arr = arr_new(num_values);
+	
+	const int n_increments = num_values - 1;
+	const double step_size = (end - start)/n_increments;
+	
+	for(int i=0; i < num_values; i++)
+		ARR(arr,i) = step_size*i + start;
+	
+	return arr;
+}
 
