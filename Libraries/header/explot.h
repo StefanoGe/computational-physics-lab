@@ -11,6 +11,7 @@ typedef struct {
 	char *build_name;
 	char *output_name;
 	char *key;
+	char *additional_set;
 }Global;
 
 typedef struct{
@@ -29,7 +30,7 @@ typedef struct{
 } SeriesSpec;
 
 static const Global NULL_GLOBAL_SETTINGS={nullptr, nullptr, nullptr, nullptr, 
-				nullptr, nullptr, nullptr};
+				nullptr, nullptr, nullptr, nullptr};
 
 static const DatasetDesc NULL_DATADESC={nullptr, nullptr, nullptr};
 

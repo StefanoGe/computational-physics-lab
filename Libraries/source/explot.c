@@ -36,7 +36,7 @@ void eplot_set_common(FILE *gp)
 Global null_global_settings()
 {
 	Global settings = {nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
-			nullptr};
+			nullptr, nullptr};
 	return settings;
 }
 
@@ -66,6 +66,9 @@ void eplot_set_global(FILE *gp, const Global *settings )
 	
 	if(settings->key)
 		fprintf(gp, "set key %s\n", settings->key);
+		
+	if(settings->additional_set)
+		fprintf(gp, "%s\n", settings->additional_set);
 }
 
 void eplot_set_terminal_and_plot(FILE *gp, char *plot_command, const char *output_name)
@@ -73,7 +76,7 @@ void eplot_set_terminal_and_plot(FILE *gp, char *plot_command, const char *outpu
 	char qt[5'000];
 	sprintf(qt,
 		"set terminal qt size 1020,700 font \'CMU Serif, 16\' enhanced\n"
-		"set for [i=1:8] linetype i lw 5 pt 7 ps 1.5\n"
+		"set for [i=1:8] linetype i lw 4 pt 7 ps 1.5\n"
 		"%s\n"
 		"pause mouse close\n", plot_command);
 	fputs(qt, gp);

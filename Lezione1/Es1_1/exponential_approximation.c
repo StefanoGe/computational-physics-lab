@@ -24,8 +24,7 @@ double smartExp( double x, int N )
 	double sum = 1;
 	for( int i = 0; i < N; i++ )
 	{
-		sum *= x;
-		sum /= ( N - i );
+		sum *= x/( N - i );
 		sum += 1;
 	}
 	return sum;
@@ -50,7 +49,7 @@ void analysis ( int max_N, int n_intervals )
 			MAT(errs, i-1,j)=absoluteError( ARR(xAxis,j), i);
 //			printf("x = %lf - exp = %lf - err = %lf\n", 
 //				ARR(xAxis,j), smartExp(ARR(xAxis,j), i), MAT(errs,i-1,j));
-			MAT(ref,i-1,j-1)=pow(ARR(xAxis,j-1),i+1)/factorial(i+1);
+			MAT(ref,i-1,j-1)=pown(ARR(xAxis,j-1),i+1)/factorial(i+1);
 			
 			//eprint("%lf %d",MAT(ref,i-1,j-1), factorial(i));
 		}
@@ -59,11 +58,11 @@ void analysis ( int max_N, int n_intervals )
 	Global gb_settings = {
 		.title="Approximation error of exponential",
 		.xlabel="x",
-		.ylabel="e^x",
+		.ylabel="Truncation error",
 		.logscale="xy",
 		.build_name="approx_exp",
 		.output_name="approx_exp1_0",
-		.key="bottom right"
+		.key="bottom right font \",12\""
 	};
 
 	SeriesSpec n1={

@@ -28,18 +28,57 @@
 \begin{figure}[htbp]
     \centering
     \includegraphics[width=\textwidth]{approx_exp1_0.pdf}
-    \caption{Caption describing the content of the figure.}
-    \label{fig:standard}
+    \caption{Truncation errors when approximating $e^{x}$ through a 
+				truncated power series. $N$ is the degree of the polinomyal used
+				for the approximation. The plot of $x^{N+1}/(N+1)$ has been
+				added for reference.}
+    \label{fig:approx_exp}
 \end{figure}
 
 \paragraph{Remarks}
+
+\begin{itemize}
+	\item{Horner's method was used in polynomial evaluation, because it is
+			faster and reduces roundoff errors. A naive implementation of a 
+			polynomial computation requires more operations (\(O(N^{2})\)) and, 
+			for small values of $x$, adds together numbers of order 1 and $x^{N}$,
+			while Horner's method is \(O(N)\) and keeps the additions only
+			between terms of order 1 and x.}
+	\item{By Taylor's theorem, if \(\hat{f}(x)\) is the power series
+			of $e^{x}$ truncated after the N-th term, the error is of order 
+			$O(x^{N+1})$ as x approaches 0. Computing an additional term of the
+			series shows that:
+			\[|e^{x}-\hat{f}(x)|=\frac{x^{N+1}}{(N+1)!}+o(x^{N+1})\]
+			It is then not surprising that the 
+			approximation error in Figure \ref{fig:approx_exp} is 
+			indistinguishable from $x^{N+1}/(N+1)$ for small values of x. For
+			larger values, the contribution of higher order terms in the series 
+			becomes ever more important, and hence the divergence from
+			$x^{N+1}/(N+1)$.}
+			
+\end{itemize}
+
 
 %-------------------------------------
 \setcounter{subsection}{1}
 \subsection{Floating-point arithmetic and roundoff errors}
 %-------------------------------------
 
+% it might prove useful: https://en.wikipedia.org/wiki/Machine_epsilon
+
 \subsubsection{Computing the Basel problem}
+
+\paragraph{Results}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=\textwidth]{basel1_2_1.pdf}
+    \caption{Truncation error when computing \(pi^{2}/6\) with the Basel problem
+		infinite series, with 32bit floating precision.}
+    \label{fig:basel}
+\end{figure}
+
+\paragraph{Remarks}
 
 %-------------------------------------
 \subsection{Error propagation and condition number}

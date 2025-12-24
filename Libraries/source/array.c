@@ -29,6 +29,7 @@ Array arr_asarr(double *data, int size)
 	Array arr;
 	arr.data=data;
 	arr.size=size;
+	arr.owns_data=false;
 	return arr;
 }
 
@@ -69,3 +70,8 @@ Array arr_linspace (double start, double end, int num_values )
 	return arr;
 }
 
+void arr_print( FILE *file, const Array *arr, const char *format )
+{
+	for(int i=0; i<arr->size; i++)
+		fprintf(file, format, ARRP(arr,i));
+}

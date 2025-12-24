@@ -8,7 +8,9 @@
 #include <stdarg.h>
 #include <stdbool.h>
 
+#ifndef PI
 #define PI 3.1415926535897932384626433
+#endif
 
 #define CREATE_MAT NULL
 #define NULL_ARR (ArrayDouble){NULL,0}

@@ -4,6 +4,10 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+#ifndef PI
+#define PI 3.1415926535897932384626433
+#endif
+
 #define UNUSED(expr) do { (void)(expr); } while(0)
 
 #define raiseErr( msg, ...) \
