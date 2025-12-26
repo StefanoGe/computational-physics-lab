@@ -1,0 +1,5 @@
+set(EXERCISE_SOURCES baseldouble.c)
+add_executable(baseldouble ${EXERCISE_SOURCES})
+target_link_libraries(baseldouble PRIVATE cp_library m)
+target_include_directories(baseldouble PRIVATE ${CMAKE_SOURCE_DIR}/Libraries/header)
+set_target_properties(baseldouble PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/Lezione2/Es2_2double")

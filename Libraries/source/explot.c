@@ -88,7 +88,7 @@ void eplot_set_terminal_and_plot(FILE *gp, char *plot_command, const char *outpu
 		sprintf(output_path, "\'plot/%s.pdf\'", output_name);
 		sprintf(pdfcairo,
 			"set terminal pdfcairo size 6.4,4 font \"CMU Serif,16\" enhanced\n"
-			"set for [i=1:8] linetype i lw 4 pt 7 ps 1.5\n"
+			"set for [i=1:8] linetype i lw 4.5 pt 7 ps 1.5\n"
 			"set output %s\n"
 			"%s\n"
 			"unset output\n", output_path, plot_command );

@@ -28,8 +28,8 @@
 \begin{figure}[htbp]
     \centering
     \includegraphics[width=\textwidth]{approx_exp1_0.pdf}
-    \caption{Truncation errors when approximating $e^{x}$ through a 
-				truncated power series. $N$ is the degree of the polinomyal used
+    \caption{Truncation errors when approximating $e^{x}$ through the
+				truncated power series \(\Sigma^{N}_{0}\). $N$ is the degree of the polinomyal used
 				for the approximation. The plot of $x^{N+1}/(N+1)$ has been
 				added for reference.}
     \label{fig:approx_exp}
@@ -66,19 +66,63 @@
 
 % it might prove useful: https://en.wikipedia.org/wiki/Machine_epsilon
 
+% specifying e_{mach} definition?
+
 \subsubsection{Computing the Basel problem}
 
 \paragraph{Results}
 
 \begin{figure}[htbp]
     \centering
-    \includegraphics[width=\textwidth]{basel1_2_1.pdf}
-    \caption{Truncation error when computing \(pi^{2}/6\) with the Basel problem
-		infinite series, with 32bit floating precision.}
-    \label{fig:basel}
+    \includegraphics[width=\textwidth]{basel1_2_1float.pdf}
+    \caption{Approximation error when computing \(\pi^{2}/6\) with the Basel problem truncated
+		series \(\Sigma_0^{N}\frac{1}{n^{2}}\), with single precision floating variables. Here $\mathrm{N}$ is 
+		the number of terms used when calculating the series.}
+    \label{fig:baselfloat}
+\end{figure}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=\textwidth]{basel1_2_1double.pdf}
+    \caption{Same as above, but now using double precision floating variables.
+		the plot of $1/x$ has been added for reference.}
+    \label{fig:baseldouble}
 \end{figure}
 
 \paragraph{Remarks}
+
+\begin{itemize}
+	\item{
+		The algorithm has been implemented with two mathematically equivalent 
+		forms, which, however, resulted in remarkably different numerical
+		results. \\
+		In the first the terms of the series are summed in increasing order of 
+		the summation index, i.e. decreasing of the value of the addends. Since
+		small addends are summed to the accumulating partial sum, it gets to a 
+		point where the next addend is smaller than \(\epsilon_{mach} \cdot sum \approx \epsilon_{mach}\),
+		so the addition of it and subsequent values does not change the value of the partial sum. \\
+		This can be seen in the error plots in Figure \ref{fig:baselfloat} and \ref{fig:baseldouble},
+		since the error stops decreasing and remains constant after \( \mathrm{1/N^{2}} = \epsilon_{ \mathrm{mach} } \),
+		which is $2^{-24}$ for single precision (N = 4096) and $2^{-53}$ for double precision ($\mathrm{N} \approx 9.5 \times 10^{7}).$ \\
+		
+		In the second implementation the terms of the series are summed in decreasing
+		order of the summation index, i.e. increasing the value of the addends. Therefore,
+		the aforementioned effect is not seen, and the numerical results correspond 
+		to the mathematical expectation, in the range considered.
+	}
+	\item{
+		The truncation error of this algorithm is asymptotically equivalent to
+		\(k/N\), with k real constant. This can be from the integral associated
+		to \( \Sigma_{n=0}^{\infty} \):
+		\[ \int^{\infty}_{N} \frac{1}{n^{2}} = \frac{1}{N}\]
+		therefore,
+		
+		\[ \Sigma_{n=N}^{\infty} \sim_{N \to \infty } \frac{1}{N} \]
+		
+		which is confirmed from the agreement between the computed values and
+		the \(1/x\) reference line in Figure \ref{fig:baseldouble}.
+		}
+\end{itemize}
 
 %-------------------------------------
 \subsection{Error propagation and condition number}

@@ -1,5 +1,3 @@
-// Esercizio 1 della lezione 2
-
 #include <stdlib.h>
 #include <math.h>
 #include "genutil.h"
@@ -51,10 +49,10 @@ void sumSquaresAnalysis( int maxIndex )
 		ARR(xaxis,i)=(double)i;
 
 	Global gb_settings = {
-		.title="Approximation error of Basel problem - single precision",
+		.title="Approximation error of Basel problem - 32bit precision",
 		.xlabel="N",
 		.ylabel="Error",
-		.logscale="xy",
+		.logscale=nullptr,
 		.build_name="baselfloat",
 		.output_name="basel1_2_1float",
 		.key="top right",
@@ -66,7 +64,7 @@ void sumSquaresAnalysis( int maxIndex )
 		.y=err_incrD.data,
 		.size=maxIndex+1,
 		.style="l",
-		.label="Sum with increasing addends",
+		.label="Sum with decreasing addends",
 		.color=nullptr
 	};
 	
@@ -75,7 +73,7 @@ void sumSquaresAnalysis( int maxIndex )
 		.y=err_decrD.data,
 		.size=maxIndex+1,
 		.style="l",
-		.label="Sum with decreasing addends",
+		.label="Sum with increasing addends",
 		.color=nullptr
 	};
 	
