@@ -31,7 +31,7 @@ float naive_varianceF( float *s, int size )
 	return sum / (float)(size - 1);
 }
 
-float smarter_varianceF( float *s, int size )
+float one_loop_varianceF( float *s, int size )
 {
 	float sum_squares = 0;
 	float sum = 0;
@@ -42,23 +42,41 @@ float smarter_varianceF( float *s, int size )
 		sum += s[i];
 	}
 	
-	eprint("sum = %f\n", sum);
-	eprint("sum squares = %f\n", sum_squares);
+	eprint("  ----  sum = %f\n", sum);
+	eprint("  ----  sum squares = %f\n", sum_squares);
 	
 	return ( sum_squares - sum*sum / (float)size ) / (float) (size - 1);
 }
 
 void testVar(float *s, int size)
 {
-	printf( "Bad variance is %f\n", naive_varianceF( s, size ) );
-	printf( "Better Variance is %f\n", smarter_varianceF(s, size) );
+	printf("----------------------------------------\n");
+	printf("Vector: [");
+	for(int i=0; i<size; i++)
+		printf("%.10g ", s[i]);
+	
+	printf("]\n");
+	printf( "  Naive variance is    %f\n", naive_varianceF( s, size ) );
+	printf( "  One loop variance is %f\n", one_loop_varianceF(s, size) );
+	printf("----------------------------------------\n");
 }
 
-
+void testSample()
+{
+	float s1[]={ 1e3f, 1+1e3f, 2+1e3f };
+	float s2[]={ 1e6f, 1+1e6f, 2+1e6f };
+	float s3[]={ 1e7f, 1+1e7f, 2+1e7f };
+	float s4[]={ 1e8f, 1+1e8f, 2+1e8f };
+	
+	testVar(s1,3);
+	testVar(s2,3);
+	testVar(s3,3);
+	testVar(s4,3);
+}
 
 int main()
 {
-	
+	testSample();
 
 	
 	exit(EXIT_SUCCESS);
@@ -92,23 +110,5 @@ void testVar1()
 	
 	freeArrF( testArr );
 	freeArrF( testArr1 );
-}
-
-void testSample()
-{
-	ArrayFloat testArr1 = buildArrF(3, 1e3, 1+1e3, 2+1e3 );
-	ArrayFloat testArr2 = buildArrF(3, 1e6, 1+1e6, 2+1e6 );
-	ArrayFloat testArr3 = buildArrF(3, 1e7, 1+1e7, 2+1e7 );
-	ArrayFloat testArr4 = buildArrF(3, 1e8, 1+1e8, 2+1e8 );
-	
-	testVar(testArr1);
-	testVar(testArr2);
-	testVar(testArr3);
-	testVar(testArr4);
-	
-	freeArrF(testArr1);
-	freeArrF(testArr2);
-	freeArrF(testArr3);
-	freeArrF(testArr4);
 }
 */
