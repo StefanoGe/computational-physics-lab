@@ -51,22 +51,15 @@ create_subdirectories() {
     # Ensure aux dirs exist
     update_dirs "$exercise_dir"
 
-    # Standardize source location: main.c in the exercise dir
-    if [[ ! -f "${exercise_dir}/main.c" ]]; then
-      # If there's exactly one .c file, rename it to main.c
-      shopt -s nullglob
-      c_files=("${exercise_dir}"/*.c)
-      shopt -u nullglob
+	# Write exercise CMakeLists if at least one .c file exists
+	shopt -s nullglob
+	c_files=("${exercise_dir}"/*.c)
+	shopt -u nullglob
 
-      if [[ ${#c_files[@]} -eq 1 ]]; then
-        mv "${c_files[0]}" "${exercise_dir}/main.c"
-      fi
-    fi
+	if [[ ${#c_files[@]} -gt 0 ]]; then
+	  create_cmake "$exercise_dir"
+	fi
 
-    # Write exercise CMakeLists if main.c exists
-    if [[ -f "${exercise_dir}/main.c" ]]; then
-      create_cmake "$exercise_dir"
-    fi
   done
 }
 
