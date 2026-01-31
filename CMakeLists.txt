@@ -11,3 +11,5 @@ add_compile_options(-Wall -Wextra -Werror -pedantic-errors -Wconversion -Wno-sig
 
 add_subdirectory(libs)
 add_subdirectory(programs)
+
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
