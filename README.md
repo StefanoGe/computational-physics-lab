@@ -30,7 +30,7 @@ The code is written in **C23** and built using **CMake**.
 
 ```bash
 git clone https://github.com/StefanoGe/computational-physics-lab.git
-cd [<REPOSITORY_FOLDER>]
+cd computational-physics-lab
 ```
 
 ### Option 2: Download ZIP
