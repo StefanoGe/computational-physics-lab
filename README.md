@@ -29,8 +29,8 @@ The code is written in **C23** and built using **CMake**.
 ### Option 1: Clone using Git (recommended)
 
 ```bash
-git clone <REPOSITORY_URL>
-cd <REPOSITORY_FOLDER>
+git clone https://github.com/StefanoGe/computational-physics-lab.git
+cd [<REPOSITORY_FOLDER>]
 ```
 
 ### Option 2: Download ZIP
