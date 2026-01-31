@@ -54,20 +54,16 @@ cmake --build build
 ## Running the programs
 
 
-After building, executables are located inside the `build/` directory
-(or in custom directories if specified via `RUNTIME_OUTPUT_DIRECTORY`).
+After building, executables are located in the same foder as their corresponding .c source.
 
-Example:
-
-```bash
-./build/programs/<executable_name>
-```
-
-<!-- Help users discover executables -->
-
-To list available build targets:
+Example, if a file is in:
 
 ```bash
-cmake --build build --target help
+./build/programs/error_analysis/Es1_1/exponential_approximation
 ```
+Then, to execute:
 
+```bash
+cd build/programs/error_analysis/Es1_1/
+./exponential_approximation
+```
