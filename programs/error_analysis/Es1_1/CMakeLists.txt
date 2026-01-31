@@ -1,3 +1,4 @@
 add_executable(exponential_approximation exponential_approximation.c)
 target_link_libraries(exponential_approximation PRIVATE cp)
+set_target_properties(exponential_approximation PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/programs/error_analysis/Es1_1")
 

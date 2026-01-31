@@ -1,3 +1,4 @@
 add_executable(gauss_legendre_integrals gauss_legendre_integrals.c)
 target_link_libraries(gauss_legendre_integrals PRIVATE cp)
+set_target_properties(gauss_legendre_integrals PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/programs/integration/Es19_1")
 
