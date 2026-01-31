@@ -1,7 +1,7 @@
 # Computational Physics Laboratory (C)
 
 <!-- Short description of the repository -->
-A collection of exercises and small programs for a Computational Physics Laboratory course.
+A collection of exercises and small programs, written by Stefano Ge for the Computational Physics Laboratory course at University of Milano-Bicocca, during 2025/2026 winter semester.
 The code is written in **C23** and built using **CMake**.
 
 > **Development status**
