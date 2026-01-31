@@ -24,14 +24,6 @@ The code is written in **C23** and built using **CMake**.
 - CMake **version 3.10 or newer**
 - Make or Ninja (on Linux/macOS)
 
-## Installation of requirements
-
-### Ubuntu / Debian
-```bash
-sudo apt update
-sudo apt install -y build-essential cmake
-````
-
 ## Downloading the repository
 
 ### Option 1: Clone using Git (recommended)
