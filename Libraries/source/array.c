@@ -75,3 +75,29 @@ void arr_print( FILE *file, const Array *arr, const char *format )
 	for(int i=0; i<arr->size; i++)
 		fprintf(file, format, ARRP(arr,i));
 }
+
+void arr_print_inline(const Array *arr, const char *format, bool parentheses,
+	bool linebreak)
+{
+	if (parentheses)
+		fputs("[ ", stdout);
+	
+	for(int i = 0; i < arr->size; i++ )
+	{
+		if(i != 0)
+			fputs( ", ", stdout);
+
+		printf(format, ARRP(arr, i));
+		
+	}
+	if (parentheses)
+		fputs( " ]", stdout);
+	if(linebreak)
+		putchar('\n');
+}
+
+
+
+
+
+

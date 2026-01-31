@@ -29,4 +29,10 @@ void mat_transpose(Matrix *source, Matrix *dest);
 
 void mat_free_many(Matrix **mats, int n);
 
+void mat_diag(Matrix *, double x);
+
+Matrix mat_new_from_file(char * filename, int nrows, int ncols);
+
+void mat_print_stdout( const Matrix *mat, char *format, bool newline);
+
 #endif

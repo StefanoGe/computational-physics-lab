@@ -2,14 +2,16 @@
 #define ARRAY_H
 
 #include <stdio.h>
+#include <stdbool.h>
 
+// -----------------
 #ifndef ARR_ACCESS
-#define ARR_ACCESS
+	#define ARR_ACCESS
 
-#define ARR(A,i) ((A).data[(i)])
-#define ARRP(A,i) ((A)->data[(i)])
-
+	#define ARR(A,i) ((A).data[(i)])
+	#define ARRP(A,i) ((A)->data[(i)])
 #endif
+// -----------------
 
 typedef double(ScalarFunc)(double);
 
@@ -34,5 +36,8 @@ void arr_free_many(Array **arrs, int n);
 Array arr_linspace (double start, double end, int num_values );
 
 void arr_print( FILE *, const Array *, const char *format );
+
+void arr_print_inline(const Array *arr, const char *format, bool parentheses,
+		bool linebreak);
 
 #endif

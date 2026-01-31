@@ -1,8 +1,5 @@
 // LinearSystems.c
 
-#ifndef SG_LINEAR_SYSTEMS_C
-#define SG_LINEAR_SYSTEMS_C
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
@@ -589,7 +586,6 @@ QR_Mats QR_decomp( MatrixDouble A )
 	return qr;
 }
 
-#endif
 
 
 

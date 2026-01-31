@@ -3,6 +3,7 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <stdbool.h>
 
 #ifndef PI
 #define PI 3.1415926535897932384626433
@@ -26,5 +27,8 @@ void mypause ( void );
 int factorial(int n);
 
 double pown( double x, int n );
+
+void carr_print_inline(const double *arr, int size, const char *format, 
+	bool parentheses, bool linebreak);
 
 #endif

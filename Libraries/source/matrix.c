@@ -72,7 +72,47 @@ void mat_free_many(Matrix **mats, int n)
         mat_free(mats[i]);
 }
 
+void mat_diag(Matrix *mat, double x)
+{
+	if(mat->ncols != mat->nrows)
+		raiseErr("matrix is not nxn - nrows = %d ncols = %d", mat->nrows, mat->ncols);
+	
+	for(int row=0; row<mat->nrows; row++)
+		for(int col=0; col<mat->ncols; col++)
+			MATP(mat, row, col)= (row==col) ? x : 0;
+}
 
+Matrix mat_new_from_file(char * filename, int nrows, int ncols)
+{
+	FILE * file = openFile( filename, "r" );
+	
+	Matrix mat = mat_new( nrows, ncols );
+	for( int i = 0; i < nrows; i ++ )
+		for( int j = 0; j < ncols; j++ )
+			if (fscanf(file, "%lf", &MAT(mat, i, j)) != 1)
+				raiseErr("Invalid or incomplete matrix file");
+	
+	fclose(file);
+	return mat;
+}
 
-
+void mat_print_stdout( const Matrix *mat, char *format, bool newline)
+{
+	const int last_col=mat->ncols-1;
+	const int last_row=mat->nrows-1;
+	for(int row=0; row<mat->nrows; row++)
+	{
+		fputs( (row==0) ? "[ " : "| ", stdout );
+		for(int col=0; col<mat->ncols; col++ )
+		{
+			printf(format, MATP(mat,row, col));
+			
+			if( col != last_col )
+				fputs(", ", stdout);
+		}
+		fputs( (row != last_row) ? "\n" : " ]", stdout );
+	}
+	if(newline)
+		putchar('\n');
+}
 

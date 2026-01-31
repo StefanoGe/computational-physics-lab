@@ -58,3 +58,28 @@ double pown( double x, int n )
 	
 	return product;
 }
+
+void carr_print_inline(const double *arr, int size, const char *format, 
+	bool parentheses, bool linebreak)
+{
+	if (parentheses)
+		fputs("[ ", stdout);
+	
+	for(int i = 0; i < size; i++ )
+	{
+		if(i != 0)
+			fputs( ", ", stdout);
+
+		printf(format, arr[i]);
+		
+	}
+	if (parentheses)
+		fputs( " ]", stdout);
+	if(linebreak)
+		putchar('\n');
+}
+
+
+
+
+
