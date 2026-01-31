@@ -11,4 +11,5 @@ gihub.pub
 *.toc
 *data
 *script
-gp_templates
+gp_templates/
+OLD/
