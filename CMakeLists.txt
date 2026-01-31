@@ -9,10 +9,12 @@ set(CMAKE_C_STANDARD_REQUIRED ON)
 # common flags
 add_compile_options(-Wall -Wextra -Werror -pedantic-errors -Wconversion -Wno-sign-conversion -O0 -lm)
 
-add_subdirectory(libs)
-add_subdirectory(programs)
-
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+# set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
 include(AddExercise)
+
+add_subdirectory(libs)
+add_subdirectory(programs)
+
+

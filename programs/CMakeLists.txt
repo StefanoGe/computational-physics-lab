@@ -1,9 +1,12 @@
-file(GLOB CHILDREN RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} *)
+file(GLOB CHILDREN LIST_DIRECTORIES true RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} *)
 
 foreach(child ${CHILDREN})
-    if(IS_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/${child}
-       AND EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/${child}/CMakeLists.txt)
-        add_subdirectory(${child})
+  if(IS_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/${child}")
+    if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/${child}/CMakeLists.txt")
+      message(STATUS "programs: adding ${child}")
+      add_subdirectory("${child}")
+    else()
+      message(STATUS "programs: skipping ${child} (no CMakeLists.txt)")
     endif()
+  endif()
 endforeach()
-
