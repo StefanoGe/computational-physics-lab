@@ -11,8 +11,7 @@ add_compile_options(-Wall -Wextra -Werror -pedantic-errors -Wconversion -Wno-sig
 
 # set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
-list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
-include(AddExercise)
+
 
 add_subdirectory(libs)
 add_subdirectory(programs)
