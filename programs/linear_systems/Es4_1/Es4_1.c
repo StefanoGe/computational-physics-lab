@@ -37,7 +37,7 @@ void test_forward()
 	Matrix test_mat2 = mat_new_from_file( "samplematrix2.txt", 4, 4 );
 	double b2[] = {-4.0, 1.0, -3.0, 5.0};
 	Array sol2 = {0};
-	linst_forwsubst( test_mat2.rows, 3, b2, &sol2 );
+	linst_forwsubst( test_mat2.rows, 4, b2, &sol2 );
 	
 	// Print of 1
 	
@@ -52,7 +52,7 @@ void test_forward()
 	
 	carr_print_inline(b1, 3, "%g", true, true);
 	
-	puts("\nSolution x:");
+	puts("\nSolution X:");
 	
 	arr_print_inline(&sol1, "%g", true, true);
 	
@@ -64,48 +64,57 @@ void test_forward()
 	
 	puts("Right-hand side b:");
 	
-	carr_print_inline(b2, 3, "%g", true, true);
+	carr_print_inline(b2, 4, "%g", true, true);
 	
-	puts("\nSolution x:");
+	puts("\nSolution X:");
 	
 	arr_print_inline(&sol2, "%g", true, true);
 	
 }
 
-
-
-/*
-
-void testSample1Back( )
+void test_back()
 {
-	MatrixDouble testMatrix = readMatD( "samplematrix1back.txt", 3, 3 );
-	ArrayDouble colVec = buildArrD(3, 1.0, 1.0, 6.0);
-	ArrayDouble testSol = backSubst( testMatrix, colVec );
+	Matrix test_mat1 = mat_new_from_file( "samplematrix1back.txt", 3, 3 );
+	double b1[] = {1, 1, 6};
+	Array sol1 = {0};
+	linst_backsubst( test_mat1.rows, 3, b1, &sol1 );
 	
-	printArrDPar( testSol, "%.14lf" );
+	Matrix test_mat2 = mat_new_from_file( "samplematrix2back.txt", 4, 4 );
+	double b2[] = {4.0, 1.0, 1.0, 5.0};
+	Array sol2 = {0};
+	linst_backsubst( test_mat2.rows, 4, b2, &sol2 );
 	
-	freeArrD(colVec);
-	freeMatD( testMatrix );
-	freeArrD( testSol );
+	// Print of 1
 	
+	puts("Test of backward substitution in two special cases, to solve\n"
+				"the linear system UX=b\n");
+	
+	puts("First matrix L:");
+	
+	mat_print_stdout(&test_mat1, "%2g", true);
+	
+	puts("Right-hand side b:");
+	
+	carr_print_inline(b1, 3, "%g", true, true);
+	
+	puts("\nSolution X:");
+	
+	arr_print_inline(&sol1, "%g", true, true);
+	
+	// Print of 2
+	
+	printf("\nSecond matrix U:\n");
+	
+	mat_print_stdout(&test_mat2, "%2g", true);
+	
+	puts("Right-hand side b:");
+	
+	carr_print_inline(b2, 4, "%g", true, true);
+	
+	puts("\nSolution X:");
+	
+	arr_print_inline(&sol2, "%g", true, true);
 }
-
-void testSample2Back()
-{
-	MatrixDouble testMatrix = readMatD( "samplematrix2back.txt", 4, 4 );
-	ArrayDouble colVec = buildArrD(4, 4.0, 1.0, 1.0, 5.0);
-	ArrayDouble testSol = backSubst( testMatrix, colVec );
-	
-	printArrDPar( testSol, "%.14lf" );
-	
-	freeArrD(colVec);
-	freeMatD( testMatrix );
-	freeArrD( testSol );
-	
-}
-
-
-*/
 
 int main()
 {
@@ -113,6 +122,7 @@ int main()
 	puts("\n-------------------------------\n");
 	test_forward();
 	puts("\n-------------------------------\n");
+	test_back();
 	
 	return 0;
 }

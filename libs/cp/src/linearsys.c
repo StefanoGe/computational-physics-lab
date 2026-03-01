@@ -1,6 +1,16 @@
 #include "linearsys.h"
 #include "genutil.h"
 
+/*
+ * Forward substitution linear system solver.
+ * Finds unknown column vector of equation LX=b, with L lower triangular matrix.
+ * 
+ * args:
+ * ltm - lower triangular matrix
+ * n - size of the matrix n by n
+ * b - right hand side
+ * sol - solution destination
+ */
 
 void linst_forwsubst( double **ltm, int n, const double *b, Array *sol)
 {	
@@ -21,6 +31,17 @@ void linst_forwsubst( double **ltm, int n, const double *b, Array *sol)
 		ARRP(sol,row) = (b[row] - partial_sum)/ltm[row][row];
 	}
 }
+
+/*
+ * Backward substitution linear system solver.
+ * Finds unknown column vector of equation UX=b, with U upper triangular matrix.
+ * 
+ * args:
+ * ltm - upper triangular matrix
+ * n - size of the matrix n by n
+ * b - right hand side
+ * sol - solution destination
+ */
 
 void linst_backsubst( double **utm, int n, const double *b, Array *sol)
 {
