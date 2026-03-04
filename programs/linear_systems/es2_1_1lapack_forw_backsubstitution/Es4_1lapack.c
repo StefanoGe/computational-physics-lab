@@ -86,7 +86,7 @@ void test_back()
 	// Print of 1
 	
 	puts("Test of backward substitution in two special cases, to solve\n"
-				"the linear system UX=b\n");
+				"the linear system UX=b\n with LAPACK");
 	
 	puts("First matrix L:");
 	
@@ -116,8 +116,6 @@ void test_back()
 	
 	Matrix test_mat2 = mat_new_from_file( "samplematrix2back.txt", 4, 4 );
 	double b2[] = {4.0, 1.0, 1.0, 5.0};
-	Array sol2 = {0};
-	linst_backsubst( test_mat2.rows, 4, b2, &sol2 );
 	
 	// Print of 2
 	

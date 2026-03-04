@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include "array.h"
 #include "genutil.h"
+#include <string.h>
 
 void arr_init( Array *arr, int size )
 {
@@ -96,8 +97,16 @@ void arr_print_inline(const Array *arr, const char *format, bool parentheses,
 		putchar('\n');
 }
 
+void arr_cp(const Array *src, Array *dest)
+{
+	arr_init(dest, src->size);
+	memcpy(dest->data, src->data, src->size*sizeof(double));
+}
 
-
-
+void arr_setv(Array *arr, double v)
+{
+	for(int i=0; i<arr->size; i++)
+		ARRP(arr,i)=v;
+}
 
 

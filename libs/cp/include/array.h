@@ -40,4 +40,8 @@ void arr_print( FILE *, const Array *, const char *format );
 void arr_print_inline(const Array *arr, const char *format, bool parentheses,
 		bool linebreak);
 
+void arr_cp(const Array *src, Array *dest);
+
+void arr_setv(Array *arr, double v);
+
 #endif

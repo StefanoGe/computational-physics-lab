@@ -1,6 +1,7 @@
 #include "matrix.h"
 #include "genutil.h"
 
+
 void mat_init(Matrix *mat, int nrows, int ncols)
 {
     if (mat->owns_data) {
@@ -116,3 +117,55 @@ void mat_print_stdout( const Matrix *mat, char *format, bool newline)
 		putchar('\n');
 }
 
+bool mat_is_squared(const Matrix *m) {return m->ncols == m->nrows;}
+
+void mat_swap_row(Matrix *m, int i, int j)
+{
+	if(i==j)
+		return;
+	double temp=0;
+	for(int p=0; p<m->ncols; p++)
+	{
+		temp=MATP(m,i,p);
+		MATP(m,i,p)=MATP(m,j,p);
+		MATP(m,j,p)=temp;
+	}
+}
+
+void mat_mult(const Matrix *A, const Matrix *B, Matrix *dest)
+{
+	if( A->ncols!=B->nrows )
+		raiseErr("A and B are not compatible for multiplication");
+	
+	mat_diag(dest,0);
+	
+	for(int i=0; i<A->nrows; i++)
+		for(int j=0; j<B->ncols; j++)
+			for(int p=0; p<A->ncols; p++)
+				MATP(dest,i,j)+=MATP(A,i,p)*MATP(B,p,j);
+}
+
+Matrix mat_mult_new(const Matrix *A, const Matrix *B)
+{
+	Matrix C=mat_new(A->nrows, B->ncols);
+	mat_mult(A,B,&C);
+	return C;	
+}
+
+void mat_vecmult(const Matrix *A, const Array *x, Array *dest)
+{
+	if(A->ncols!=x->size)
+		raiseErr("A and B are not compatible for multiplication");
+
+	arr_setv(dest, 0);
+	for(int i=0; i<A->nrows; i++)
+		for(int p=0; p<A->ncols; p++)
+			ARRP(dest,i)+=MATP(A,i,p)*ARRP(x,p);
+}
+
+Array mat_vecmult_new(const Matrix *A, const Array *x)
+{
+	Array dest = arr_new(A->nrows);
+	mat_vecmult(A,x,&dest);
+	return dest;
+}

@@ -9,6 +9,12 @@
 #define PI 3.1415926535897932384626433
 #endif
 
+#define SWAP(a, b) do { \
+    __typeof__(a) _tmp = (a); \
+    (a) = (b); \
+    (b) = _tmp; \
+} while (0)
+
 #define UNUSED(expr) do { (void)(expr); } while(0)
 
 #define raiseErr( msg, ...) \
