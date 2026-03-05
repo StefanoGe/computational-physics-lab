@@ -33,5 +33,7 @@ Matrix linst_lu_extract_l(const Matrix *lu);
 
 Matrix linst_lu_extract_p(int *pivots, int dim);
 
+int linst_lu_factor_no_pivot(Matrix *A, double tol);
+
 
 #endif

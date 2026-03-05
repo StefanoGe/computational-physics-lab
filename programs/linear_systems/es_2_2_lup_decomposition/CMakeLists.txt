@@ -1,4 +1,4 @@
-add_executable(Es6_1 Es6_1.c)
-target_link_libraries(Es6_1 PRIVATE cp)
-set_target_properties(Es6_1 PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/programs/linear_systems/Es6_1")
+add_executable(lup_decomposition lup_decomposition.c)
+target_link_libraries(lup_decomposition PRIVATE cp)
+set_target_properties(lup_decomposition PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/programs/linear_systems/es_2_2_lup_decomposition")
 

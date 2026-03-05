@@ -1,5 +1,6 @@
 #include "matrix.h"
 #include "genutil.h"
+#include <string.h>
 
 
 void mat_init(Matrix *mat, int nrows, int ncols)
@@ -169,3 +170,33 @@ Array mat_vecmult_new(const Matrix *A, const Array *x)
 	mat_vecmult(A,x,&dest);
 	return dest;
 }
+
+void mat_cp(const Matrix *src, Matrix *dest)
+{
+	mat_init(dest,src->nrows, src->ncols);
+	memcpy(dest->data, src->data, src->nrows*src->ncols*sizeof(double));
+}
+
+void mat_scale(Matrix *A, double alpha)
+{
+	for(int i=0; i<A->nrows*A->ncols; i++)
+		A->data[i]*=alpha;
+}
+
+void mat_axpy(Matrix *y, double alpha, const Matrix *x)
+{
+	if(y->nrows!=x->nrows || y->ncols!=x->ncols)
+		raiseErr("matrices should be of same dimension");
+	for(int i=0; i<y->nrows*y->ncols; i++)
+		y->data[i]+=alpha*x->data[i];
+}
+/*
+void mat_lincom(double a, const *Matrix A, double b,const Matrix *B)
+{
+	
+	
+	
+	
+	
+}
+*/

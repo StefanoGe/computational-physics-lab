@@ -109,4 +109,16 @@ void arr_setv(Array *arr, double v)
 		ARRP(arr,i)=v;
 }
 
+void arr_scale(Array *x, double alpha)
+{
+	for(int i=0; i<x->size; i++)
+		x->data[i]*=alpha;
+}
 
+void arr_axpy(Array *y, double alpha, const Array *x)
+{
+	if(x->size!=y->size)
+		raiseErr("arrays should be of same dimension");
+	for(int i=0; i<x->size; i++)
+		y->data[i]+=alpha*x->data[i];
+}

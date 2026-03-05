@@ -48,4 +48,10 @@ void mat_vecmult(const Matrix *A, const Array *x, Array *dest);
 
 Array mat_vecmult_new(const Matrix *A, const Array *x);
 
+void mat_cp(const Matrix *src, Matrix *dest);
+
+void mat_axpy(Matrix *y, double alpha, const Matrix *x);
+
+void mat_scale(Matrix *A, double alpha);
+
 #endif

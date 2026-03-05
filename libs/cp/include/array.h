@@ -44,4 +44,9 @@ void arr_cp(const Array *src, Array *dest);
 
 void arr_setv(Array *arr, double v);
 
+void arr_axpy(Array *y, double alpha, const Array *x);
+
+void arr_scale(Array *x, double alpha);
+
+
 #endif

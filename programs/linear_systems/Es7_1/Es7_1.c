@@ -1,46 +1,62 @@
 #include <stdlib.h>
 #include <stdio.h>
-#include "comp_physics.h"
+#include "matrix.h"
+#include "linearsys.h"
 
-MatrixDouble build_matrix( double epsilon)
+Matrix test_matrix( double eps, bool swap_rows)
 {
-	MatrixDouble mat = allocMatD( 2,2 );
-	mat.val[0][0] = -epsilon;
-	mat.val[0][1] = 1;
-	mat.val[1][0] = 1;
-	mat.val[1][1] = -1;
+	Matrix A = mat_new(2,2);
+	MAT(A,0,0) = -eps;
+	MAT(A,1,0) = 1;
+	MAT(A,0,1) = 1;
+	MAT(A,1,1) = -1;
 	
-	return mat;
+	if(swap_rows)
+		mat_swap_row(&A,0,1);
+	
+	return A;
 }
 
-
-void cond_numb_study( double eps )
+void cond_numb_study( double eps, bool swap_rows )
 {
-	printf("eps = %e\n", eps);
-	MatrixDouble mat = build_matrix(eps);
-	ArrayDouble x = buildArrD(2, 1.0, 0.0);
-	ArrayDouble b = mat_vec_mult( mat, x, NULL );
+	printf("Testing for eps = %g\n", eps);
+	Matrix A = test_matrix(eps, swap_rows);
 	
+	double x_[]={1,1};
+	Array x = arr_asarr(x_,2);
+	Array b = mat_vecmult_new(&A,&x);
 	
-	printf("A is: ");
-	printMatDGraph(mat);
+	printf("A is: \n");
+	mat_print_stdout(&A,"%g",true);
+	
 	printf("x is: ");
-	printArrDPar( x, "%.30lf " );
-	printf("b is: ");
-	printArrDPar( b, "%.30lf " );
+	arr_print_inline( &x, "%g", true, true );
+	
+	printf("b=Ax is: ");
+	arr_print_inline( &b, "%.30g", true, true );
+	
+	printf("x-b is: ");
+	arr_axpy(&x, -1, &b);
+	arr_print_inline( &x, "%g", true, true );
 
-	LUMats lumat= LUDecompLow( mat );
-	ArrayDouble z = forwSubst( lumat.L, b );
-	ArrayDouble x_calc = backSubst( lumat.U, z );
+	Matrix LU={0};
+	mat_cp(&A, &LU);
+	linst_lu_factor_no_pivot(&LU, 0);
+	Matrix L=linst_lu_extract_l(&LU);
+	Matrix U=linst_lu_extract_u(&LU);
+
+	linst_forwsubst_inplace( &LU, &b, true );
+	linst_backsubst_inplace( &LU, &b );
 	
-	printArrDPar( x_calc, "%.30lf " );
+	printf("x found by solving LUx=b: \n");
+	arr_print_inline(&b, "%g", true, true);
 	
-	MatrixDouble LU_product = matMultD( lumat.L, lumat.U, CREATE_MAT );
+	Matrix LU_product = mat_mult_new( &L, &U );
 	
-	MatrixDouble diff_matrix = mat_diffD( mat, LU_product, CREATE_MAT);
+	mat_axpy(&A, -1, &LU_product);
 	
 	printf( "A - LU:\n");
-	printMatDGraph( diff_matrix );
+	mat_print_stdout( &A, "%g", true );
 	
 	// Condition number in sup-norm
 	
@@ -49,32 +65,15 @@ void cond_numb_study( double eps )
 	printf("------------------------------\n");
 }
 
-void test_inv()
-{
-	MatrixDouble id = readMatD( "data/inv_test_matrix.txt", 3, 3 );
-	MatrixDouble known_terms = readMatD( "data/inv_test_matrix_2.txt", 3, 3 );
-	
-	MatrixDouble inv_id = mat_inv(id);
-	
-	eprint("ok 4\n");
-	
-	MatrixDouble inv_other = mat_inv(known_terms);
-	
-	printf("inv id:\n");
-	printMatDGraph(inv_id);
-	printf("Other inv:\n");
-	printMatDGraph(inv_other);
-}
 
-/*
-	 cond_numb_study( 1e-12 );
-	 cond_numb_study( 1e-20 );
-*/
 
 int main()
 {
-	test_inv();
-
+	//test_inv();
+	cond_numb_study( 1e-12, false );
+	cond_numb_study( 1e-20, false );
+	cond_numb_study( 1e-20, true );
+	
 	
 	return 0;
 }

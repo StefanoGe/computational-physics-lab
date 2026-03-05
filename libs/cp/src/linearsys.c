@@ -182,6 +182,32 @@ double linst_lup_det(const Matrix *lu, int *pivots)
 	return det;
 }
 
+int linst_lu_factor_no_pivot(Matrix *A, double tol)
+{	
+	if(!mat_is_squared(A))
+		raiseErr("A must be squared");
+		
+	if(tol<0)
+		tol=1e-14;
+	
+	const int dim = A->ncols;
+	
+	for(int n = 0; n < dim; n++)
+	{
+		// Check if pivot is 0
+		if(fabs(MATP(A,n,n))<=tol)
+			return n;
+		// Write L
+		for(int row=n+1; row<dim; row++)
+			MATP(A,row,n)=MATP(A,row,n)/MATP(A,n,n);
+		// Subtract in A
+		for(int row=n+1; row<dim; row++)
+			for(int col=n+1; col<dim; col++)
+				MATP(A, row, col) = MATP(A,row,col)-MATP(A,row,n)*MATP(A,n,col);
+	}
+	return 0;
+}
+
 int linst_lup_solve_inplace(const Matrix *lu, int *pivots, Array *b)
 {
 	for(int i=0; i<b->size; i++)
