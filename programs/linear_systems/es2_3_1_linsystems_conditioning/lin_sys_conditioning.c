@@ -34,10 +34,6 @@ void cond_numb_study( double eps, bool swap_rows )
 	
 	printf("b=Ax is: ");
 	arr_print_inline( &b, "%.30g", true, true );
-	
-	printf("x-b is: ");
-	arr_axpy(&x, -1, &b);
-	arr_print_inline( &x, "%g", true, true );
 
 	Matrix LU={0};
 	mat_cp(&A, &LU);
@@ -45,11 +41,21 @@ void cond_numb_study( double eps, bool swap_rows )
 	Matrix L=linst_lu_extract_l(&LU);
 	Matrix U=linst_lu_extract_u(&LU);
 
+	printf("L is:\n");
+	mat_print_stdout( &L, "%g", true );
+	
+	printf("U is:\n");
+	mat_print_stdout( &U, "%g", true );
+
 	linst_forwsubst_inplace( &LU, &b, true );
 	linst_backsubst_inplace( &LU, &b );
 	
 	printf("x found by solving LUx=b: \n");
 	arr_print_inline(&b, "%g", true, true);
+	
+	printf("x_calc - x_true is: ");
+	arr_axpy(&b, -1, &x);
+	arr_print_inline( &b, "%g", true, true );
 	
 	Matrix LU_product = mat_mult_new( &L, &U );
 	
@@ -57,8 +63,7 @@ void cond_numb_study( double eps, bool swap_rows )
 	
 	printf( "A - LU:\n");
 	mat_print_stdout( &A, "%g", true );
-	
-	// Condition number in sup-norm
+
 	
 	
 	

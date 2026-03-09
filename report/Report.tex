@@ -2,6 +2,26 @@
 
 \usepackage[utf8]{inputenc}
 \usepackage{amsmath}
+\usepackage{siunitx}   % units
+
+\sisetup{
+	output-exponent-marker = \ensuremath{\mathrm{e}},
+	exponent-product= {},
+	tight-spacing = true
+}
+
+% ─────────────── Hyperlinks ───────────────
+\usepackage{xcolor}
+\usepackage[
+    colorlinks=true,
+    linkcolor=blue!70!black,
+    citecolor=blue!70!black,
+    urlcolor=teal,
+    % hidelinks,
+]{hyperref}
+
+% Optional: better-looking bookmarks in PDF viewer sidebar
+\usepackage{bookmark}   % usually loads automatically with recent hyperref
 
 \usepackage{graphicx}
 \graphicspath{ {./images/} }
@@ -15,8 +35,10 @@
 
 \maketitle
 
-\tableofcontents
-{}
+\begingroup
+    \hypersetup{linkcolor=black}   % ← makes TOC links black (plain text color)
+    \tableofcontents
+\endgroup
 
 %--------------------------------------------------------------------------
 %--------------------------------------------------------------------------
@@ -33,7 +55,7 @@
     \centering
     \includegraphics[width=\textwidth]{approx_exp1_0.pdf}
     \caption{Truncation errors when approximating $e^{x}$ through the
-				truncated power series \(\Sigma^{N}_{0}\). $N$ is the degree of the polinomyal used
+				truncated power series $\Sigma^{N}_{0}$. $N$ is the degree of the polinomyal used
 				for the approximation. The plot of $x^{N+1}/(N+1)$ has been
 				added for reference.}
     \label{fig:approx_exp}
@@ -44,11 +66,11 @@
 \begin{itemize}
 	\item{Horner's method was used in polynomial evaluation, because it is
 			faster and reduces roundoff errors. A naive implementation of a 
-			polynomial computation requires more operations (\(O(N^{2})\)) and, 
+			polynomial computation requires more operations ($O(N^{2})$) and, 
 			for small values of $x$, adds together numbers of order 1 and $x^{N}$,
-			while Horner's method is \(O(N)\) and keeps the additions only
+			while Horner's method is $O(N)$ and keeps the additions only
 			between terms of order 1 and x.}
-	\item{By Taylor's theorem, if \(\hat{f}(x)\) is the power series
+	\item{By Taylor's theorem, if $\hat{f}(x)$ is the power series
 			of $e^{x}$ truncated after the N-th term, the error is of order 
 			$O(x^{N+1})$ as x approaches 0. Computing an additional term of the
 			series shows that:
@@ -79,8 +101,8 @@
 \begin{figure}[htbp]
     \centering
     \includegraphics[width=\textwidth]{basel1_2_1float.pdf}
-    \caption{Approximation error when computing \(\pi^{2}/6\) with the Basel problem truncated
-		series \(\Sigma_0^{N}\frac{1}{n^{2}}\), with single precision floating variables. Here $\mathrm{N}$ is 
+    \caption{Approximation error when computing $\pi^{2}/6$ with the Basel problem truncated
+		series $\Sigma_0^{N}\frac{1}{n^{2}}$, with single precision floating variables. Here $\mathrm{N}$ is 
 		the number of terms used when calculating the series.}
     \label{fig:baselfloat}
 \end{figure}
@@ -103,10 +125,10 @@
 		In the first the terms of the series are summed in increasing order of 
 		the summation index, i.e. decreasing of the value of the addends. Since
 		small addends are summed to the accumulating partial sum, it gets to a 
-		point where the next addend is smaller than \(\epsilon_{mach} \cdot sum \approx \epsilon_{mach}\),
+		point where the next addend is smaller than $\epsilon_{mach} \cdot sum \approx \epsilon_{mach}$,
 		so the addition of it and subsequent values does not change the value of the partial sum. \\
 		This can be seen in the error plots in Figure \ref{fig:baselfloat} and \ref{fig:baseldouble},
-		since the error stops decreasing and remains constant after \( \mathrm{1/N^{2}} = \epsilon_{ \mathrm{mach} } \),
+		since the error stops decreasing and remains constant after $ \mathrm{1/N^{2}} = \epsilon_{ \mathrm{mach} } $,
 		which is $2^{-24}$ for single precision (N = 4096) and $2^{-53}$ for double precision ($\mathrm{N} \approx 9.5 \times 10^{7}).$ \\
 		
 		In the second implementation the terms of the series are summed in decreasing
@@ -116,15 +138,15 @@
 	}
 	\item{
 		The truncation error of this algorithm is asymptotically equivalent to
-		\(k/N\), with k real constant. This can be from the integral associated
-		to \( \Sigma_{n=0}^{\infty} \):
+		$k/N$, with k real constant. This can be from the integral associated
+		to $ \Sigma_{n=0}^{\infty} $:
 		\[ \int^{\infty}_{N} \frac{1}{n^{2}} = \frac{1}{N}\]
 		therefore,
 		
 		\[ \Sigma_{n=N}^{\infty} \sim_{N \to \infty } \frac{1}{N} \]
 		
 		which is confirmed from the agreement between the computed values and
-		the \(1/x\) reference line in Figure \ref{fig:baseldouble}.
+		the $1/x$ reference line in Figure \ref{fig:baseldouble}.
 		}
 \end{itemize}
 
@@ -309,7 +331,7 @@ Determinant is -480.
 \]
 Determinant is 80.
 
-Matrix \(\mathbf{A}=\mathbf{T}(3,-1)\mathbf{R}(\pi/5)\mathbf{T}(-3,1):\)
+Matrix $\mathbf{A}=\mathbf{T}(3,-1)\mathbf{R}(\pi/5)\mathbf{T}(-3,1):$
 \[
 A=\begin{bmatrix}
 	2.3 & 1.6 & -2.3\\
@@ -325,7 +347,7 @@ A=\begin{bmatrix}
 5.45 \\ 1.51 \\ 1.5
 \end{bmatrix}
 \]
-Factorization of \(\mathbf{A}\) is:
+Factorization of $\mathbf{A}$ is:
 \[
 \mathbf{A}=
 \begin{bmatrix}
@@ -343,9 +365,163 @@ Factorization of \(\mathbf{A}\) is:
 
 \paragraph{Results}
 
+In the case study proposed, first we construct numerically:
+\[
+	\mathbf{b}=\mathbf{A}\mathbf{x}=
+	\begin{bmatrix}
+	-\epsilon & 1 \\
+	1 & -1
+	\end{bmatrix}
+	\begin{bmatrix} 1 \\ 1 \end{bmatrix}
+\]
+
+Where $\epsilon$ is a real parameter.
+We then apply the LU decomposition (without pivoting) to 
+solve for x given $\mathbf{A}$ and the $\mathbf{b}$ just computed.
+
+For $\epsilon = 10^{-12}$ we find:
+
+\[
+	\mathbf{A}=\mathbf{LU}=
+	\begin{bmatrix}
+		1 & 0 \\
+		\num{-1e-12} & 1\\
+	\end{bmatrix}
+	\begin{bmatrix}
+		\num{-e-12} & 1 \\
+		0 & \num{1e12} \\
+	\end{bmatrix} 
+\]
+
+\[
+	\mathbf{x}_{\text{computed}} -
+	\begin{bmatrix} 1 \\ 1 \end{bmatrix} 
+	= \begin{bmatrix} \num{-2.2e-5} \\ 0 \end{bmatrix}
+\]
+As a test, we find correctly:
+\[
+\mathbf{A}-\mathbf{LU} = \mathbf{0}
+\]
+
+However, if we set $\epsilon = 10^{-12}$, we find:
+
+\[
+	\mathbf{A}=\mathbf{LU}=
+	\begin{bmatrix}
+		1 & 0 \\
+		\num{-1e-20} & 1\\
+	\end{bmatrix}
+	\begin{bmatrix}
+		\num{-e-20} & 1 \\
+		0 & \num{1e20} \\
+	\end{bmatrix} 
+\]
+
+\[
+	\mathbf{x}_{\text{computed}} -
+	\begin{bmatrix} 1 \\ 1 \end{bmatrix} 
+	= \begin{bmatrix} \num{-1} \\ 0 \end{bmatrix}
+\]
+
+\[
+	\mathbf{A}-\mathbf{LU} = 
+	\begin{bmatrix}
+		0 & 0 \\
+		0 & -1 \\
+	\end{bmatrix}
+\]
+
+
+
 \paragraph{Remarks}
 
+\begin{itemize}
+	\item{
+		The exact LU-factorization of $\mathbf{A}$ is:
+		\[
+			\mathbf{A}=
+			\begin{bmatrix}
+				1 & 0 \\
+				-\epsilon^{-1} & 1
+			\end{bmatrix}
+			\begin{bmatrix}
+				-\epsilon & 1 \\
+				0 & \epsilon^{-1} - 1
+			\end{bmatrix}
+		\]
+		If $\epsilon=10^{-20}\ll \epsilon_{\text{mach}}$, in the bottom-right entry
+		of $\mathbf{U}$ only $\epsilon^{-1}$ gets stored, since the relative 
+		variation of adding -1 to $\epsilon^{-1}$ is less than
+		 $\epsilon_{\text{mach}}$.
+		But when $\mathbf{L}$ and $\mathbf{U}$ get
+		multiplied together, in the addition resulting into the bottom-right
+		entry of $\mathbf{A}$ two $\epsilon^{-1}$ terms cancels out, and
+		the exact result is the -1 that is lost in numerical LU-decomposition.
+	}
+	\item{
+		Exact $\mathbf{b}$ is:
+		\[
+			\begin{bmatrix} 1 -\epsilon \\ 0 \end{bmatrix} 
+		\]
+		but $\epsilon$ does not get registered if it is lower than 
+		$\epsilon_{\text{mach}}$.
+		Because the condition number of the matrices $\mathbf{L}$ and $\mathbf{U}$
+		is very high ($\epsilon^{-2}$ in \infty-norm), the tiny variation of 
+		$\mathbf{b_{\text{calc}}}$ over 
+		$\mathbf{b_{\text{exact}}}$ is allowed to propagate tremendously and 
+		results in the wrong result seen before.
+		
+		Doing the calculations shows that the error on $\mathbf{U}$ as no
+		impact on $\mathbf{b_{\text{calc}}}$, and that the final error on 
+		$\mathbf{b_{\text{calc}}}$ is due entirely on the ill-conditioning
+		of the linear systems $\mathbf{Lz}=\mathbf{b}$ and 
+		$\mathbf{Ux}=\mathbf{z}$.
+	}
+	\item{
+		By contrast, the condition number of the starting
+		matrix $\mathbf{A}$ is only \approx 4. Therefore, in principle it
+		should be possible to solve the system for $\mathbf{x}$ even if
+		$\mathbf{b}$ is slightly nudged: the problem is the stability of
+		the algorithm adopted.
+		
+		LU-decomposition without row-pivoting is much less numerically stable
+		than LUP-decomposition with row-pivoting where the maximum value entry
+		in a column is selected as the pivot.
+		
+		Indeed, if we perform LU-decomposition on the following matrix,
+		obtained by permuting the two rows of matrix $\mathbf{A}$, as
+		prescribed by row-pivoting, we find the correct results:
+		\[
+			\mathbf{PA}=
+			\begin{bmatrix}
+			1 & -1 \\
+			-\epsilon & 1 \\
+			\end{bmatrix}
+			=\mathbf{LU}=
+			\begin{bmatrix}
+				1 & 0 \\
+				\num{-1e-20} & 1\\
+			\end{bmatrix}
+			\begin{bmatrix}ta
+				\num{1} & -1 \\
+				0 & \num{1} \\
+			\end{bmatrix} 
+		\]
+		\[
+			\mathbf{x}_{\text{computed}} -
+			\begin{bmatrix} 1 \\ 1 \end{bmatrix} 
+			= \begin{bmatrix} \num{-0} \\ 0 \end{bmatrix}
+		\]
 
+		\[
+			\mathbf{A}-\mathbf{LU} = 
+			\begin{bmatrix}
+				0 & 0 \\
+				0 & 0 \\
+			\end{bmatrix}
+		\]
+	}
+\end{itemize}
 
 %--------------------------------------------------------------------------
 %--------------------------------------------------------------------------
@@ -376,13 +552,12 @@ Factorization of \(\mathbf{A}\) is:
 \subsubsection{Trapezoidal rule}
 
 
-test
+
 
 
 \subsubsection{Simpson's rule}
 
 
-test
 
 %-------------------------------------
 \subsection{Free-nodes integration}
@@ -391,7 +566,6 @@ test
 
 \subsubsection{Nodes and weights of Gauss-Legendre rule}
 
-something
 
 \paragraph{Remarks}
 

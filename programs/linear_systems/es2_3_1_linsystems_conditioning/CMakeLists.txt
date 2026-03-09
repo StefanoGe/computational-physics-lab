@@ -1,0 +1,4 @@
+add_executable(lin_sys_conditioning lin_sys_conditioning.c)
+target_link_libraries(lin_sys_conditioning PRIVATE cp)
+set_target_properties(lin_sys_conditioning PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/programs/linear_systems/es2_3_1_linsystems_conditioning")
+
