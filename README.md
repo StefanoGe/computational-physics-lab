@@ -21,8 +21,9 @@ The code is written in **C23** and built using **CMake**.
 ## Requirements
 
 - C compiler supporting C23
-- CMake **version 3.10 or newer**
+- CMake version 3.10 or newer
 - Make or Ninja (on Linux/macOS)
+- **(optional)** LAPACKE and dependencies (BLAS, LAPACK, libgfortran)
 
 ## Downloading the repository
 
@@ -50,6 +51,11 @@ mkdir build
 cmake -S . -B build
 cmake --build build
 ```
+If you have LAPACKE installed, you can also cofigure using:
+```bash
+cmake -S . -B build   -DCMAKE_C_FLAGS="-DHAVE_LAPACKE=1"   -DCMAKE_C_STANDARD_LIBRARIES="-llapacke -llapack -lblas -lgfortran -lm"
+```
+Otherwise, source codes depending on LAPACKE will be compiled into blank executables.
 
 ## Running the programs
 
