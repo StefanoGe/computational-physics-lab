@@ -79,7 +79,19 @@ void carr_print_inline(const double *arr, int size, const char *format,
 		putchar('\n');
 }
 
+double eval(const ParamFunc *f, double x)
+{
+	return (f->func)(x, f->params);
+}
 
+ParamFunc param_func_new(ParamFuncPtr f, void *params) {
+    ParamFunc pf;
+    pf.func   = f;
+    pf.params = params;
+    return pf;
+}
 
-
-
+ParamFunc param_func_null(ParamFuncPtr f)
+{
+	return param_func_new(f,nullptr);
+}

@@ -101,17 +101,6 @@ int linst_backsubst_inplace( const Matrix *U, const Array *b)
 	return 0;
 }
 
-LUP_Result lup_init(int size)
-{
-	LUP_Result result={0};
-	result.size=size;
-	result.L=mat_new(size, size);
-	result.U=mat_new(size,size);
-	mat_diag(&result.U, 0);
-	mat_diag(&result.L, 1);
-	return result;
-}
-
 static inline int find_pivot(const Matrix *A, int n, int dim)
 {
 	double max_pivot=0;
@@ -248,4 +237,105 @@ Matrix linst_lu_extract_p(int *pivots, int dim)
 	return P;
 }
 
+void linst_gram_matrix(const Matrix *A, Matrix *G)
+{
+	const int dim_g = A->ncols;
+	for(int row=0; row< dim_g; row++)
+		for(int col=row; col<dim_g; col++)
+		{
+			double sum=0;
+			
+			for(int p=0; p<A->nrows; p++)
+				sum+=MATP(A,p,row)*MATP(A,p,col);
+			
+			MATP(G,row,col)=MATP(G,col,row)=sum;
+		}
+}
 
+static inline void mat_atb(const Matrix *A, const Array *b, Array *x)
+{
+	const int dim_g = A->ncols;
+	for (int i=0; i<dim_g; i++)
+	{
+		double sum = 0;
+
+		for (int p=0; p<A->nrows; p++)
+			sum += MATP(A,p,i) * ARRP(b,p);
+
+		ARRP(x,i) = sum;
+	}
+}
+
+void linst_lsqr_lup ( const Matrix *A, const Array *b, Array *x )
+{
+	//We should have more equations than variables
+	if( A->nrows < A->ncols )
+		raiseErr( "A.nrows = %d should be greater than or equal A.ncols = %d\n", 
+			A->nrows, A->ncols );
+	
+	//Number of equations should match height of the right hand side vector
+	if( A->nrows != b->size )
+		raiseErr( "A.nrows = %d and b.length = %d should have same length.\n", 
+			A->nrows, b->size );
+	
+	const int dim_g = A->ncols;
+	Matrix G = mat_new(dim_g, dim_g); // Gram matrix A_tr A
+	arr_init(x,dim_g);
+	linst_gram_matrix(A,&G);
+	mat_atb(A,b,x);
+	
+	
+	int *pivots = malloc(sizeof(int)*dim_g);
+	
+	if( linst_lup_factor(&G, pivots, 0) )
+		raiseErr("could not lup factor");
+	
+	if( linst_lup_solve_inplace(&G, pivots, x) )
+		raiseErr("Could not solve linear system");
+	
+	
+	free(pivots);
+	mat_free(&G);
+}
+
+LinearModel linear_model_new(ParamFunc *funcs, int nfuncs) {
+    LinearModel model;
+    model.funcs  = funcs;
+    model.nfuncs = nfuncs;
+    return model;
+}
+
+LinearModel linear_model_alloc(int nfuncs) {
+    LinearModel m;
+    m.funcs = malloc(sizeof(ParamFunc) * nfuncs);
+    m.nfuncs = nfuncs;
+    return m;
+}
+
+void linear_model_free(LinearModel *m) {
+    free(m->funcs);
+}
+
+void linst_lsqr_fit_linear( const Array *x, const Array *y, 
+const LinearModel *model, Array *coeffs )
+{
+	if( x->size != y->size )
+		raiseErr( "must have same size\n" );
+		
+	const int n_parameters = model->nfuncs;
+	const int n_data = x->size;
+		
+	Matrix A = mat_new( n_data, n_parameters );
+	
+	// Construct matrix from f
+	
+	for( int col = 0; col < n_parameters; col++ )
+		for( int row = 0; row < n_data; row++ )
+			MAT(A,row,col) = eval(model->funcs+col,ARRP(x,row));
+	
+	// Apply least square solver
+	
+	linst_lsqr_lup( &A, y, coeffs );
+	
+	mat_free(&A);
+}

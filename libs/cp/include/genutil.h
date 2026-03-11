@@ -37,4 +37,24 @@ double pown( double x, int n );
 void carr_print_inline(const double *arr, int size, const char *format, 
 	bool parentheses, bool linebreak);
 
+typedef double(*ParamFuncPtr) (double, void *);
+
+typedef double(*FuncPtr)(double);
+
+typedef struct {
+    ParamFuncPtr func;
+    void *params;
+} ParamFunc;
+
+double eval(const ParamFunc *f, double x);
+
+#define MAKE_PARAM_FUNC_WRAP(name)            \
+static inline double name##_wrap(double x, void *p) { \
+    (void)p;                                 \
+    return name(x);                          \
+}
+
+ParamFunc param_func_new(ParamFuncPtr f, void *params);
+ParamFunc param_func_null(ParamFuncPtr f);
+
 #endif
