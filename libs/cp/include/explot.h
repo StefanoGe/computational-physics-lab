@@ -40,11 +40,30 @@ Global null_global_settings();
 
 DatasetDesc null_datadesc();
 
+Global eplot_init_global(	char *title,
+	char *xlabel,
+	char *ylabel,
+	char *logscale,
+	char *build_name,
+	char *output_name,
+	char *key,
+	char *additional_set);
+	
+SeriesSpec eplot_init_series(
+	double *x,
+	double *y,
+	int size,
+	char *style,
+	char *label,
+	char *color);
+
 void eplot_set_global( FILE *gp, const Global *settings);
 
 void eplot_2carr(double *xaxis, double *yaxis, int size, const Global *gb_settings,
 					const DatasetDesc *data_settings);
 
 void eplot_multi(const SeriesSpec *series, int count, const Global *gb_settings);
+
+
 
 #endif

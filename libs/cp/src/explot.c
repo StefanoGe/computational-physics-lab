@@ -222,4 +222,45 @@ void eplot_multi(const SeriesSpec *series, int count, const Global *gb_settings)
 	gb_counter++;
 }
 
+Global eplot_init_global(	
+	char *title,
+	char *xlabel,
+	char *ylabel,
+	char *logscale,
+	char *build_name,
+	char *output_name,
+	char *key,
+	char *additional_set)
+{
+	Global gb_settings={
+		title,
+		xlabel,
+		ylabel,
+		logscale,
+		build_name,
+		output_name,
+		key,
+		additional_set
+	};
+	
+	return gb_settings;
+}
 
+SeriesSpec eplot_init_series(
+	double *x,
+	double *y,
+	int size,
+	char *style,
+	char *label,
+	char *color)
+{
+	SeriesSpec series ={
+		x,
+		y,
+		size,
+		style,
+		label,
+		color
+	};
+	return series;
+}
