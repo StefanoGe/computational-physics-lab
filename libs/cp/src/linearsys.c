@@ -76,7 +76,7 @@ int linst_backsubst( const Matrix *U, const Array *b, Array *sol)
 }
 
 
-int linst_backsubst_inplace( const Matrix *U, const Array *b)
+int linst_backsubst_inplace(const Matrix *U, const Array *b)
 {
 	if(U->ncols!=U->nrows)
 		raiseErr("U must be squared");
@@ -85,6 +85,19 @@ int linst_backsubst_inplace( const Matrix *U, const Array *b)
 	
 	if(b->size != dim)
 		raiseErr("U and b must have same dimension");
+	
+	return linst_backsubst_inplace_n(U,b,dim);
+}
+
+
+int linst_backsubst_inplace_n( const Matrix *U, const Array *b, int dim)
+{
+	if(U->nrows <dim||U->ncols < dim)
+		raiseErr("Matrix should be bigger nrows %d ncols %d dim %d",
+			U->nrows, U->ncols, dim);
+	
+	if(b->size < dim)
+		raiseErr("b should be bigger size %d dim %d", b->size, dim);
 	
 	double partial_sum;
 	
@@ -237,21 +250,6 @@ Matrix linst_lu_extract_p(int *pivots, int dim)
 	return P;
 }
 
-void linst_gram_matrix(const Matrix *A, Matrix *G)
-{
-	const int dim_g = A->ncols;
-	for(int row=0; row< dim_g; row++)
-		for(int col=row; col<dim_g; col++)
-		{
-			double sum=0;
-			
-			for(int p=0; p<A->nrows; p++)
-				sum+=MATP(A,p,row)*MATP(A,p,col);
-			
-			MATP(G,row,col)=MATP(G,col,row)=sum;
-		}
-}
-
 static inline void mat_atb(const Matrix *A, const Array *b, Array *x)
 {
 	const int dim_g = A->ncols;
@@ -281,7 +279,7 @@ void linst_lsqr_lup ( const Matrix *A, const Array *b, Array *x )
 	const int dim_g = A->ncols;
 	Matrix G = mat_new(dim_g, dim_g); // Gram matrix A_tr A
 	arr_init(x,dim_g);
-	linst_gram_matrix(A,&G);
+	mat_gram(A,&G);
 	mat_atb(A,b,x);
 	
 	
@@ -314,24 +312,35 @@ LinearModel linear_model_alloc(int nfuncs) {
 
 void linear_model_free(LinearModel *m) {
     free(m->funcs);
+    m->funcs=nullptr;
+    m->nfuncs=0;
 }
 
-void linst_lsqr_fit_linear( const Array *x, const Array *y, 
-const LinearModel *model, Array *coeffs )
+static inline void make_linear_model_matrix(Matrix *A, const LinearModel *model,
+	const Array *x)
 {
-	if( x->size != y->size )
-		raiseErr( "must have same size\n" );
-		
+	
 	const int n_parameters = model->nfuncs;
 	const int n_data = x->size;
-		
-	Matrix A = mat_new( n_data, n_parameters );
 	
-	// Construct matrix from f
+	mat_init(A,n_data, n_parameters );
 	
 	for( int col = 0; col < n_parameters; col++ )
 		for( int row = 0; row < n_data; row++ )
-			MAT(A,row,col) = eval(model->funcs+col,ARRP(x,row));
+			MATP(A,row,col) = eval(model->funcs+col,ARRP(x,row));
+
+	
+}
+
+void linst_lsqr_fit_linear_lup( const Array *x, const Array *y, 
+	const LinearModel *model, Array *coeffs )
+{
+	if( x->size != y->size )
+		raiseErr( "must have same size\n" );
+	
+	Matrix A={0};
+	
+	make_linear_model_matrix(&A, model, x);
 	
 	// Apply least square solver
 	
@@ -339,3 +348,263 @@ const LinearModel *model, Array *coeffs )
 	
 	mat_free(&A);
 }
+
+double linst_linear_eval(double x, const LinearModel *l, const Array *coeffs)
+{
+	double sum = 0;
+	for(int i=0; i<l->nfuncs; i++)
+		sum+= ARRP(coeffs, i) * eval(l->funcs+i, x);
+	return sum;
+}
+
+
+
+void linst_qr_mgs(const Matrix *A, Matrix *Q, Matrix *R)
+{
+	const int vsize=A->nrows;
+	const int nvecs=A->ncols;
+	mat_init(Q,vsize,nvecs);
+	mat_init(R,nvecs,nvecs);
+	
+	mat_cp(A,Q);
+	mat_diag(R,0);
+	
+	for(int s=0; s<nvecs; s++)
+	{
+		double qi_norm = 0;
+		for(int p=0; p<vsize; p++)
+			qi_norm += MATP(Q,p,s)*MATP(Q,p,s);
+		qi_norm=sqrt(qi_norm);
+        MATP(R,s,s) = qi_norm;
+		for(int p=0; p<vsize; p++)
+			MATP(Q,p,s)/=qi_norm;
+		
+		for(int v=s+1; v<nvecs; v++)
+		{
+			double dot = 0;
+			for(int p = 0; p<vsize; p++)
+				dot+=MATP(Q,p,s)*MATP(Q,p,v);	
+			MATP(R,s,v)=dot;
+			
+			for(int p=0; p<vsize; p++)
+				MATP(Q,p,v)-=dot*MATP(Q,p,s);
+		}
+		
+		
+	}
+}
+
+void linst_lsqr_qr( const Matrix *A, const Array *b, Array *x )
+{
+	//We should have more equations than variables
+	if( A->nrows < A->ncols )
+		raiseErr( "A.nrows = %d should be greater than or equal A.ncols = %d\n", 
+			A->nrows, A->ncols );
+	
+	//Number of equations should match height of the right hand side vector
+	if( A->nrows != b->size )
+		raiseErr( "A.nrows = %d and b.length = %d should have same length.\n", 
+			A->nrows, b->size );
+	
+	const int dim_g = A->ncols;
+	Matrix Q={0};
+	Matrix R={0};
+	linst_qr_mgs(A,&Q,&R);
+
+	arr_init(x,dim_g);
+	mat_atb(&Q,b,x);
+	
+	linst_backsubst_inplace(&R, x);
+	
+	mat_free(&R);
+	mat_free(&Q);
+}
+
+void linst_lsqr_fit_linear_qr( const Array *x, const Array *y, 
+	const LinearModel *model, Array *coeffs )
+{
+	if( x->size != y->size )
+		raiseErr( "must have same size\n" );
+	
+	Matrix A={0};
+	
+	make_linear_model_matrix(&A, model, x);
+	
+	// Apply least square solver
+	
+	linst_lsqr_qr( &A, y, coeffs );
+	
+	mat_free(&A);
+}
+
+void linst_qless(const Matrix *A, Matrix *Q, Matrix *R, const Array *b,
+	Array *z)
+{
+	const int vsize=A->nrows;
+	const int nvecs=A->ncols;
+	mat_init(Q,vsize,nvecs);
+	mat_init(R,nvecs,nvecs);
+	arr_init(z,nvecs);
+	
+	mat_cp(A,Q);
+	mat_diag(R,0);
+	
+    // working copy of b (will become z progressively)
+    Array w={0};
+    arr_init(&w, vsize);
+    arr_cp(b, &w);
+	
+	for(int s=0; s<nvecs; s++)
+	{
+		double qi_norm = sqrt(mat_dot_col_col(Q,s,s));
+		if(qi_norm <= 1e-15)
+			raiseErr("Linearly dependent columns: norm=%g", qi_norm);
+			
+        MATP(R,s,s) = qi_norm;
+		mat_col_scale(Q,s,1.0/qi_norm);
+		
+		double zs=mat_dot_col_arr(Q,s,&w);
+		ARRP(z,s)=zs;
+		
+		for(int v=s+1; v<nvecs; v++)
+		{
+			double dot = mat_dot_col_col(Q,s,v);
+			MATP(R,s,v)=dot;
+			
+			mat_axpy_col_col(Q,v,-dot,Q,s);
+		}
+
+        // augmented behavior
+        for (int p = 0; p < vsize; p++)
+            ARR(w,p) -= zs * MATP(Q,p,s);
+	}
+	arr_free(&w);
+}
+/*
+void linst_lsqr_qless( const Matrix *A, const Array *b, Array *x )
+{
+	//We should have more equations than variables
+	if( A->nrows < A->ncols )
+		raiseErr( "A.nrows = %d should be greater than or equal A.ncols = %d\n", 
+			A->nrows, A->ncols );
+	
+	//Number of equations should match height of the right hand side vector
+	if( A->nrows != b->size )
+		raiseErr( "A.nrows = %d and b.length = %d should have same length.\n", 
+			A->nrows, b->size );
+	
+	
+	Matrix Q={0};
+	Matrix R={0};
+	linst_qless(A,&Q,&R,b,x);
+	
+	linst_backsubst_inplace(&R, x);
+	
+	mat_free(&R);
+	mat_free(&Q);
+}
+*/
+
+void linst_lsqr_qless( const Matrix *A, const Array *b, Array *x )
+{
+    // build augmented matrix [A | b]
+    Matrix Ab=mat_aug_arr_new(A,b);
+
+    // QR decomposition
+    Matrix R={0};
+    Matrix Q={0};
+    linst_qr_mgs(&Ab,&Q,&R);
+
+	arr_init(x,A->ncols);
+
+    for (int i = 0; i < A->ncols; i++)
+        ARRP(x,i) = MATP(&R,i,A->ncols);
+
+    // --- solve Rx = z ---
+    if (linst_backsubst_inplace_n(&R, x,A->ncols))
+        raiseErr("Back substitution failed");
+
+    mat_free(&R);
+    mat_free(&Ab);
+    mat_free(&Q);
+}
+
+void linst_lsqr_fit_linear_qless( const Array *x, const Array *y, 
+	const LinearModel *model, Array *coeffs )
+{
+	if( x->size != y->size )
+		raiseErr( "must have same size\n" );
+	
+	Matrix A={0};
+	
+	make_linear_model_matrix(&A, model, x);
+	
+	// Apply least square solver
+	
+	linst_lsqr_qless( &A, y, coeffs );
+	
+	mat_free(&A);
+}
+
+
+/*
+ * Pure QR algorithm to find the eigenvalues of a real symmetric matrix
+ * whose eigenvalues have all different absolute values, and whose corresponding
+ * eigenvector matrix has all nonsingular leading principal minors
+ * 
+ * args:
+ * A: matrix satisfying the requirements above
+ * eigenvalues: array into which to store the resulting eigenvalues
+ * 
+ */
+
+double off_diagonal_norm(const Matrix *A)
+{
+	double off = 0;
+	for (int i = 1; i < A->nrows; i++)
+		for (int j = 0; j < i; j++)
+			off += MATP(A,i,j) * MATP(A,i,j);
+
+	off = sqrt(off);
+	return off;
+}
+
+int linst_pure_qr(const Matrix *A, Array *eigenvalues, Matrix *evecs, 
+	double tol)
+{
+	const int dim=A->nrows;
+	
+	Matrix Acp={0};
+	mat_cp(A,&Acp);
+	
+	Matrix Q={0};
+	Matrix R={0};
+	mat_init(evecs,dim,dim);
+	mat_diag(evecs,1);
+	
+	double off_norm=INFINITY;
+	
+	int i=0;
+	
+	while(tol<off_norm)
+	{
+		linst_qr_mgs(&Acp,&Q,&R);
+		mat_mult(&R,&Q,&Acp);
+		mat_mult(evecs,&Q,evecs);
+		off_norm=off_diagonal_norm(&Acp);
+		
+		i++;
+		if(i>=1000)
+			raiseErr("loop did not stop");
+	}
+	
+	arr_init(eigenvalues,dim);
+	for(int p=0; p<dim; p++)
+		ARRP(eigenvalues,p)=MAT(Acp,p,p);
+	
+	Matrix *to_free[]={&Q,&R,&Acp};
+	mat_free_many(to_free,3);
+	return i;
+}
+
+

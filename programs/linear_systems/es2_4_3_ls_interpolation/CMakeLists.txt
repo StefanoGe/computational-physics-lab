@@ -1,0 +1,4 @@
+add_executable(ls_interpolation ls_interpolation.c)
+target_link_libraries(ls_interpolation PRIVATE cp)
+set_target_properties(ls_interpolation PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/programs/linear_systems/es2_4_3_ls_interpolation")
+

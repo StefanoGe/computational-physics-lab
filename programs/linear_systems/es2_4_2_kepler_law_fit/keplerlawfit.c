@@ -20,7 +20,7 @@ void kepler_plot( double distances[], double periods[],
 		"Orbital periods [days]", NULL, NULL, "kepler_plot", NULL, NULL);
 	
 	SeriesSpec exp_data = eplot_init_series(distances, periods, 8, 
-		"lp", "Data", NULL);
+		"p", "Data", NULL);
 		
 	int count_data = 1000;
 		
@@ -77,13 +77,14 @@ void kepler_law_int()
 	model.funcs[1] = f_log;
 	
 	Array coeffs={0};
-	linst_lsqr_fit_linear( &distances_arr, &log_periods, &model, &coeffs);
+	linst_lsqr_fit_linear_lup( &distances_arr, &log_periods, &model, &coeffs);
 	
 	const double alpha = ARR(coeffs,1);
 	const double c = exp(ARR(coeffs,0));
+
 	
-	printf("Found:\nalpha = %g\nc = %g", alpha, c);
-	
+	printf("Found:\nalpha = %g\nc = %g\n\n", alpha, c);
+	fflush(stdout);
 	kepler_plot(distances, periods, alpha, c);
 	
 	linear_model_free(&model);

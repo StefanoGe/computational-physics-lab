@@ -1,7 +1,7 @@
 \documentclass[a4paper,11]{article}
 
 \usepackage[utf8]{inputenc}
-\usepackage{amsmath}
+\usepackage{amsmath,amsfonts,amssymb}
 \usepackage{siunitx}   % units
 
 \sisetup{
@@ -523,11 +523,229 @@ However, if we set $\epsilon = 10^{-12}$, we find:
 	}
 \end{itemize}
 
+\subsection{Overdetermined linear systems}
+
+\subsubsection{Least squares through normal equations}
+
+\paragraph{Results}
+
+After implementing a routine for finding a the vector $\mathbf{X}$ that best
+fits an overdetermined linear system, we tested it on the following linear 
+system:
+\[
+	\begin{bmatrix}
+		2 & -1 \\
+		0 & 1 \\
+		-2 & 2
+	\end{bmatrix}
+	\mathbf{X}=
+	\begin{bmatrix}
+		1 \\
+		-5 \\
+		6
+	\end{bmatrix}
+\]
+and found:
+\[
+	\mathbf{X}=
+	\begin{bmatrix}
+		-2 \\
+		1
+	\end{bmatrix}
+\]
+
+% \paragraph{Remarks}
+
+\subsubsection{Fitting of Kepler's Law}
+
+We want to extrapolate Kepler's third law from experimental data through the
+algorithm just introduced. First we linearize the following relationship by 
+taking the logarithm at both sides:
+
+\[
+	\mathrm{T = C D^{\alpha} \implies \log(T) = \log(C) + \alpha \log(D) }
+\]
+
+where T is the orbital periods of the planets, D is their average distance from
+the Sun and alpha and C are two costants to be determined through the method
+of least squares. This is equivalent to finding $x_{1}$ and 
+$x_{2}$ that minimize:
+\[
+	\mathbf{\log(T)} = x_{1}\mathbf{1} + x_{2}\mathbf{\log(D)} =
+	\begin{bmatrix}
+		\mathbf{1} & \mathbf{\log(D)}
+	\end{bmatrix}
+	\begin{bmatrix}
+		x_{1} \\
+		x_{2}
+	\end{bmatrix}
+\]
+
+where quantities in bold are vectors, leading to an overdetermined linear system.
+
+\paragraph{Results}
+
+We therefore find that the values that fit the aforementioned system are:
+\[
+\alpha = 1.49865 \qquad C = 0.201522
+\]
+
+where alpha is consistent with Kepler's law, which predicts $\alpha = 1.5$.
+
+The graph containing the fitted curve and experimental data can be found in
+Figure \ref{fig:kepler}
+
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=\textwidth]{kepler_plot.pdf}
+    \caption{Orbital peirods vs distances from the Sun of the planets.}
+    \label{fig:kepler}
+\end{figure}
+
+\subsubsection{Fitting of exp(sine) function}
+
+\paragraph{Results}
+
+We want to approximate the function $\exp(\sin(t-1))$, first through a 
+Taylor-like polynomial:
+
+\[
+	y(t)=c_{1}+c_{2}t+...+c_{7}t^{6}
+\]
+and then through a periodic Fourier-like approximation:
+\[
+	y(t)=d_{1}+d_{2}\cos(t)+d_{3}\sin(t)+d_{4}\cos(2t)+d_{5}\sin(5t)
+\]
+
+Results are shown in Figure \ref{fig:expsin_pol} and in Figure 
+\ref{fig:expsin_per}.
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=\textwidth]{expsin_pol.pdf}
+    \caption{Least square fit of $\exp(\sin(t-1)$ with 6th degree polynomial}
+    \label{fig:expsin_pol}
+\end{figure}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=\textwidth]{expsin_per.pdf}
+    \caption{Least square fit of $\exp(\sin(t-1)$ with Fourier periodic functions}
+    \label{fig:expsin_per}
+\end{figure}
+
+\paragraph{Remarks}
+
+\begin{itemize}
+	\item{
+		Not surpringly, the function is better approximated by the first terms
+		of the Fourier basis than by a sixth degree polynomial.
+		The Fourier basis is an orthonormal complete set of $L^{2}([0,2\pi])$,
+		therefore it is guaranteed to be the best approximation in $L^{2}$ norm,
+		among expansions on sets spanned by it. Moreover, sines and cosines are 
+		themselves periodic and are thus well suited for approximating
+		a periodic function like $\exp^{\sin(t-1)}$, producing a nice 
+		approximation over the whole domain $\mathbb{R}$. On the other hand, 
+		monic
+		monomyals, though complete, are neither an orthonormal set of 
+		$L^{2}([0,2\pi])$ nor are well suited for 
+		approximating periodic functions, as they do blow up at infinity
+		and do not approximate well outside of the points employed in the fit.
+	}
+\end{itemize}
+
+\subsection{QR decomposition}
+
+In this section we implement algorithms to find the QR decomposition of
+any matrices. First the modified Gram-Schmidt procedure (MGS).
+
+\paragraph{Results}
+
+We test the modified Gram-Schmidt procedure on the following matrices:
+
+\[
+	\begin{bmatrix}
+		2 & -1 \\
+		0 & 1 \\
+		-2 & 2
+	\end{bmatrix}=
+	\begin{bmatrix}
+		0.707 & 0.408 \\
+		0.000 & 0.816 \\
+		-0.707 & 0.408
+	\end{bmatrix}
+	\begin{bmatrix}
+		2.828 & -2.121 \\
+		0 & 1.225
+	\end{bmatrix}
+\]
+
+\[
+	\begin{bmatrix}
+		2 & 3 & 4 \\
+		4 & 5 & 10 \\
+		4 & 8 & 2
+	\end{bmatrix}
+	=
+	\begin{bmatrix}
+		 0.333 & -0.104 &  0.937 \\
+		 0.667 & -0.677 & -0.312 \\
+		 0.667 &  0.729 & -0.156
+	\end{bmatrix}
+	\begin{bmatrix}
+		6.000 & 9.667 & 9.333 \\
+		0      & 2.134 & -5.726 \\
+		0      & 0      &  0.312
+	\end{bmatrix}
+\]
+
+\[
+	\begin{bmatrix}
+		2 & -1 & 4 \\
+		0 & 3 & 5 \\
+		7 & 2 & -6 \\
+		1 & -4 & 0
+	\end{bmatrix}
+	=
+	\begin{bmatrix}
+		 0.272 & -0.241 &  0.733 \\
+		 0.000 &  0.559 &  0.617 \\
+		 0.953 &  0.179 & -0.233 \\
+		 0.136 & -0.773 &  0.163
+	\end{bmatrix}
+	\begin{bmatrix}
+		7.348 & 1.089 & -4.627 \\
+		0     & 5.368 &  0.752 \\
+		0     & 0     &  7.418
+	\end{bmatrix}
+\]
+
+Computing the product $\mathbf{A=QR}$ gives us the matrices we have decomposed,
+confirming the correctness of the decomposition.
+Also we computed $\mathbf{Q}^\intercal \mathbf{Q}$ and we confirmed that the 
+computed $\mathbf{Q}$'s are indeed ONC matrices. 
+
+\subsubsection{Least squares through QR}
+
+We implemented QR algorithm to solve least-squares problem, and applied it
+to the problem of fitting the function $\exp^{\sin(4t)}$ with a 14th degree
+polynomial.
+
+\paragraph{Results}
+
+
+
+\subsubsection{QR decomposition for eigenvalues and eigenvectors}
+
+
+
 %--------------------------------------------------------------------------
 %--------------------------------------------------------------------------
 \section{Interpolation}
 %--------------------------------------------------------------------------
 %--------------------------------------------------------------------------
+
 
 
 %--------------------------------------------------------------------------

@@ -1,3 +1,5 @@
+// Deprecated! Now prefer linearsys.c and linearsys.h. 
+// Here only for legacy code. will be removed.
 // LinearSystems.c
 
 #include <stdio.h>
@@ -576,7 +578,7 @@ QR_Mats QR_decomp( MatrixDouble A )
 	// loop che controlla il q che sto usando
 	for( int i = 0; i < nvecs; i ++ )
 	{
-		qr.R.val[i][ i ] = normalise( &qr.Q, i );
+		qr.R.val[i][i] = normalise( &qr.Q, i );
 		// Mi serve ora un algoritmo che calcoli i vari vj
 		for( int j = i + 1; j < nvecs; j++)
 		{

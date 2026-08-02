@@ -76,7 +76,7 @@ void eplot_set_terminal_and_plot(FILE *gp, char *plot_command, const char *outpu
 	char qt[5'000];
 	sprintf(qt,
 		"set terminal qt size 1020,700 font \'CMU Serif, 16\' enhanced\n"
-		"set for [i=1:8] linetype i lw 4 pt 7 ps 1.5\n"
+		"set for [i=1:8] linetype i lw 4 pt 7 ps 1.6\n"
 		"%s\n"
 		"pause mouse close\n", plot_command);
 	fputs(qt, gp);
@@ -88,7 +88,7 @@ void eplot_set_terminal_and_plot(FILE *gp, char *plot_command, const char *outpu
 		sprintf(output_path, "\'plot/%s.pdf\'", output_name);
 		sprintf(pdfcairo,
 			"set terminal pdfcairo size 6.4,4 font \"CMU Serif,16\" enhanced\n"
-			"set for [i=1:8] linetype i lw 4.5 pt 7 ps 1.5\n"
+			"set for [i=1:8] linetype i lw 4.5 pt 7 ps 0.65\n"
 			"set output %s\n"
 			"%s\n"
 			"unset output\n", output_path, plot_command );

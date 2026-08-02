@@ -32,7 +32,7 @@ void mat_free_many(Matrix **mats, int n);
 
 void mat_diag(Matrix *, double x);
 
-Matrix mat_new_from_file(char *filename, int nrows, int ncols);
+Matrix mat_new_from_file(const char *filename, int nrows, int ncols);
 
 void mat_print_stdout( const Matrix *mat, char *format, bool newline);
 
@@ -53,5 +53,23 @@ void mat_cp(const Matrix *src, Matrix *dest);
 void mat_axpy(Matrix *y, double alpha, const Matrix *x);
 
 void mat_scale(Matrix *A, double alpha);
+
+void mat_gram(const Matrix *A, Matrix *G);
+
+void mat_setv(const Matrix *A, double x);
+
+double mat_dot_col_col(const Matrix *m, int c1, int c2);
+
+double mat_dot_col_arr(const Matrix *m, int c, const Array *arr);
+
+void mat_aug_arr(const Matrix *A, const Array*b, Matrix *dest);
+
+Matrix mat_aug_arr_new(const Matrix *A, const Array*b);
+
+void mat_col_scale(Matrix *A, int c, double x);
+
+void mat_axpy_col_col(Matrix *y, int cy, double alpha, const Matrix *x, int cx);
+
+void mat_col_to_arr(const Matrix *mat, Array *arr, int col);
 
 #endif

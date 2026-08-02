@@ -9,6 +9,8 @@ int linst_forwsubst_inplace(const Matrix *L, Array *b, bool is_diag_one);
 
 int linst_forwsubst(const Matrix *L, const Array *b, Array *sol, bool is_diag_one);
 
+int linst_backsubst_inplace_n( const Matrix *U, const Array *b, int dim);
+
 int linst_backsubst_inplace( const Matrix *U, const Array *b);
 
 int linst_backsubst( const Matrix *U, const Array *b, Array *sol);
@@ -40,7 +42,27 @@ LinearModel linear_model_alloc(int nbasis);
 
 void linear_model_free(LinearModel *m);
 
-void linst_lsqr_fit_linear( const Array *x, const Array *y, 
-const LinearModel *model, Array *coeffs );
+void linst_lsqr_fit_linear_lup( const Array *x, const Array *y, 
+	const LinearModel *model, Array *coeffs );
+
+double linst_linear_eval(double x, const LinearModel *l, const Array *coeffs);
+
+void linst_qr_mgs(const Matrix *A, Matrix *Q, Matrix *R);
+
+void linst_lsqr_qr( const Matrix *A, const Array *b, Array *x );
+
+void linst_lsqr_fit_linear_qr( const Array *x, const Array *y, 
+	const LinearModel *model, Array *coeffs );
+
+void linst_qless(const Matrix *A, Matrix *Q, Matrix *R, const Array *b,
+	Array *z);
+
+void linst_lsqr_qless( const Matrix *A, const Array *b, Array *x );
+
+void linst_lsqr_fit_linear_qless( const Array *x, const Array *y, 
+	const LinearModel *model, Array *coeffs );
+	
+int linst_pure_qr(const Matrix *A, Array *eigenvalues, Matrix *evecs, 
+	double tol);
 
 #endif
