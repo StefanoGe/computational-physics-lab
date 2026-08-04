@@ -76,7 +76,7 @@ int linst_backsubst( const Matrix *U, const Array *b, Array *sol)
 }
 
 
-int linst_backsubst_inplace(const Matrix *U, const Array *b)
+int linst_backsubst_inplace(const Matrix *U, Array *b)
 {
 	if(U->ncols!=U->nrows)
 		raiseErr("U must be squared");
@@ -90,9 +90,9 @@ int linst_backsubst_inplace(const Matrix *U, const Array *b)
 }
 
 
-int linst_backsubst_inplace_n( const Matrix *U, const Array *b, int dim)
+int linst_backsubst_inplace_n( const Matrix *U, Array *b, int dim)
 {
-	if(U->nrows <dim||U->ncols < dim)
+	if(U->nrows<dim||U->ncols < dim)
 		raiseErr("Matrix should be bigger nrows %d ncols %d dim %d",
 			U->nrows, U->ncols, dim);
 	
@@ -114,18 +114,49 @@ int linst_backsubst_inplace_n( const Matrix *U, const Array *b, int dim)
 	return 0;
 }
 
+int linst_backsubst_bulk(const Matrix *U, const Matrix *B, Matrix *X)
+{
+	if(U->ncols!=U->nrows)
+		raiseErr("U must be squared");
+	
+	const int dim = U->nrows;
+	
+	if(B->nrows != dim)
+		raiseErr("B nrows must match linsys dimension");
+
+	const int nrhs = B->ncols;
+	
+	mat_init(X,dim,nrhs);
+	
+	Array temp_arr = arr_new(dim);
+	
+	for(int i=0; i<nrhs; i++)
+	{
+		mat_col_to_arr(B,&temp_arr,i);
+		
+		if(linst_backsubst_inplace(U,&temp_arr))
+			return 1;
+		
+		for(int j=0; j<dim; j++)
+			MATP(X,j,i)=ARR(temp_arr,j);
+	}
+	
+	arr_free(&temp_arr);
+	
+	return 0;
+}
+
 static inline int find_pivot(const Matrix *A, int n, int dim)
 {
 	double max_pivot=0;
 	int pivot_row=n;
 	for(int row=n; row<dim; row++)
-	{
-		if(fabs(MATP(A,row,n))>=max_pivot)
+		if(fabs(MATP(A,row,n))>max_pivot)
 		{
 			max_pivot=fabs(MATP(A,row,n));
 			pivot_row=row;
 		}
-	}
+			
 	return pivot_row;
 }
 
@@ -210,15 +241,20 @@ int linst_lu_factor_no_pivot(Matrix *A, double tol)
 	return 0;
 }
 
-int linst_lup_solve_inplace(const Matrix *lu, int *pivots, Array *b)
+int linst_lup_solve_inplace(const Matrix *lu, const int *pivots, Array *b)
 {
 	for(int i=0; i<b->size; i++)
+	{
+//		eprint("pivots[i] = %d",pivots[i]);
 		if(i!=pivots[i])
 			SWAP( ARRP(b, i), ARRP(b,pivots[i]) );
+
+	}
 	int info=0;
 	
 	if( (info=linst_forwsubst_inplace(lu, b, true) )>0)
 		return -info;
+
 	return linst_backsubst_inplace(lu,b);
 }
 
@@ -605,6 +641,69 @@ int linst_pure_qr(const Matrix *A, Array *eigenvalues, Matrix *evecs,
 	Matrix *to_free[]={&Q,&R,&Acp};
 	mat_free_many(to_free,3);
 	return i;
+}
+
+double linst_inf_norm(const Matrix *m)
+{
+	if(!mat_is_squared(m))
+		raiseErr("mat must be squared");
+	
+	double max_sum = 0;
+	double partial_sum=0;
+	for(int row=0; row<m->nrows; row++)
+	{
+		partial_sum=0;
+		for(int col=0; col<m->ncols;col++)
+			partial_sum+=fabs(MATP(m,row,col));
+		max_sum=MAX(partial_sum,max_sum);
+	}
+	
+	return max_sum;
+}
+
+int linst_inv_qr(const Matrix *A, Matrix *invA)
+{
+	if(!mat_is_squared(A))
+		raiseErr("mat must be squared");
+
+	const int dim = A->nrows;
+
+	mat_init(invA,dim,dim);
+
+	Matrix Q={0};
+	Matrix R={0};
+	Matrix id=mat_new(dim,dim);
+	
+	mat_diag(&id,1);
+
+	linst_qr_mgs(A,&Q,&R);
+	
+	mat_transpose(&Q,&Q);
+	
+	if(linst_backsubst_bulk(&R,&id,invA))
+		return 1;
+	
+	mat_mult(invA, &Q, invA);
+	
+	Matrix *to_free[]={&Q,&R,&id};
+	
+	mat_free_many(to_free,3);
+	
+	return 0;
+}
+
+double linst_cond_numb_inf(const Matrix *A)
+{
+	if(!mat_is_squared(A))
+		raiseErr("mat must be squared");
+	
+	double norm = linst_inf_norm(A);
+	Matrix invA = mat_new(A->nrows,A->ncols);
+	linst_inv_qr(A, &invA);
+	
+	double norm_inv=linst_inf_norm(&invA);
+	
+	return norm*norm_inv;
 }
 
 

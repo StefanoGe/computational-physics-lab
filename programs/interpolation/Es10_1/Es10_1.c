@@ -1,81 +1,58 @@
-#include "comp_physics.h"
 #include <stdio.h>
 #include <math.h>
 #include <stdlib.h>
+#include "interpolation.h"
 
-double cosk( double x, void * k )
+double interpolate_cosine(int n, int k)
 {
-	return cos( x * *(int*)k );
+	const int n_nodes = n+1;
+	Array x_values = arr_linspace(-1,1,n_nodes);
+	Array y_values = arr_new(n_nodes);
+	Array coeffs = arr_new(n_nodes);
+	double cond_number=0;
+	
+	for(int i=0; i<n_nodes; i++)
+		ARR(y_values,i) = cos(k*ARR(x_values,i));
+
+	if( !interp_polyn_vand_lup(&x_values, &y_values, &coeffs, &cond_number) )
+	{
+		printf("for n = %d k = %d matrix was singular\n",n,k);
+		return INFINITY;
+	}
+	
+	double value_at_zero = ARR(coeffs,0);
+	
+	printf("For n = %d k = %d:\n",n,k);
+	arr_print_inline(&coeffs, "%5.3g",true,true);
+	printf("cond number: %lf\n\n", cond_number);
+	
+	Array *to_free[]={&x_values,&y_values,&coeffs};
+	arr_free_many(to_free,3);
+	return value_at_zero;
 }
-
-Par_Func init_cosk(int k)
-{
-	Par_Func pf;
-	pf.param_func_ptr = cosk;
-	pf.params = malloc( sizeof( double ) );
-	((int *)pf.params)[0] = k;
-	return pf;
-}
-
-ArrayDouble generate_x_data( int n )
-{
-	return linspaceD( -1, 1, n + 1 );
-}
-
-ArrayDouble generate_y_data( ArrayDouble x_data, int k )
-{
-	ArrayDouble y_data = allocArrD( x_data.length );
-	for( int i = 0; i < x_data.length; i++ )
-		y_data.val[i] = cos( k * x_data.val[i] );
-	return y_data;
-}
-
-ArrayDouble polynomial_interpolation( ArrayDouble x_data, ArrayDouble y_data)
-{
-	if( x_data.length != y_data.length )
-		raiseErr( "x_data = %d and y_data = %d must have same size\n", 
-			x_data.length, y_data.length );
-	
-	const int n_data = x_data.length;
-
-	MatrixDouble A = allocMatD( n_data, n_data );
-	
-	// Set first col to 1 ( as it is the col of the constant function)
-	for(int row = 0; row < n_data; row++ )
-		A.val[row][0] = 1.0;
-	
-	for( int col = 1; col < n_data; col++ )
-		for( int row = 0; row < n_data; row++ )
-			A.val[ row ][ col ] = A.val[row][col - 1] * x_data.val[row];
-			
-	ArrayDouble result = solve_LU( A, y_data );
-	
-	freeMatD(A);
-	
-	return result;
-}
-
-void test( int n, int k )
-{
-	ArrayDouble x_data = generate_x_data(n);
-	ArrayDouble y_data = generate_y_data( x_data, k );
-	
-	ArrayDouble coeffs = polynomial_interpolation(x_data, y_data);
-	
-	printf("For n = %d, k = %d\n", n, k);
-	printArrDPar( coeffs, "%lf, " );
-	putchar('\n');
-	
-	freeAllArrD( x_data, y_data, coeffs, NULL_ARR );
-}
-
-
 
 int main()
 {
-	for( int k = 10; k <= 100; k+=10 )
-		for( int n = 4; n <= 40; n+=4 )
-			test( n, k );
+	const int maxk = 100;
+	const int stepk = 10;
+	const int maxn = 40;
+	const int stepn = 4;
+
+	Matrix values_at_zero = mat_new( maxk/stepk, maxn/stepn);
+	
+//	eprint("%d %d", values_at_zero.nrows,values_at_zero.ncols);
+
+	for( int k = stepk; k <= maxk; k+=stepk )
+		for( int n = stepn; n <= maxn; n+=stepn )
+		{
+//			eprint("%d %d",k,n);
+			MAT(values_at_zero, k/stepk-1,n/stepn-1) = interpolate_cosine( n, k );
+		}
+	mat_print_stdout(&values_at_zero,"% .3lf",true);
+	
+	interpolate_cosine(10,1);
+	
+	mat_free(&values_at_zero);
 	
 	exit(EXIT_SUCCESS);
 }

@@ -1,4 +1,4 @@
 add_executable(lup_decomposition lup_decomposition.c)
 target_link_libraries(lup_decomposition PRIVATE cp)
-set_target_properties(lup_decomposition PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/programs/linear_systems/es_2_2_lup_decomposition")
+set_target_properties(lup_decomposition PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/programs/linear_systems/es2_2_2_lup_decomposition")
 

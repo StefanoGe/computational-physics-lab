@@ -9,17 +9,19 @@ int linst_forwsubst_inplace(const Matrix *L, Array *b, bool is_diag_one);
 
 int linst_forwsubst(const Matrix *L, const Array *b, Array *sol, bool is_diag_one);
 
-int linst_backsubst_inplace_n( const Matrix *U, const Array *b, int dim);
+int linst_backsubst_inplace_n( const Matrix *U, Array *b, int dim);
 
-int linst_backsubst_inplace( const Matrix *U, const Array *b);
+int linst_backsubst_inplace( const Matrix *U, Array *b);
 
 int linst_backsubst( const Matrix *U, const Array *b, Array *sol);
+
+int linst_backsubst_bulk(const Matrix *U, const Matrix *B, Matrix *X);
 
 int linst_lup_factor(Matrix *A, int *pivots, double tol);
 
 double linst_lup_det(const Matrix *lu, int *pivots);
 
-int linst_lup_solve_inplace(const Matrix *lu, int *pivots, Array *b);
+int linst_lup_solve_inplace(const Matrix *lu, const int *pivots, Array *b);
 
 Matrix linst_lu_extract_u(const Matrix *lu);
 
@@ -64,5 +66,9 @@ void linst_lsqr_fit_linear_qless( const Array *x, const Array *y,
 	
 int linst_pure_qr(const Matrix *A, Array *eigenvalues, Matrix *evecs, 
 	double tol);
+
+int linst_inv_qr(const Matrix *A, Matrix *invA);
+
+double linst_cond_numb_inf(const Matrix *A);
 
 #endif
