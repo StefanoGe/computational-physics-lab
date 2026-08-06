@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdbool.h>
+#include <stdint.h>
 
 #ifndef PI
 #define PI 3.1415926535897932384626433
@@ -27,6 +28,24 @@
 	} while (0)
 
 #define eprint(a, ...) fprintf( stderr, a "\n" __VA_OPT__(,) __VA_ARGS__ )
+
+#define SAFE_ALLOC(ptr, count)                                      \
+    do {                                                             \
+        size_t _count = (count);                                     \
+        if (_count > SIZE_MAX / sizeof *(ptr))                       \
+            raiseErr("allocation size overflow");                    \
+                                                                     \
+        (ptr) = malloc(_count * sizeof *(ptr));                      \
+                                                                     \
+        if (!(ptr))                                                  \
+            raiseErr("allocation failed");                           \
+    } while (0)
+    
+#define SAFE_FREE(ptr)       \
+    do {                      \
+        free(ptr);            \
+        (ptr) = NULL;         \
+    } while (0)
 
 FILE * openFile( const char * fileName, const char * mode );
 
@@ -58,5 +77,7 @@ static inline double name##_wrap(double x, void *p) { \
 
 ParamFunc param_func_new(ParamFuncPtr f, void *params);
 ParamFunc param_func_null(ParamFuncPtr f);
+
+
 
 #endif

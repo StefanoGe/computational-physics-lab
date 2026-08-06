@@ -3,6 +3,7 @@
 
 #include <stdio.h>
 #include <stdbool.h>
+#include "genutil.h"
 
 // -----------------
 #ifndef ARR_ACCESS
@@ -30,6 +31,8 @@ Array arr_asarr(double *data, int size);
 Array arr_new(int size);
 
 Array arr_map( const Array *, ScalarFunc f );
+
+Array arr_map_par( const Array *x, ParamFuncPtr f, void *params );
 
 void arr_free_many(Array **arrs, int n);
 

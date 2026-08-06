@@ -4,17 +4,6 @@
 #include <float.h>
 #include "comp_physics.h"
 
-/*
-static inline VectorD arrD_as_VecD( ArrayDouble arr )
-{
-	VectorD vec;
-	vec.length = arr.length;
-	vec.val = arr.val;
-	vec.size = vecD_necessary_size( vec.length );
-	vec.val = realloc( vec.val, vec.size * sizeof(double) );
-	return vec;
-}
-*/
 
 static inline VectorD build_weights( const VectorD * points )
 {
@@ -48,7 +37,7 @@ static inline VectorD eq_weights( int n )
 	VectorD weights = init_vec_length( n );
 	weights.val[ 0 ] = 1;
 	for( int i = 1; i < n; i++ )
-		weights.val[i] = weights.val[ i -1 ] * ( i - 1 - n ) / i;
+		weights.val[i] = weights.val[ i -1 ] * ( i - n ) / i;
 	return weights;
 }
 

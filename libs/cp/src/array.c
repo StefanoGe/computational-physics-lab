@@ -49,6 +49,14 @@ Array arr_map( const Array *x, ScalarFunc f )
 	return arr;
 }
 
+Array arr_map_par( const Array *x, ParamFuncPtr f, void *params )
+{
+	Array arr=arr_new(x->size);
+	for(int i=0; i<x->size; i++)
+		ARR(arr,i)=f(ARRP(x,i), params);
+	return arr;
+}
+
 void arr_free_many(Array **arrs, int n)
 {
     for (int i = 0; i < n; i++)
