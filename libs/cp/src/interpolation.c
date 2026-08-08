@@ -169,3 +169,52 @@ void interp_barf_free(BarFit *barf)
 	barf->npoints=0;
 	barf->func=NULL;
 }
+
+double* interp_cheb2_nodes_def( int num )
+{
+	double *nodes;
+	SAFE_ALLOC(nodes,num);
+	const double const_factor = PI/( num - 1 );
+	for( int i = 0; i < num; i++ )
+		nodes[i] = -cos( i  * const_factor );
+	return nodes;
+}
+
+double* interp_cheb2_nodes( double x1, double x2, int num )
+{
+	double *nodes=interp_cheb2_nodes_def(num);
+
+	const double half_length = ( x2 - x1 ) / 2;
+	for( int i = 0; i < num; i ++ )
+		nodes[i] = (nodes[i] + 1 ) * half_length + x1;
+	return nodes;
+}
+
+double* interp_build_cheb2_weights( int num )
+{
+	double *weights;
+	SAFE_ALLOC(weights,num);
+	for( int i = 0; i < num; i ++ )
+	{
+		weights[i] = 1;
+		if( i % 2 )
+			weights[i] *= -1;
+		if( i == 0 || i == num-1 )
+			weights[ i ] /= 2;
+	}
+	return weights;
+}
+
+void interp_barf_init_cheb2_points( BarFit *barf, double x1, double x2, int npoints )
+{
+	barf->npoints = npoints;
+	barf->points = interp_cheb2_nodes(x1,x2,npoints);
+	barf->weights = interp_build_cheb2_weights( npoints );
+}
+
+BarFit interp_barf_new_cheb2_points(double x1, double x2, int npoints)
+{
+	BarFit barf={0};
+	interp_barf_init_cheb2_points(&barf, x1, x2, npoints);
+	return barf;
+}

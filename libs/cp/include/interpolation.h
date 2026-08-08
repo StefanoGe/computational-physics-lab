@@ -34,3 +34,7 @@ void interp_barf_add_fvalues(BarFit *barf, const ParamFunc *opt_f);
 double interp_barf_get_value( const BarFit *barf, double x );
 
 void interp_barf_free(BarFit *barf);
+
+void interp_barf_init_cheb2_points( BarFit *barf, double x1, double x2, int npoints );
+
+BarFit interp_barf_new_cheb2_points(double x1, double x2, int npoints);
