@@ -9,7 +9,6 @@
 #define DEFAULT_FTOLERANCE DBL_EPSILON * 10'000
 #define MAX_ITERATION 100'000
 
-// da sistemare tenendo conto della machine precision
 static inline int sign( double x )
 {
 	if( x > 0 )

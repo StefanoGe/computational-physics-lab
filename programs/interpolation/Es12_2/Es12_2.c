@@ -1,41 +1,56 @@
-#include "comp_physics.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
+#include "interpolation.h"
+#include "explot.h"
 
 #define N_DOMAIN 1000
 
-double cos_sin(double x) { return cosh(sin(x)); }
-
-void test_cheb( Func_Ptr func, int n_nodes, double x1, double x2 )
+double f1(double x, void *null)
 {
-	VectorD domain = vec_range( x1, x2, N_DOMAIN );
-	BarFit barf = fit_cheb2( func, n_nodes, x1, x2 );
-	VectorD y_values = init_vecD();
-	VectorD true_values = init_vecD();
-	for( int i = 0; i < N_DOMAIN; i++ )
-	{
-		appendD( &y_values, barf_get_value( &barf, domain.val[i] ) );
-		appendD( &true_values, func(domain.val[i]) );
-	}
+	(void)null;
+	return cosh(sin(x));
+}
+
+void test_cheb(ParamFuncPtr f, double x1, double x2, int n_nodes)
+{
+	ParamFunc fp = {f,NULL};
+	BarFit barf = interp_barf_new_cheb2_points(x1,x2,n_nodes);
+	interp_barf_add_fvalues(&barf,&fp);
 	
-	VectorD ys[] = { y_values, true_values };
+	Array domain = arr_linspace(x1,x2,N_DOMAIN);
+	Array approx_pol = arr_map_par(&domain,interp_barf_get_value_wrap,&barf);
+	arr_print_inline(&approx_pol,"%lf ",true,true);
+	Array true_values = arr_map_par(&domain, f, NULL);
 	
-	PlotInfo plot_info = plot_info_init(2);
-	plot_info.title = "'Interpolation of cosh(sin(x))'";
-	plot_info.labels[0] = "Fitted function";
-	plot_info.labels[1] = "cosh(sin(x))";
+	Global gb_settings = eplot_init_global("Polynomial interpolation of "
+				"cosh(sin x)) with Chebyshev nodes","x","y",NULL,
+				"cheb_example",
+				NULL,NULL,NULL);
 	
-	plot_mult_vecs( &domain, ys, 2, plot_info );
+	SeriesSpec data = eplot_init_series(domain.data,true_values.data,
+			N_DOMAIN,"l","cosh(sin(x))",NULL);
 	
-	free_vecD( &y_values, &true_values, &domain, &barf.f_values, &barf.points,
-	&barf.weights );
+	SeriesSpec plot_fit = eplot_init_series(domain.data,approx_pol.data,
+			N_DOMAIN,"l dt 3","Interpolant polynomial",NULL);
+			
+//	Array node_indices = arr_linspace(0,n_nodes-1,1);
+			
+	SeriesSpec nodes = eplot_init_series(barf.points,barf.f_values,
+		n_nodes,"p","Nodes",NULL);
+			
+	SeriesSpec series[]={data,plot_fit,nodes};
+	
+	eplot_multi(series,3,&gb_settings);
+	
+	Array *arr_to_free[] = {&domain,&approx_pol,&true_values};
+	arr_free_many(arr_to_free,3);
+	interp_barf_free(&barf);
 }
 
 int main()
 {
-	
-	test_cheb( cos_sin, 40, 0, 2 * PI );
+	test_cheb(f1,0,2*PI,40);
 	
 	exit(EXIT_SUCCESS);
 }

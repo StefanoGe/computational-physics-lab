@@ -15,10 +15,20 @@
 // -----------------
 
 typedef double(ScalarFunc)(double);
+/*
+data == NULL && size == 0 && capacity == 0
+    => empty, appendable Array
 
+data != NULL && owns_data == false
+    => non-owning view, cannot grow
+
+data != NULL && owns_data == true
+    => owning, growable Array
+*/
 typedef struct {
 	double *data;
 	int size;
+	int capacity;
 	bool owns_data;
 } Array;
 
@@ -51,5 +61,8 @@ void arr_axpy(Array *y, double alpha, const Array *x);
 
 void arr_scale(Array *x, double alpha);
 
+void arr_append(Array *arr, double x);
+
+void arr_reserve(Array *arr, int capacity);
 
 #endif

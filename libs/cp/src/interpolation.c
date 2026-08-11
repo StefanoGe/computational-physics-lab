@@ -2,6 +2,18 @@
 #include "linearsys.h"
 #include <math.h>
 
+#define LOW_NUMBER 0.0001
+
+double interp_real_line_to_unit( double z )
+{
+	return ( fabs(z) < LOW_NUMBER ) ? 0 : ( sqrt( 1 + z * z ) -1 ) / z;
+}
+
+double interp_unit_to_real_line( double x )
+{
+	return 2 * x / ( 1 - x * x );
+}
+
 int interp_polyn_vand_lup(const Array *x, const Array *y, Array *coeffs, 
 	double *cond_number)
 {
@@ -110,7 +122,7 @@ void interp_barf_add_func(BarFit *barf, const ParamFunc *f)
 	if(!f)
 		return;
 	barf->func=f->func;
-	barf->params=f->params;	
+	barf->params=f->params;
 }
 
 void interp_barf_add_fvalues(BarFit *barf, const ParamFunc *opt_f)
@@ -147,6 +159,9 @@ double interp_barf_get_value( const BarFit *barf, double x )
 	double temp = 0;
 	const int nfitpoints = barf->npoints;
 	
+	if(barf->are_points_projection)
+		x = barf->inv_projection(x);
+	
 	for ( int i=0; i < nfitpoints; i++ )
 	{
 		if( is_diff_too_small( x, barf->points[i] ) )
@@ -160,15 +175,24 @@ double interp_barf_get_value( const BarFit *barf, double x )
 	return num/den;
 }
 
+double interp_barf_get_value_wrap(double x, void *barf)
+{
+	return interp_barf_get_value((BarFit*)barf,x);
+}
+
 void interp_barf_free(BarFit *barf)
 {
-	SAFE_FREE(barf->points);
-	SAFE_FREE(barf->weights);
-	SAFE_FREE(barf->f_values);
-	SAFE_FREE(barf->params);
-	barf->npoints=0;
-	barf->func=NULL;
+    SAFE_FREE(barf->points);
+    SAFE_FREE(barf->weights);
+    SAFE_FREE(barf->f_values);
+
+    barf->npoints = 0;
+    barf->func = NULL;
+    barf->params = NULL;
+    barf->are_points_projection = false;
+    barf->inv_projection = NULL;
 }
+
 
 double* interp_cheb2_nodes_def( int num )
 {
@@ -218,3 +242,89 @@ BarFit interp_barf_new_cheb2_points(double x1, double x2, int npoints)
 	interp_barf_init_cheb2_points(&barf, x1, x2, npoints);
 	return barf;
 }
+
+
+static inline double* interp_build_cheb1_weights( int num )
+{
+	const double common_factor = PI / (num*2);
+	double *weights;
+	SAFE_ALLOC(weights,num);
+//	printf("weights:\n");
+	for(int i = 0; i < num; i++)
+	{
+		weights[i] = sin( (2 * i + 1) * common_factor );
+		if( i % 2 == 0 )
+			weights[i]*=(-1);
+//		printf("%lf ", weights[i-1]);
+	}
+//	printf("\n");
+	return weights;
+}
+
+static inline double* interp_cheb1_nodes_def(int num)
+{
+	const double common_factor = PI /(2 * num);
+	double* nodes;
+	SAFE_ALLOC(nodes,num);
+	for(int i = 0; i < num; i++)
+	{
+		nodes[i] = -cos( (2 * i + 1) * common_factor );
+	}
+	
+	return nodes;
+}
+
+static inline double* interp_cheb1_nodes( double x1, double x2, int num )
+{
+	double* nodes = interp_cheb1_nodes_def( num );
+	double half_length = ( x2 - x1 ) / 2;
+	for( int i = 0; i < num; i ++ )
+		nodes[i] = (nodes[i] + 1 ) * half_length + x1;
+	return nodes;
+}
+
+void interp_barf_init_cheb1_points( BarFit *barf, double x1, double x2, int npoints )
+{
+	barf->npoints = npoints;
+	barf->points = interp_cheb1_nodes(x1,x2,npoints);
+	barf->weights = interp_build_cheb1_weights( npoints );
+}
+
+BarFit interp_barf_new_cheb1_points(double x1, double x2, int npoints)
+{
+	BarFit barf={0};
+	interp_barf_init_cheb1_points(&barf, x1, x2, npoints);
+	return barf;
+}
+
+void interp_barf_add_fvalues_realline(BarFit *barf, 
+	const ParamFunc *opt_f, FuncPtr projection, FuncPtr inv_projection)
+{
+	if(!barf->points||barf->npoints<=0)
+		raiseErr("points are missing. cannot add fvalues");
+		
+	if(!barf->weights)
+		raiseErr("weights are missing. cannot add fvalues");
+	
+	interp_barf_add_func(barf, opt_f);
+	
+	if(!barf->func)
+		raiseErr("function to interpolate is missing. cannot add fvalues");
+	
+	if (!projection)
+		projection = interp_unit_to_real_line;
+		
+	if(!inv_projection)
+		inv_projection = interp_real_line_to_unit;
+	
+	SAFE_FREE(barf->f_values);
+	SAFE_ALLOC(barf->f_values, barf->npoints);
+	
+	for(int i=0; i<barf->npoints; i++)
+		barf->f_values[i] = barf->func(projection(barf->points[i]),barf->params);
+	
+	barf->are_points_projection = true;
+	barf->inv_projection = inv_projection;
+	
+}
+

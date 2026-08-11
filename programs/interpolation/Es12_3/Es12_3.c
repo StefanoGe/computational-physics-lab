@@ -1,152 +1,23 @@
-#include "comp_physics.h"
+#include "interpolation.h"
+#include "explot.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
-#include <float.h>
 
 // capire come valutare bene questa quantità
 
-#define LOW_NUMBER 0.0001
-#define DOMAIN_PLOT 1000
+#define N_DOMAIN_PLOT 1000
 
 // Ricordati di studiare le proprietà della funzione
 // e dimostrare che sia biunivoca (ha derivata maggiore di zero --> monotona)
 // e ha come limite agli estremi di definizione +- inf
 
-double f1(double z)
+double f1(double z, void *null)
 {
+	(void)null;
 	return 1 / ( z*z -2*z + 2 );
 }
-
-VectorD cheb1_nodes_def(int num)
-{
-	const double common_factor = PI /(2 * num);
-	VectorD nodes = init_vec_length(num);
-	for(int i = 1; i <= num; i++)
-	{
-		nodes.val[i - 1] = -cos( (2 * i - 1) * common_factor );
-	}
-
-	
-	//std_print_vecD( &nodes );
-	
-	return nodes;
-}
-
-VectorD cheb1_weights( int num )
-{
-	const double common_factor = PI / (num*2);
-	VectorD weights = init_vec_length(num);
-	printf("weights:\n");
-	for(int i = 1; i <= num; i++)
-	{
-		weights.val[i - 1] = sin( (2 * i - 1) * common_factor );
-		if( i % 2 == 1 )
-			weights.val[i-1]*=(-1);
-		printf("%lf ", weights.val[i-1]);
-	}
-	printf("\n");
-	return weights;
-}
-
-VectorD cheb1_nodes( double x1, double x2, int num )
-{
-	VectorD nodes = cheb1_nodes_def( num );
-	double half_length = ( x2 - x1 ) / 2;
-	for( int i = 0; i < num; i ++ )
-		nodes.val[i] = (nodes.val[i] + 1 ) * half_length + x1;
-	return nodes;
-}
-
-BarFit fit_cheb1_def( Func_Ptr func, int n_nodes )
-{
-	BaricFitter fit_par;
-	fit_par.points = cheb1_nodes_def( n_nodes );
-	fit_par.weights = cheb1_weights( n_nodes );
-	BarFit barf = bar_fir( &fit_par, func );
-	free_vecD( &fit_par.points, &fit_par.weights );
-	return barf;
-}
-
-BarFit fit_cheb1( Func_Ptr func, int n_nodes, double x1, double x2 )
-{
-	BaricFitter fit_par;
-	fit_par.points = cheb1_nodes( x1, x2, n_nodes );
-	fit_par.weights = cheb1_weights( n_nodes );
-	BarFit barf = bar_fir( &fit_par, func );
-	free_vecD( &fit_par.points, &fit_par.weights );
-	return barf;
-}
-
-double unit_to_real_line( double x )
-{
-	// Here -1 < x < 1
-	return 2 * x / ( 1 - x * x );
-}
-
-BarFit bar_fir_real( const BaricFitter * bar_fitter, Func_Ptr func )
-{
-	BarFit fit;
-	fit.points = vec_cp( &bar_fitter->points );
-	fit.weights = vec_cp( &bar_fitter->weights );
-	fit.f_values = alloc_vecD( fit.points.size );
-	fit.f_values.length = fit.points.length;
-	for( int i = 0; i < fit.f_values.length; i ++ )
-		fit.f_values.val[i] = func( unit_to_real_line( fit.points.val[i] ) );
-	
-	fit.func = func;
-	
-	return fit;
-}
-
-BarFit fit_cheb1_real( Func_Ptr func, int n_nodes )
-{
-	BaricFitter fit_par;
-	fit_par.points = cheb1_weights(n_nodes);
-	fit_par.weights = cheb1_weights( n_nodes );
-	BarFit barf = bar_fir_real( &fit_par, func );
-	free_vecD( &fit_par.points, &fit_par.weights );
-	return barf;
-}
-
-//Ancora meglio: calcolare la funzione con una interpolazione!
-//Ma aspe non sappiamo farla lol
-
-double real_line_to_unit( double z )
-{
-	return ( fabs(z) < LOW_NUMBER ) ? 0 : ( sqrt( 1 + z * z ) -1 ) / z;
-}
-
-static inline bool is_diff_too_small( double x1, double x2 )
-{
-	const double abs_diff = fabs( x1- x2 );
-	const double tolerance = DBL_EPSILON * ( 1 + fabs(x2) );
-	return abs_diff <= tolerance;
-}
-
-double barf_get_value_real( const BarFit * barf, double z )
-{
-	double num = 0;
-	double den = 0;
-	const int length = barf->points.length;
-	double temp = 0;
-	
-	double x = real_line_to_unit(z);
-	
-	
-	for ( int i=0; i < length; i++ )
-	{
-		if( is_diff_too_small( x, barf -> points.val[i] ) )
-			return barf->f_values.val[i];
-		
-		temp = barf->weights.val[i]/( x - barf -> points.val[i] );
-		num += temp * barf->f_values.val[i];
-		den += temp;
-	}
-	
-	return num/den;
-}
-
+/*
 void test( int num )
 {
 	VectorD domain = vec_range( -6, 6, DOMAIN_PLOT );
@@ -171,7 +42,8 @@ void test( int num )
 	free_vecD( &baric_fitter.points, &baric_fitter.weights, &barf.f_values,
 				&barf.points, &barf.weights, &y_values, &true_values);
 }
-
+*/
+/*
 void test_inv_func ( int num)
 {
 	VectorD cheb1 = cheb1_nodes_def( num );
@@ -189,14 +61,49 @@ void test_inv_func ( int num)
 	
 	free_vecD( &cheb1 );
 }
+*/
+
+void test_realline_interp(ParamFuncPtr f,int n)
+{
+	ParamFunc fp = {f,0};
+	BarFit barf = interp_barf_new_cheb1_points(-1,1,n);
+	interp_barf_add_fvalues_realline(&barf,&fp,NULL,NULL);
+	
+	Array domain = arr_linspace(-6,6,N_DOMAIN_PLOT);
+	Array true_values = arr_map_par(&domain,f,NULL);
+	Array approx_pol = arr_map_par(&domain, interp_barf_get_value_wrap,&barf);
+	
+	Global gb_settings = eplot_init_global("Polynomial interpolation "
+				"over the real line","x","y",NULL,
+				"cheb_realline",
+				NULL,NULL,"set xrange [-7:7]");
+	
+	SeriesSpec data = eplot_init_series(domain.data,true_values.data,
+			N_DOMAIN_PLOT,"l","1/(z^2-2z+2)",NULL);
+			
+	SeriesSpec plot_fit = eplot_init_series(domain.data,approx_pol.data,
+			N_DOMAIN_PLOT,"l dt 3","Interpolant polynomial",NULL);
+	
+	Array nodes = arr_new(n);
+	
+	for(int i=0; i<n; i++)
+		ARR(nodes,i) = interp_unit_to_real_line(barf.points[i]);
+			
+	SeriesSpec nodes_plot = eplot_init_series(nodes.data,barf.f_values,
+			n,"p","Nodes",NULL);
+			
+	SeriesSpec series[]={data,plot_fit,nodes_plot};
+			
+	eplot_multi(series,3,&gb_settings);
+	
+	Array *arr_to_free[]={&domain,&true_values,&approx_pol,&nodes};
+	arr_free_many(arr_to_free,4);
+}
 
 int main()
 {
-	//test_inv_func( 10 );
 	
-	
-	test( 30 );
-	
+	test_realline_interp(f1,30);
 	
 	exit(EXIT_SUCCESS);
 }

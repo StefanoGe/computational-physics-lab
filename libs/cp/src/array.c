@@ -13,6 +13,7 @@ void arr_init( Array *arr, int size )
 		raiseErr("Error in memory allocation");
 		
 	arr->size = size;
+	arr->capacity = size;
 	arr->owns_data=true;
 }
 
@@ -20,9 +21,44 @@ void arr_free(Array *arr)
 {
 	if(arr->owns_data)
 		free( arr->data );
-	arr->data=nullptr;
+	arr->data=NULL;
 	arr->size=0;
+	arr->capacity=0;
 	arr->owns_data=false;
+}
+
+void arr_reserve(Array *arr, int capacity)
+{
+    if (capacity <= arr->capacity)
+        return;
+
+    if (!arr->owns_data && arr->data != NULL)
+        raiseErr("Cannot reserve to non-owning array");
+        
+    arr->owns_data = true;
+
+    double *new_data = realloc(arr->data, sizeof(double) * capacity);
+
+    if (!new_data)
+        raiseErr("Error in memory allocation");
+
+    arr->data = new_data;
+    arr->capacity = capacity;
+}
+
+void arr_append(Array *arr, double x)
+{
+    if (!arr->owns_data && arr->data != NULL)
+        raiseErr("Cannot append to non-owning array");
+	
+    if (arr->size >= arr->capacity)
+    {
+        int new_capacity = (arr->capacity == 0 ? 1 : arr->capacity * 2);
+        arr_reserve(arr, new_capacity);
+    }
+
+    arr->data[arr->size] = x;
+    arr->size++;
 }
 
 Array arr_asarr(double *data, int size)
