@@ -65,4 +65,6 @@ void arr_append(Array *arr, double x);
 
 void arr_reserve(Array *arr, int capacity);
 
+void arr_null(Array *arr);
+
 #endif

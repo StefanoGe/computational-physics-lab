@@ -31,7 +31,7 @@ Matrix linst_lu_extract_p(int *pivots, int dim);
 
 int linst_lu_factor_no_pivot(Matrix *A, double tol);
 
-void linst_lsqr_lup ( const Matrix *A, const Array *b, Array *x );
+void linst_lsqr_lup (const Matrix *A, const Array *b, Array *x);
 
 typedef struct {
     ParamFunc *funcs;   
@@ -44,7 +44,7 @@ LinearModel linear_model_alloc(int nbasis);
 
 void linear_model_free(LinearModel *m);
 
-void linst_lsqr_fit_linear_lup( const Array *x, const Array *y, 
+void linst_lsqr_fit_linear_lup( const Array *x, const Array *y,
 	const LinearModel *model, Array *coeffs );
 
 double linst_linear_eval(double x, const LinearModel *l, const Array *coeffs);
@@ -55,6 +55,9 @@ void linst_lsqr_qr( const Matrix *A, const Array *b, Array *x );
 
 void linst_lsqr_fit_linear_qr( const Array *x, const Array *y, 
 	const LinearModel *model, Array *coeffs );
+	
+LinearModel linst_lsqr_fit_linear_qr_wrap( const Array *x, const Array *y, 
+	ParamFuncPtr *f, void **params, int nfuncs, Array *coeffs );
 
 void linst_qless(const Matrix *A, Matrix *Q, Matrix *R, const Array *b,
 	Array *z);

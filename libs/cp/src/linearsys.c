@@ -446,9 +446,17 @@ void linst_lsqr_qr( const Matrix *A, const Array *b, Array *x )
 	Matrix Q={0};
 	Matrix R={0};
 	linst_qr_mgs(A,&Q,&R);
+//	puts("Q\n");
+//	mat_print_stdout(&Q,"%.17g ",true);
+//	puts("R\n");
+//	mat_print_stdout(&R,"%.17g ",true);
 
+	
 	arr_init(x,dim_g);
 	mat_atb(&Q,b,x);
+	
+//	arr_print_inline(x,"%lf ", true, true);
+//	arr_print_inline(x,"%lf ", true, true);
 	
 	linst_backsubst_inplace(&R, x);
 	
@@ -466,11 +474,33 @@ void linst_lsqr_fit_linear_qr( const Array *x, const Array *y,
 	
 	make_linear_model_matrix(&A, model, x);
 	
+//	mat_print_stdout(&A,"%lf ",true);
+	
 	// Apply least square solver
 	
 	linst_lsqr_qr( &A, y, coeffs );
 	
 	mat_free(&A);
+}
+
+LinearModel linst_lsqr_fit_linear_qr_wrap( const Array *x, const Array *y, 
+		ParamFuncPtr *f, void **params, int nfuncs, Array *coeffs )
+{
+	ParamFunc *funcs;
+	SAFE_ALLOC(funcs,nfuncs);
+	for(int i=0; i<nfuncs; i++)
+	{
+		funcs[i].func = f[i];
+		funcs[i].params = (params ? params[i] : NULL);
+	}
+	
+	LinearModel lm = linear_model_new(funcs,nfuncs);
+	
+	linst_lsqr_fit_linear_qr(x,y,&lm,coeffs);
+	
+//	printf("%lf %lf\n",ARRP(coeffs,0),ARRP(coeffs,1));
+	
+	return lm;
 }
 
 void linst_qless(const Matrix *A, Matrix *Q, Matrix *R, const Array *b,

@@ -166,3 +166,11 @@ void arr_axpy(Array *y, double alpha, const Array *x)
 	for(int i=0; i<x->size; i++)
 		ARRP(y,i)+=alpha*ARRP(x,i);
 }
+
+void arr_null(Array *arr)
+{
+	arr->data=NULL;
+	arr->size=0;
+	arr->capacity=0;
+	arr->owns_data=false;
+}
