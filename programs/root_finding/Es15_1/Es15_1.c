@@ -178,6 +178,17 @@ void convergence_study(const Array *debug, const Array *roots_found,
 	SAFE_FREE(abs_errs);
 }
 
+void remove_roots_from_debug(Array *debug, int nfound_roots,
+		const Array *roots_found)
+{
+	for(int j=0; j<debug[nfound_roots-1].size; j++)
+	{
+		if(fabs(ARR(debug[nfound_roots-1],j) - 
+		ARRP(roots_found,nfound_roots-1) )< 1e-15 )
+			debug[nfound_roots-1].size=j;
+	}
+}
+
 void test_newt(ParamFuncPtr f,ParamFuncPtr derivative,FuncPtr der2,
 				FuncPtr der3,
 				double x1,double x2,const double starting_points[], int nroots,
@@ -200,12 +211,7 @@ void test_newt(ParamFuncPtr f,ParamFuncPtr derivative,FuncPtr der2,
 			arr_append(&roots_found,curr_root);
 			arr_append(&starting_values,starting_points[i]);
 			nfound_roots++;
-			for(int j=0; j<debug[nfound_roots-1].size; j++)
-			{
-				if(fabs(ARR(debug[nfound_roots-1],j) - 
-				ARR(roots_found,nfound_roots-1) )< 1e-15 )
-					debug[nfound_roots-1].size=j;
-			}
+			remove_roots_from_debug(debug,nfound_roots,&roots_found);
 		} else{
 			arr_free(debug+nfound_roots);
 			arr_null(debug+nfound_roots);

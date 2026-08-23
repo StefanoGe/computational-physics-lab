@@ -3,10 +3,17 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <comp_physics.h>
+#include "rootf.h"
 #include <math.h>
+#include "explot.h"
 
 #define DOMAIN_PLOT_SIZE 1000
+
+#define ANSI_BLUE   "\x1b[34m"
+#define ANSI_RESET  "\x1b[0m"
+#define ANSI_RED    "\x1b[31m"
+#define ANSI_YELLOW "\x1b[33m"
+#define ANSI_GREEN "\x1b[32m"
 
 double f1( double x, void * unused )
 {
@@ -14,15 +21,11 @@ double f1( double x, void * unused )
 	return x*x - exp( -x );
 }
 
-Par_Func f1_p = { f1,     NULL, 0 };
-
 double f2( double x, void * unused )
 {
 	UNUSED(unused);
 	return tan(x) - 2 * x;
 }
-
-Par_Func f2_p = { f2,     NULL, 0 };
 
 double f3( double x, void * unused )
 {
@@ -30,104 +33,161 @@ double f3( double x, void * unused )
 	return exp(x + 1) - x - 2;
 }
 
-Par_Func f3_p = { f3,     NULL, 0 };
 
-void plot_graph( Par_Func f_p, double x1, double x2, const VectorD * roots)
+void plot_graph(ParamFuncPtr f, double x1, double x2, const Array *roots,
+						char *fname)
 {
-	const int nroots = roots->length;
-	VectorD domain = vec_range( x1, x2, DOMAIN_PLOT_SIZE );
-	VectorD y_values = vec_par_func( &domain, &f_p );
-	VectorD zeroes = vec_full( nroots, 0 );
+	Array domain = arr_linspace(x1,x2,DOMAIN_PLOT_SIZE);
+	Array y_values = arr_map_par(&domain,f,NULL);
+	Array y_roots = arr_map_par(roots,f,NULL);
 	
+	char title[100];
+	snprintf(title,100,"Graph and roots of %s",fname);
 	
-	FILE * gp = gp_open();
-	gp_term_def( gp, "Graph and roots of " );
-	fprintf(gp, "set grid nopolar\n");
-	gp_axes_labels( gp, "x", "f(x)" );
-	char * style2 = "points";
-	char * styles[2];
-	styles[0] = NULL;
-	styles[1] = style2;
-	gp_set_plot( gp, 2, NULL, styles );
-	gp_prt_carr( gp, domain.val, y_values.val, domain.length );
-	gp_prt_carr( gp, roots->val, zeroes.val, nroots );
-	gp_end(gp);
+	Global gb_settings = eplot_init_global(title,
+		"x","y",NULL,"test_newt",NULL,"top left",NULL);
 	
-	free_vecD( &domain, &y_values, &zeroes );
+	SeriesSpec graph = eplot_init_series(domain.data,y_values.data,
+		domain.size,"l",fname,NULL);	
+
+	SeriesSpec root_graph = eplot_init_series(roots->data,y_roots.data,
+		roots->size,"p","Roots",NULL);
+
+	SeriesSpec series[]={graph,root_graph};
+	
+	eplot_multi(series,2,&gb_settings);
 }
 
-void convergence_study(double root, const VectorD * debug)
-{	
-	VectorD digits = init_vec_length( debug->length - 1 );
-	for( int i = 0; i < digits.length; i ++ )
-		digits.val[i] = -log10( fabs( debug->val[i] - root ) );
-		
-	VectorD ratios = init_vec_length( digits.length - 1 );
-	for( int i = 0; i < ratios.length; i ++ )
-		ratios.val[i] = digits.val[i + 1] / digits.val[i];
-		
-	std_print_vecD( &ratios );
-}
-
-//NOTE: DETERMINE THE C CONSTANT!
-
-void test( Par_Func f_p, double x1, double x2,
-					double xtol, double ftol, int nroots, ... )
+void convergence_study(const Array *debug, const Array *roots_found, 
+						int nfound_roots, double *starting_values1,
+						double *starting_values2,
+						const char *f_name)
 {
-	VectorD debug = init_vecD();
-	UNUSED(debug);
+	Array *log_abs_errs;
+	SAFE_ALLOC(log_abs_errs,nfound_roots);
+	Array *log_ratios;
+	SAFE_ALLOC(log_ratios,nfound_roots);
+	Array *abs_errs;
+	SAFE_ALLOC(abs_errs,nfound_roots);
 	
-	va_list args;
-	va_start( args, nroots );
-	
-	VectorD starting_points1 = init_vec_length(nroots);
-	VectorD starting_points2 = init_vec_length(nroots);
-	
-	for(int i =0; i < nroots; i++)
+	for(int root_index=0; root_index<nfound_roots; root_index++)
 	{
-		starting_points1.val[i] = va_arg( args, double );
-		starting_points2.val[i] = va_arg( args, double );		
+		log_abs_errs[root_index] = arr_new(debug[root_index].size);
+		abs_errs[root_index] = arr_new(debug[root_index].size);
+
+		log_ratios[root_index] = arr_new(debug[root_index].size-1);
+		for(int err_index=0; err_index<debug[root_index].size; err_index++)
+		{
+			ARR(abs_errs[root_index],err_index) = 
+				fabs(ARRP(debug+root_index,err_index) 
+				- ARRP(roots_found,root_index)) ;
+			
+			ARR(log_abs_errs[root_index],err_index) = -log10(
+				ARR(abs_errs[root_index],err_index));
+		}
+			
+		for(int err_index=0; err_index<debug[root_index].size-1; err_index++)
+			ARR(log_ratios[root_index],err_index) = 
+				ARR(log_abs_errs[root_index],err_index+1) /
+				ARR(log_abs_errs[root_index],err_index);
 	}
+	
+	puts("-----------------------------------\n");
+	for(int i=0; i<nfound_roots; i++)
+	{
+		printf(ANSI_GREEN"Secant method convergence study for root x = %lf\n"
+				"of function "ANSI_RESET ANSI_RED"%s\n"ANSI_RESET
+				ANSI_YELLOW"starting interval = [%.2lf,%.2lf]\n\n"ANSI_RESET, 
+			ARRP(roots_found,i),f_name,starting_values1[i],starting_values2[i]);
+		puts(ANSI_YELLOW"-log|abs_err|:"ANSI_RESET);
+		arr_print_inline(log_abs_errs+i,"%lf",true,true);
+		puts(ANSI_YELLOW"\nRatios of consecutive -log|abs_err|:"ANSI_RESET);
+		arr_print_inline(log_ratios+i,"%.3lf",true,true);
+		putchar('\n');
+		// (*c_printer[i])(der,der2,der3,ARRP(roots_found,i),abs_errs+i);
+		if(i!=nfound_roots-1)
+			puts("---\n");
+	}
+	
+	puts("-----------------------------------\n\n");
+	
+	for(int i=0; i<nfound_roots; i++)
+	{
+		arr_free(log_ratios+i);
+		arr_free(log_abs_errs+i);
+		arr_free(abs_errs+i);
+	}
+	SAFE_FREE(log_ratios);
+	SAFE_FREE(log_abs_errs);
+	SAFE_FREE(abs_errs);
+}
 
-	va_end(args);
+void remove_roots_from_debug(Array *debug, int nfound_roots,
+		const Array *roots_found)
+{
+	for(int j=0; j<debug[nfound_roots-1].size; j++)
+	{
+		if(fabs(ARR(debug[nfound_roots-1],j) - 
+		ARRP(roots_found,nfound_roots-1) )< 1e-15 )
+			debug[nfound_roots-1].size=j;
+	}
+}
 
-	VectorD roots = init_vec_length(nroots);
+void test( ParamFuncPtr f, double x1, double x2,
+					double xtol, double ftol, int nroots, 
+					double starting_points1[], double starting_points2[],
+					char *fname)
+{
+	Array *debug;
+	SAFE_ALLOC(debug,nroots);
+	for(int i=0; i<nroots; i++)
+		arr_null(debug+i);
+	Array roots = arr_new(nroots);
 	
 	for( int i = 0; i < nroots; i++)
 	{
 		int exit_status = -2;
-		roots.val[i] = root_sec( &f_p, starting_points1.val[i], 
-							starting_points2.val[i], xtol, ftol, &debug,
+		ARR(roots,i) = root_sec( f, NULL, starting_points1[i], 
+							starting_points2[i], xtol, ftol, debug+i,
 							&exit_status);
 		
 		if(exit_status == -1)
 		{
 			eprint("root_finding failed. debug:\n");
-			print_vecD( &debug, "%.20lf, ", stderr );
+			arr_print( stderr,debug+i, "%.20lf, ");
+			return;
 		}
-		
-		if( exit_status != -2 && exit_status != -1 )
-		{
-			printf("Intermediate values for finding the root %lf of index %d:\n", 
-					roots.val[i], i);
-			print_vecD( &debug, "%.20lf\n", stdout );
-			convergence_study( roots.val[i], &debug );
-		}
-		
-
+		remove_roots_from_debug(debug,i+1,&roots);
 	}
 	 
-	plot_graph( f_p, x1, x2, &roots );
-	
-	free_vecD( &debug, &roots, &starting_points1, &starting_points2 );
+	convergence_study(debug,&roots,nroots,starting_points1,starting_points2,
+		fname);
+	 
+	plot_graph( f, x1, x2, &roots,fname );
+
+	arr_free(&roots);
+	for(int i=0; i<nroots; i++)
+		arr_free(debug+i);
+	SAFE_FREE(debug);
 }
 
 int main()
 {
-	test( f1_p, -2, 2, DEF_TOL, DEF_TOL, 1, -2.0, 2.0 );
-	test( f2_p, -0.2, 1.4, DEF_TOL, DEF_TOL, 2, -0.2, 0.5, 0.9, 1.4 );
-	test( f3_p, -2, 2, DEF_TOL, DEF_TOL, 1,-2.0, 2.0 );
+	double starting_points1_1[]={-2};
+	double starting_points1_2[]={2};
+	test(f1,-2,2,DEF_TOL,DEF_TOL,1,starting_points1_1,starting_points1_2,
+		"x^2 - e^{-x}");
 	
+	double starting_points2_1[]={-0.2,0.9};
+	double starting_points2_2[]={0.5,1.4};
+	test(f2,-0.2,1.4,DEF_TOL,DEF_TOL,2,starting_points2_1,starting_points2_2,
+		"2x - tan(x)");
+		
+	double starting_points3_1[]={-2};
+	double starting_points3_2[]={2};
+	test(f3,-2,2,DEF_TOL,DEF_TOL,1,starting_points3_1,starting_points3_2,
+		"e^{x+1} - 2 - x");
+
 	exit(EXIT_SUCCESS);
 }
 
