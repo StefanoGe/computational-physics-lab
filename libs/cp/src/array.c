@@ -174,3 +174,20 @@ void arr_null(Array *arr)
 	arr->capacity=0;
 	arr->owns_data=false;
 }
+
+Array arr_slice(const Array *arr,int start, int end)
+{
+	if(start >= end)
+		raiseErr("end must be strictly higher than start: "
+				"start: %d end: %d", start,end);
+	
+	if(end > arr->size)
+		raiseErr("end must be less or equal to arr->size: "
+				"arr->size: %d end: %d",arr->size,end);
+	
+	const int new_size = end-start;
+	Array new = arr_new(new_size);
+	for(int i=0; i<new_size; i++)
+		ARR(new,i)=ARRP(arr,i+start);
+	return new;
+}

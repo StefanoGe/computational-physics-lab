@@ -67,4 +67,7 @@ void arr_reserve(Array *arr, int capacity);
 
 void arr_null(Array *arr);
 
+Array arr_slice(const Array *arr,int start, int end);
+
+
 #endif

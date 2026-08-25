@@ -10,6 +10,12 @@
 #define PI 3.1415926535897932384626433
 #endif
 
+#define ANSI_BLUE   "\x1b[34m"
+#define ANSI_RESET  "\x1b[0m"
+#define ANSI_RED    "\x1b[31m"
+#define ANSI_YELLOW "\x1b[33m"
+#define ANSI_GREEN "\x1b[32m"
+
 #define SWAP(a, b) do { \
     __typeof__(a) _tmp = (a); \
     (a) = (b); \
