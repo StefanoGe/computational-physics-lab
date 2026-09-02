@@ -6,7 +6,7 @@
 
 #define MAX_LEG 10'000
 #define ORDER_AUTO -1
-#define DOUBLE_EXP_T_TOL DBL_EPSILON*5
+#define DOUBLE_EXP_T_TOL DBL_EPSILON*10
 
 double intg_trap( const ParamFuncPtr f, void *params,
 			double x1, double x2, int n_subint )
@@ -161,58 +161,149 @@ static inline double double_exp_real_line_cov_der(double x){
 static inline double real_line_add(double x,ParamFuncPtr f,void *params)
 {
 	return f(double_exp_real_line_cov(x),params)
-					*double_exp_real_line_cov_der(x);
-}
+					*double_exp_real_line_cov_der(x);}
 
+static inline double double_exp_half_line_cov(double x){
+		return exp(PI*sinh(x)/2);}
 
+static inline double double_exp_half_line_cov_der(double x){
+		return exp(PI*sinh(x)/2)*PI/2*cosh(x);}
 
-double intg_double_exp_real_line(ParamFuncPtr f, void *params, int N)
+static inline double half_line_add(double x,ParamFuncPtr f,void *params)
 {
-	double (diffeomorphism)(double,ParamFuncPtr,void*);
+	return f(double_exp_half_line_cov(x),params)
+					*double_exp_half_line_cov_der(x);}
+
+static inline double double_exp_half_line_exp_cov(double x){
+		return exp(x-exp(-x));}
+
+static inline double double_exp_half_line_exp_cov_der(double x){
+		return exp(x-exp(-x))*(1+exp(-x));}
+
+static inline double half_line_add_exp(double x,ParamFuncPtr f,void *params)
+{
+	return f(double_exp_half_line_exp_cov(x),params)
+					*double_exp_half_line_exp_cov_der(x);}
+
+typedef struct {
+    void *params;
+	double a;
+	double b;
+}AddParams;
+
+static inline double double_exp_bounded_cov(double x){
+		return tanh(PI/2*sinh(x));}
+
+static inline double double_exp_bounded_cov_der(double x){
+		return PI/2*cosh(x)/pow(cosh(PI/2*sinh(x)),2);}
+
+static inline double bounded_add(double t,ParamFuncPtr f,void *params)
+{
+	AddParams *add_params = (AddParams*)params;
+
+    const double c = (add_params->a+add_params->b)/2;
+    const double h = (add_params->b-add_params->a)/2;
+
+    const double u = double_exp_bounded_cov(t);
+	
+//	eprint("t = %.5e f(t)=%.5e\n",c+h*u,f(c+h*u,add_params->params) );
+
+	const double x = c+h*u;
+	eprint("t = %.17g u = %.17g  x2-x = %.17g",
+		   t,u,add_params->b-x);
+
+	return f(c+h*u,add_params->params) * h
+					* double_exp_bounded_cov_der(t);}
+
+double intg_double_exp(ParamFuncPtr f, void *params, int N, Dbexp_mode mode,
+	double a,double b,double tol)
+{
+	if(tol==DEF_TOL)
+		tol=DOUBLE_EXP_T_TOL;
+	else if(tol<=0)
+		raiseErr("tol must be more than zero\ntol = %lf",tol);
+	
+	double (*diffeomorphism)(double);
+	double (*addend_calc)(double,ParamFuncPtr,void *);
+	AddParams add_params={params,0,0};
+	
+	switch(mode){
+		case REAL_LINE:
+			addend_calc=real_line_add;
+			diffeomorphism=double_exp_real_line_cov;
+			break;
+		case HALF_LINE:
+			addend_calc=half_line_add;
+			diffeomorphism=double_exp_half_line_cov;
+			break;
+		case HALF_LINE_EXP:
+			addend_calc=half_line_add_exp;
+			diffeomorphism=double_exp_half_line_exp_cov;
+			break;
+		case BOUNDED:
+			add_params.a=a;
+			add_params.b=b;
+			params=(void*)&add_params;
+			addend_calc=bounded_add;
+			diffeomorphism=double_exp_bounded_cov;
+	}
 	
 	double tM=0.1;
-	while( fabs(real_line_add(tM,f,params)) > DOUBLE_EXP_T_TOL 
-		|| fabs(real_line_add(-tM,f,params)) > DOUBLE_EXP_T_TOL )
-	{
+	double curr_add_plus=0;
+	double curr_add_minus=0;
+	do{
+		curr_add_plus=fabs(addend_calc(tM,f,params));
+		curr_add_minus=fabs(addend_calc(-tM,f,params));
 		if(tM>5.7)
 			raiseErr("f(x) is not approaching zero fast enough\n"
 					 "g(tM) = %g g(-tM) = %g\n"
 					 "f(x) = %g f(-x) = %g\n",
-						real_line_add(tM,f,params),
-						real_line_add(-tM,f,params),
-						f(double_exp_real_line_cov(tM),params),
-						f(double_exp_real_line_cov(-tM),params));
-/*	
-		eprint(	"%lf\n"
-				"g(tM) = %g g(-tM) = %g\n",
-				 tM,
-				 real_line_add(tM,f,params),
-					real_line_add(-tM,f,params));
-*/
+						addend_calc(tM,f,params),
+						addend_calc(-tM,f,params),
+						f(diffeomorphism(tM),params),
+						f(diffeomorphism(-tM),params));
+	
+		eprint(	"tM = %lf\n"
+					 "g(tM) = %g g(-tM) = %g\n"
+					 "x = %g -x = %g\n"
+					 "f(x) = %g f(-x) = %g\n",tM,
+						addend_calc(tM,f,params),
+						addend_calc(-tM,f,params),
+						diffeomorphism(tM),
+						diffeomorphism(-tM),
+						f(diffeomorphism(tM),params),
+						f(diffeomorphism(-tM),params));
+	
 		tM+=0.1;
-	}
+	}while( curr_add_plus > tol 
+		|| curr_add_minus > tol 
+		|| isnan(curr_add_plus) || isnan(curr_add_minus));
 	
 //	eprint("%lf\n",tM);
 	
-	double sum=0;
+	double sum_plus=0;
+	double sum_minus=0;
 	const double stepsize=tM/N;
 	
 	if(N<=0)
 		raiseErr("order N must be greater than 0\n"
 				 "order N = %d",N);
 	
-	for(int i=-N; i<=N; i++)
+	for(int i=N; i>0; i--)
 	{
 //		eprint("%lf, %lf\n",double_exp_real_line_cov(i*stepsize),
 //						double_exp_real_line_cov_der(i*stepsize));
-		sum+=real_line_add(stepsize*i,f,params);
 /*
-		eprint( "sum = %lf addend = %lf\n"
-				"x = %lf f(x) = %lf",sum,real_line_add(stepsize*i,f,params),
-					double_exp_real_line_cov(stepsize*i),
-					f(double_exp_real_line_cov(stepsize*i),params));
+		eprint( "sum_plus =  %.3e addend = %.3e\n"
+				"sum_minus = %.3e addend = %.3e\n",sum_plus,
+					addend_calc(stepsize*i,f,params),
+					sum_minus,
+					addend_calc(-stepsize*i,f,params));
 */
+		sum_plus+=addend_calc(stepsize*i,f,params);
+		sum_minus+=addend_calc(-stepsize*i,f,params);
+
+
 	}
-	
-	return sum*stepsize;
+	return (sum_plus+sum_minus+addend_calc(0,f,params))*stepsize;
 }

@@ -5,6 +5,15 @@
 #include "array.h"
 #include "matrix.h"
 
+#define DEF_TOL -1
+
+typedef enum {
+	BOUNDED,
+	REAL_LINE,
+	HALF_LINE,
+	HALF_LINE_EXP
+}Dbexp_mode;
+
 double intg_trap( const ParamFuncPtr f, void *params,
 			double x1, double x2, int n_subint );
 
@@ -23,5 +32,9 @@ double intg_gauss_legendre( ParamFuncPtr f, void *params, int order,
 			double x1, double x2 );
 
 double intg_double_exp_real_line(ParamFuncPtr f, void *params, int N);
+
+double intg_double_exp(ParamFuncPtr f, void *params, int N, Dbexp_mode mode,
+	double a, double b,double tol);
+
 
 #endif
