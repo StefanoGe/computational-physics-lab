@@ -12,9 +12,9 @@ typedef struct{
 	int nparams;
 }ParDer;
 
-void ode_feuler( double init_time, double final_time, const double init_value[], 
-				const Derivative ders[], void **f_parameters,
-				int sys_size, int nsteps, Array *t_output, Matrix *f_output );
+void ode_feuler( double t0, double tf, const double init_value[], 
+				Derivative ders[], void **params,
+				int nfuncs, int nsteps, Array *t_output, Matrix *f_output );
 
 void ode_ie2( double init_time, double final_time, const double init_value[], 
 				const Derivative ders[], void **f_parameters,

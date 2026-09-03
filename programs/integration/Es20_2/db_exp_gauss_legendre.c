@@ -49,7 +49,8 @@ void computation_result_analysis( ParamFuncPtr f, double true_value,
 	arr_init(true_value_deviation_gl,n_estimations);
 	
 	printf( ANSI_GREEN"Evalutaing integral of function "ANSI_RED"%s\n"
-			ANSI_GREEN"with double exponential quadrature rule\n"
+			ANSI_GREEN"with double exponential and Guass-Legendre "
+			"quadrature rules\n"
 			ANSI_YELLOW
 			"between endpoints ["ANSI_RED"%.2lf"ANSI_RESET","ANSI_RED
 			"%.2lf"ANSI_RESET
@@ -96,18 +97,20 @@ void plot_error(const Array *true_value_deviation_dbe,
 		sprintf(fnames_de[i],"%s de", fnames[i]);
 		sprintf(linetype_gl[i],"lp lt %d",i+1);
 		sprintf(linetype_de[i],"l lt %d dt 2",i+1);
-		series[i*2]=eplot_init_series(n_nodes.data,(true_value_deviation_dbe+i)->data,
+		series[i*2]=eplot_init_series(n_nodes.data,
+				(true_value_deviation_dbe+i)->data,
 				n_estimations,linetype_de[i],fnames_de[i],NULL);
-		series[i*2+1]=eplot_init_series(n_nodes.data,(true_value_deviation_gl+i)->data,
+		series[i*2+1]=eplot_init_series(n_nodes.data,
+				(true_value_deviation_gl+i)->data,
 				n_estimations,linetype_gl[i],"-    gl",NULL);
 	}
 
 	
 	Global gb_settings = eplot_init_global("Convergence of double exp. "
-		"rule for improper integrals",
+		"rule vs Gauss-Legendre in bounded intervals",
 		"n. nodes","|I_n - I|","y","improper_conv_plot",
 		"improper_conv_plot","outside",
-		"set object 1 rect from -20,1e-14 to 60,1e-16 fc rgb \"light-red\" " 
+		"set object 1 rect from -20,1e-14 to 60,1e-17 fc rgb \"light-red\" " 
 		"fs transparent solid 0.2 border lc rgb \"#b0f03232\" lw 1.5\n"
 		"set object 1 front\n"
 		"set label \"{/Symbol e}_{mach} zone\" at 1,4e-14\n"
@@ -158,7 +161,7 @@ int main()
 								fnames[3],0,PI/2,DEF_TOL);
 	computation_result_analysis(f5,PI/sqrt(2),true_value_deviation_dbe+4,
 								true_value_deviation_gl+4,
-								fnames[4],0,PI/2,DEF_TOL);
+								fnames[4],0,PI/2,10e-6);
 
 //	printf("%e\n",(PI/2-10e-10)-(PI/2));
 

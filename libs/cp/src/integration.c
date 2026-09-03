@@ -207,11 +207,11 @@ static inline double bounded_add(double t,ParamFuncPtr f,void *params)
     const double u = double_exp_bounded_cov(t);
 	
 //	eprint("t = %.5e f(t)=%.5e\n",c+h*u,f(c+h*u,add_params->params) );
-
+/*
 	const double x = c+h*u;
 	eprint("t = %.17g u = %.17g  x2-x = %.17g",
 		   t,u,add_params->b-x);
-
+*/
 	return f(c+h*u,add_params->params) * h
 					* double_exp_bounded_cov_der(t);}
 
@@ -262,7 +262,7 @@ double intg_double_exp(ParamFuncPtr f, void *params, int N, Dbexp_mode mode,
 						addend_calc(-tM,f,params),
 						f(diffeomorphism(tM),params),
 						f(diffeomorphism(-tM),params));
-	
+/*	
 		eprint(	"tM = %lf\n"
 					 "g(tM) = %g g(-tM) = %g\n"
 					 "x = %g -x = %g\n"
@@ -273,7 +273,7 @@ double intg_double_exp(ParamFuncPtr f, void *params, int N, Dbexp_mode mode,
 						diffeomorphism(-tM),
 						f(diffeomorphism(tM),params),
 						f(diffeomorphism(-tM),params));
-	
+*/	
 		tM+=0.1;
 	}while( curr_add_plus > tol 
 		|| curr_add_minus > tol 

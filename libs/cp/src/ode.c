@@ -4,7 +4,8 @@
 
 // Common helper functions
 
-static void init_output(int sys_size, int nsteps, Array *t_output, Matrix *f_output)
+static void init_output(int sys_size, int nsteps, Array *t_output, 
+	Matrix *f_output)
 {
 	if(t_output->size!=nsteps+1)
 		arr_init(t_output, nsteps+1);
@@ -26,25 +27,26 @@ static void init_starting_values(double step_size, int sys_size, int nsteps,
 
 static void **setup_parameters( int sys_size, void **f_parameters )
 {
-	void **parameters=malloc(sizeof(void*)*sys_size);
+	void **parameters;
+	SAFE_ALLOC(parameters,sys_size);
 	for(int i=0; i<sys_size;i++)
-		parameters[i]=(f_parameters)?f_parameters[i]:nullptr;
+		parameters[i]=(f_parameters)?f_parameters[i]:NULL;
 	return parameters;
 }
 
 /*
  * Forward Euler method for solving systems of differential equations that
- * can be written in the form ui'(t)=f(u[],t)
+ * can be written in the form u_i'(t)=f(u[],t)
  * 
  * Paramters:
- * init_time      
- * final_time      
+ * t0      
+ * tf      
  * init_value[]   - value of the functions at time t
  * ders[]         - array of parametrized functions. ders[i](t, u, f_parameters[i]) 
  *                  should return the value of the derivative of the i-th 
  *                  function at time t
  * **f_paramters  - optional parameters of the functions
- * sys_size       - number of equations to be considered, and of functions to be
+ * nfucs       - number of equations to be considered, and of functions to be
  *                  computed
  * nsteps         - number of timesteps to divide the time interval equally
  * *t_output      - array to store the initial time + nsteps timesteps 
@@ -54,42 +56,43 @@ static void **setup_parameters( int sys_size, void **f_parameters )
  * 
  */ 
 
-void ode_feuler( double init_time, double final_time, const double init_value[], 
-				const Derivative ders[], void **f_parameters,
-				int sys_size, int nsteps, Array *t_output, Matrix *f_output )
+void ode_feuler( double t0, double tf, const double init_value[], 
+				Derivative ders[], void **params,
+				int nfuncs, int nsteps, Array *t_output, Matrix *f_output )
 {
-	init_output(sys_size, nsteps, t_output, f_output);
-	const double step_size = ( final_time - init_time )/nsteps;
-	init_starting_values(step_size,sys_size, nsteps, t_output, f_output,
-								init_time, init_value);
-	void **parameters=setup_parameters(sys_size, f_parameters);
+	init_output(nfuncs, nsteps, t_output, f_output);
+	const double step_size = ( tf - t0 )/nsteps;
+	init_starting_values(step_size,nfuncs, nsteps, t_output, f_output,
+								t0, init_value);
+
+	void **parameters=setup_parameters(nfuncs,params);
 
 	for(int t = 0; t < nsteps; t++ )
 	{
-		for(int j=0; j<sys_size; j++ )
+		for(int j=0; j<nfuncs; j++ )
 		{
 			MATP(f_output,t+1,j)=MATP(f_output,t,j) 
-				+ step_size*ders[j](ARRP(t_output,t), f_output->rows[t], parameters);
-			if(t<100)
-				eprint("component %d at time %d: %lf", j, t+1,MATP(f_output,t+1,j));
+				+ step_size*ders[j](ARRP(t_output,t), f_output->rows[t], parameters[j]);
+//			if(t<100)
+//				eprint("component %d at time %d: %lf", j, t+1,MATP(f_output,t+1,j));
 		}
 	}
 
 	mat_transpose(f_output,f_output);
+	SAFE_FREE(parameters);
 }
 
 
 
 
 void ode_ie2( double init_time, double final_time, const double init_value[], 
-				const Derivative ders[], void **f_parameters,
+				const Derivative ders[], void **params,
 				int sys_size, int nsteps, Array *t_output, Matrix *f_output )
 {
 	init_output(sys_size, nsteps, t_output, f_output);
 	const double step_size = ( final_time - init_time )/nsteps;
 	init_starting_values(step_size,sys_size, nsteps, t_output, f_output,
 								init_time, init_value);
-	void **parameters=setup_parameters(sys_size, f_parameters);
 
 	Array step1=arr_new(sys_size);
 	for(int t = 0; t < nsteps; t++ )
@@ -97,7 +100,7 @@ void ode_ie2( double init_time, double final_time, const double init_value[],
 		for(int j=0; j<sys_size; j++)
 		{
 			ARR(step1,j)=MATP(f_output,t,j) 
-				+ step_size/2*ders[j](ARRP(t_output,t), f_output->rows[t], parameters[j]);
+				+ step_size/2*ders[j](ARRP(t_output,t), f_output->rows[t], params[j]);
 		}
 		
 		const double t_step2=ARRP(t_output,t)+step_size/2;
@@ -105,13 +108,13 @@ void ode_ie2( double init_time, double final_time, const double init_value[],
 		for(int j=0; j<sys_size; j++ )
 		{		
 			MATP(f_output,t+1,j)=MATP(f_output,t,j) 
-				+ step_size*ders[j](t_step2, step1.data, parameters[j]);
+				+ step_size*ders[j](t_step2, step1.data, params[j]);
 			/*if(t<100)
 				eprint("component %d at time %d: %lf", j, t+1,MATP(f_output,t+1,j));*/
 		}
 	}
 	arr_free(&step1);
-	free(parameters);
+	free(params);
 	mat_transpose(f_output,f_output);
 }
 
