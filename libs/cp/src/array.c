@@ -191,3 +191,12 @@ Array arr_slice(const Array *arr,int start, int end)
 		ARR(new,i)=ARRP(arr,i+start);
 	return new;
 }
+
+double arr_max(const Array *arr)
+{
+	double max=ARRP(arr,0);
+	for(int i=1; i<arr->size; i++)
+		if(max<ARRP(arr,i))
+		max=ARRP(arr,i);
+	return max;
+}

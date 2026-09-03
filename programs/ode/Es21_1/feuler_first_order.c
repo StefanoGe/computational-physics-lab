@@ -5,6 +5,8 @@
 #include "matrix.h"
 #include <math.h>
 
+#define N_FUNCS 3
+
 double eq1(double t, double *u, [[maybe_unused]]void *unused )
 {return -2*t**u;}
 
@@ -45,36 +47,43 @@ void solve()
 */
 void plot(
 		int nsteps, char fnc_names[][100], FuncPtr funcs[],
-		Matrix *f_values, Array *t_values, int nsystems)
+		Matrix *f_values, Array *t_values)
 {
 	// Static counter to keep track of function calls, for easier file management.
 	static int counter=0; counter++;
-	UNUSED(fnc_names);
-	Array *true_values;
-	SAFE_ALLOC(true_values,3);
-	for(int i=0; i<3; i++)
+	Array true_values[N_FUNCS]={0};
+	Array normalized_times[N_FUNCS]={0};
+	for(int i=0; i<N_FUNCS; i++)
+	{
+		arr_cp(t_values+i,normalized_times+i);
+		arr_scale(normalized_times+i,1.0/ARRP(t_values+i,nsteps));
+	}
+	eprint("ok2");
+	for(int i=0; i<N_FUNCS; i++)
 		true_values[i]=arr_map(t_values+i,funcs[i]);
+	eprint("ok3");
 	// Plot setup --- global settings
 	char title[1000];
 	char build_name[100];
 	char output_name[100];
-	sprintf(title, "Numerical solution of");
+	char labels[N_FUNCS*2][100];
+	sprintf(title, "ODEs solutions from Euler's method");
 	sprintf(build_name, "euler_test%d", counter);
 	sprintf(output_name, "euler_test%d", counter);
-	eprint("ok");
 	SeriesSpec *series;
-	SAFE_ALLOC(series,nsystems*2);
+	SAFE_ALLOC(series,N_FUNCS*2);
 
 	Global gb_settings = eplot_init_global(title,"t","u(t)",NULL,build_name,
-	output_name,NULL,NULL);
-	for(int i=0; i<nsystems; i++)
+	output_name,"top right outside",NULL);
+	for(int i=0; i<N_FUNCS; i++)
 	{
-		series[i*2]=eplot_init_series(t_values[i].data,true_values[i].data,
-			nsteps+i,"l",NULL,NULL);
-		series[i*2+1]=eplot_init_series(t_values[i].data,f_values[i].data,
-			nsteps+i,"p",NULL,NULL);
+		sprintf(labels[i*2],"u' = %s - exact solution",fnc_names[i]);
+		series[i*2]=eplot_init_series(normalized_times[i].data,f_values[i].data,
+			nsteps+1,"l",labels[2*i],NULL);
+		sprintf(labels[i*2+1],"-    numerical solution");
+		series[i*2+1]=eplot_init_series(normalized_times[i].data,true_values[i].data,
+			nsteps+1,"l dt 3",labels[2*i+1],NULL);
 	}
-	eprint("ok2");
 	/*
 	// Values of exact solution at timesteps
 	SeriesSpec data_desc_true={
@@ -98,10 +107,12 @@ void plot(
 	};
 	*/
 	
-	eplot_multi(series, 2*nsystems, &gb_settings);
+	eplot_multi(series, 2*N_FUNCS, &gb_settings);
 	
-	for(int i=0; i<3; i++)
+	for(int i=0; i<3; i++){
 		arr_free(true_values+i);
+		arr_free(normalized_times+i);
+	}
 }
 
 double compute_error(double *true_arr, double *estimate, int length)
@@ -211,7 +222,7 @@ int main()
 	ode_feuler(0,3,init_values+2,eqs+2,NULL,1,320,t_values+2,f_values+2);
 	eprint("ok");
 	char fnames[][100]={"-2tu","u+t","t^2/u(1+t^3)"};
-	plot(320,fnames,true_funcs,f_values,t_values,3);
+	plot(320,fnames,true_funcs,f_values,t_values);
 /*
 	test_feuler(eq1, 0, 2, 2, "", true1);
 	test_feuler(eq2, 0, 1, 2, "", true2); 
