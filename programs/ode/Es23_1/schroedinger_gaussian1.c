@@ -4,7 +4,6 @@
 // se differenzasarà minore o uguale a una certa tolleranza.
 // è un'operazione che faccio a ogni step, e a ogni step riaggiusto lo 
 // stepsize
-#include "comp_physics.h"
 #include "matrixc.h"
 #include "arrayc.h"
 #include "array.h"

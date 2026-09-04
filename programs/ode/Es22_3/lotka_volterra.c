@@ -1,4 +1,3 @@
-#include "comp_physics.h"
 #include "ode.h"
 #include "explot.h"
 #include "array.h"

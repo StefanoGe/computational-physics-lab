@@ -1,19 +1,15 @@
-#include "comp_physics.h"
 #include "ode.h"
 #include "explot.h"
 #include "array.h"
 #include "matrix.h"
 #include <math.h>
+#include "genutil.h"
 
-double eq1(double t, double *u, [[maybe_unused]]void *unused )
-{return -2*t**u;}
+double eq1(double t, double *u, [[maybe_unused]]void *unused ){
+	return -2*t**u;}
 
-typedef double(*TrueFunc)(double);
-
-double true1(double t)
-{
-	return 2*exp(-t*t);
-}
+double true1(double t){
+	return 2*exp(-t*t);}
 
 double compute_error(double *true_arr, double *estimate, int length)
 {
@@ -31,7 +27,7 @@ double compute_error(double *true_arr, double *estimate, int length)
 }
 
 void error_study(Derivative eq, double t0, double tf, double in_value,
-	const char *fnc_name, TrueFunc fnc)
+	const char *fnc_name, FuncPtr fnc)
 {
 	const int max_nstep=300;
 	const int nstep_increment=30;
@@ -40,109 +36,71 @@ void error_study(Derivative eq, double t0, double tf, double in_value,
 	Matrix num_sol={0};
 	Array time={0};
 	// Global errors
-	VectorD errors_ie2=init_vecD();
-	VectorD errors_rk4=init_vecD();
+	Array errors_ie2={0};
+	Array errors_rk4={0};
 	// Number of function evaluation for each iteration of the methods
-	VectorD nf_ie2=init_vecD();
-	VectorD nf_rk4=init_vecD();
+	Array nf_ie2={0};
+	Array nf_rk4={0};
 
 	Array true_values={0};
-	VectorD nsteps_vec=init_vecD();
-	VectorD one_over_step_size_sq=init_vecD();
-	VectorD one_over_step_size_4th=init_vecD();
+	Array nsteps_vec={0};
+	Array one_over_step_size_sq={0};
+	Array one_over_step_size_4th={0};
 	
 	for(int i=0; i<n_iter; i++)
 	{
 		// Number of steps
 		int nsteps=nstep_increment*(i+1);
-		appendD(&nf_ie2, (double)nsteps*2);
-		appendD(&nf_rk4, (double)nsteps*4);
-		appendD(&one_over_step_size_sq, (double)1/nsteps/nsteps);
-		appendD(&one_over_step_size_4th, one_over_step_size_sq.val[i]/nsteps/nsteps);
-		appendD(&nsteps_vec, (double)nsteps);
-		
+		arr_append(&nf_ie2, (double)nsteps*2);
+		arr_append(&nf_rk4, (double)nsteps*4);
+		arr_append(&one_over_step_size_sq, (double)1/nsteps/nsteps);
+		arr_append(&one_over_step_size_4th, ARR(one_over_step_size_sq,i)/nsteps/nsteps);
+		arr_append(&nsteps_vec, (double)nsteps);
 		// Call of IE2 method
-		ode_ie2( t0, tf, &in_value, &eq, nullptr,
+		ode_ie2( t0, tf, &in_value, &eq, NULL,
 						1, nsteps, &time, &num_sol );
-		
 		// Computation of true values
 		arr_init(&true_values, nsteps+1);
 		for(int j=0; j<nsteps+1; j++)
 			ARR(true_values,j)=fnc(ARR(time,j));
 		
 		// Error computation for IE2 method
-		appendD(&errors_ie2,  compute_error(true_values.data, num_sol.data,nsteps+1) );
+		arr_append(&errors_ie2,  compute_error(true_values.data, num_sol.data,nsteps+1) );
 		
 		// Call of RK4 method
 		ode_rk4( t0, tf, &in_value, &eq, nullptr,
 						1, nsteps, &time, &num_sol );
 		
 		//Error computation for RK4 method
-		appendD(&errors_rk4, compute_error(true_values.data, num_sol.data,nsteps+1) );		
-		
+		arr_append(&errors_rk4, compute_error(true_values.data, num_sol.data,nsteps+1) );		
 		arr_free(&time);
 		mat_free(&num_sol);
 	}
-	
 	// Plot setup --- global settings
 	char title[1000];
-	char build_name[100];
-	char output_name[100];
 	sprintf(title, "Convergence of IE2 and RK4 method for u\'(t)=%s", 
 							fnc_name);
-	sprintf(build_name, "ie2_rk4_conv_study");
-	sprintf(output_name, "ie2_rk4_conv_study");
 
-	Global gb_settings = {
-		.title=title,
-		.xlabel="Number of function evaluations",
-		.ylabel="Maximum error",
-		.logscale="xy",
-		.build_name=build_name,
-		.output_name=output_name
-	};
+	Global gb_settings = eplot_init_global(title,"Number of function evaluations",
+		"Maximum error","xy","ie2_rk4_conv_study","ie2_rk4_conv_study",NULL,NULL);
 	// Max error over whole vs nsteps plot 
-	SeriesSpec error_ie2={
-		.x=nf_ie2.val,
-		.y=errors_ie2.val,
-		.size=n_iter,
-		.style="lp",
-		.label="ie2",
-		.color=nullptr
-	};
+	SeriesSpec error_ie2=eplot_init_series(nf_ie2.data,errors_ie2.data,n_iter,
+		"lp","ie2",NULL);
 	// Max error over whole vs nsteps plot 
-	SeriesSpec error_rk4={
-		.x=nf_rk4.val,
-		.y=errors_rk4.val,
-		.size=n_iter,
-		.style="lp",
-		.label="rk4",
-		.color=nullptr
-	};
+	SeriesSpec error_rk4=eplot_init_series(nf_rk4.data,errors_rk4.data,
+		n_iter,"lp","rk4",NULL);
 	// Reference line for second order convergence
-	SeriesSpec ref_line2={
-		.x=nsteps_vec.val,
-		.y=one_over_step_size_sq.val,
-		.size=n_iter,
-		.style="l dt 4",
-		.label="2^{nd} order convergence",
-		.color=nullptr
-	};
+	SeriesSpec ref_line2={nsteps_vec.data,one_over_step_size_sq.data,n_iter,
+		"l dt 4","2^{nd} order convergence",NULL};
 	// Reference line for fourth order convergence
-	SeriesSpec ref_line4={
-		.x=nsteps_vec.val,
-		.y=one_over_step_size_4th.val,
-		.size=n_iter,
-		.style="l dt 4",
-		.label="4^{th} order convergence",
-		.color=nullptr
-	};
-
+	SeriesSpec ref_line4={nsteps_vec.data,one_over_step_size_4th.data,
+		n_iter,"l dt 4","4^{th} order convergence",NULL};
 	SeriesSpec series[]={error_ie2, error_rk4, ref_line2, ref_line4};
 	eplot_multi(series, 4, &gb_settings);
 			
-	free_vecD(&errors_ie2, &errors_rk4, &nf_ie2, &nf_rk4, &nsteps_vec,
-				&one_over_step_size_4th, &one_over_step_size_sq);
+	Array *arr_to_free[]={&errors_ie2,&errors_rk4,&nf_ie2,&nf_rk4,
+		&true_values,&nsteps_vec,&one_over_step_size_4th,&one_over_step_size_sq};
+	arr_free_many(arr_to_free,8);
 }
 
 int main()
