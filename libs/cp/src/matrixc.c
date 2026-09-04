@@ -1,97 +1,364 @@
 #include "matrixc.h"
 #include "genutil.h"
+#include <string.h>
 
-/*
- * New matrices should always be 0-initialized. e.g.
- * Matrix mat={0};
- * 
- */
 
 void matc_init(MatrixC *mat, int nrows, int ncols)
 {
-	matc_free(mat);
-	
-	mat->data = malloc(sizeof(double complex) * nrows * ncols);
-	if(!mat->data) raiseErr("Error in memory allocation");
-	
-	mat->nrows = nrows;
-	mat->ncols = ncols;
-	mat->owns_data=true;
-	matc_build_rows(mat);
+    if (mat->owns_data) {
+        free(mat->data);
+    }
+    free(mat->rows);
+
+    mat->data = malloc(sizeof(double complex) * nrows * ncols);
+    if(!mat->data) raiseErr("Error in memory allocation");
+
+    mat->nrows = nrows;
+    mat->ncols = ncols;
+    mat->owns_data = true;
+    matc_build_rows(mat);
 }
 
-void matc_free( MatrixC *mat )
-{	
-	if(!mat) return;
-	free(mat->rows);
-	if(mat->owns_data)
-	{
-		free(mat->data);
-	}
-	mat->nrows=0;
-	mat->ncols=0;
-	mat->data=nullptr;
-	mat->rows=nullptr;
-	mat->owns_data=false;
+void matc_free(MatrixC *mat)
+{
+    free(mat->rows);
+    if(mat->owns_data)
+    {
+        free(mat->data);
+    }
+
+    mat->nrows = 0;
+    mat->ncols = 0;
+    mat->data = NULL;
+    mat->rows = NULL;
+    mat->owns_data = false;
 }
 
 void matc_build_rows(MatrixC *mat)
 {
-	mat->rows=malloc(sizeof(double complex*)*mat->nrows);
-	if(!mat->rows) raiseErr("Error in memory allocation");
-	for(int i=0; i<mat->nrows; i++)
-		mat->rows[i]=mat->data+i*mat->ncols;
+    mat->rows = malloc(sizeof(double complex *) * mat->nrows);
+    if(!mat->rows) raiseErr("Error in memory allocation");
+
+    for(int i = 0; i < mat->nrows; i++)
+        mat->rows[i] = mat->data + i * mat->ncols;
+}
+
+void matc_transpose(MatrixC *source, MatrixC *dest)
+{
+    const int new_nrows = source->ncols;
+    const int new_ncols = source->nrows;
+
+    double complex *new_data_ptr =
+        malloc(sizeof(double complex) * new_ncols * new_nrows);
+
+    if(!new_data_ptr)
+        raiseErr("Error in memory allocation");
+
+    for(int i = 0; i < new_nrows; i++)
+        for(int j = 0; j < new_ncols; j++)
+            new_data_ptr[i * new_ncols + j] = MATP(source, j, i);
+
+    matc_free(dest);
+
+    dest->data = new_data_ptr;
+    dest->nrows = new_nrows;
+    dest->ncols = new_ncols;
+    dest->owns_data = true;
+
+    matc_build_rows(dest);
 }
 
 MatrixC matc_new(int nrows, int ncols)
 {
-	MatrixC m={0};
-	matc_init(&m, nrows, ncols);
-	return m;
+    MatrixC m = {0};
+    matc_init(&m, nrows, ncols);
+    return m;
 }
 
 void matc_free_many(MatrixC **mats, int n)
 {
-    for (int i = 0; i < n; i++)
+    for(int i = 0; i < n; i++)
         matc_free(mats[i]);
 }
 
-void matc_set_value(MatrixC *mat, double complex value)
+void matc_diag(MatrixC *mat, double complex x)
 {
-	for(int i=0; i<mat->nrows; i++)
-		for(int j=0; j<mat->ncols; j++)
-			MATP(mat,i,j)=value;
+    if(mat->ncols != mat->nrows)
+        raiseErr("matrix is not nxn - nrows = %d ncols = %d",
+                 mat->nrows, mat->ncols);
+
+    for(int row = 0; row < mat->nrows; row++)
+        for(int col = 0; col < mat->ncols; col++)
+            MATP(mat, row, col) = (row == col) ? x : 0;
 }
 
-void matc_print(FILE *f, const MatrixC *mat)
+MatrixC matc_new_from_file(const char *filename, int nrows, int ncols)
 {
-	for(int row=0; row<mat->nrows; row++)
-	{
-		for(int col=0; col<mat->ncols; col++)
-			fprintf(f, "%.2lf%+.2lfi  ", creal(MATP(mat,row,col)), cimag(MATP(mat,row,col)));
-		fputs("\n", f);
-	}
+    FILE *file = openFile(filename, "r");
+
+    MatrixC mat = matc_new(nrows, ncols);
+
+    /*
+     * Complex input format needs to be defined explicitly.
+     * This currently assumes each value is stored as:
+     *
+     *     real imag
+     *
+     * for example:
+     *
+     *     1.0  2.0
+     *     3.0 -1.0
+     */
+    for(int i = 0; i < nrows; i++)
+        for(int j = 0; j < ncols; j++)
+        {
+            double re, im;
+
+            if(fscanf(file, "%lf %lf", &re, &im) != 2)
+                raiseErr("Invalid or incomplete matrix file");
+
+            MAT(mat, i, j) = re + im * I;
+        }
+
+    fclose(file);
+    return mat;
 }
 
-void matc_arrc_mult(double complex **mat, const double complex *arr, int nrows, 
-				int ncols, ArrayC *dest)
+void matc_print_stdout(const MatrixC *mat, char *formatr,
+	char *formati, bool newline)
 {
-	double complex *new_data=malloc(sizeof(double complex)*nrows);
-	for(int i=0; i<nrows; i++)
-	{
-		new_data[i]=0;
-		for(int j=0; j<ncols; j++)
-			new_data[i]+=mat[i][j]*arr[j];
-	}
-	arrc_free(dest);
-	dest->data=new_data;
-	dest->owns_data=true;
-	dest->size=nrows;
+    const int last_col = mat->ncols - 1;
+    const int last_row = mat->nrows - 1;
+
+    for(int row = 0; row < mat->nrows; row++)
+    {
+        fputs((row == 0) ? "[ " : "| ", stdout);
+
+        for(int col = 0; col < mat->ncols; col++)
+        {
+            /*
+             * printf cannot print a double complex directly.
+             * The format is therefore applied separately to the
+             * real and imaginary components.
+             */
+            printf(formatr, creal(MATP(mat, row, col)));
+            printf(formati, cimag(MATP(mat, row, col)));
+
+            if(col != last_col)
+                fputs(", ", stdout);
+        }
+
+        fputs((row != last_row) ? "\n" : " ]", stdout);
+    }
+
+    if(newline)
+        putchar('\n');
 }
 
+bool matc_is_squared(const MatrixC *m)
+{
+    return m->ncols == m->nrows;
+}
 
+void matc_swap_row(MatrixC *m, int i, int j)
+{
+    if(i == j)
+        return;
 
+    double complex temp = 0;
 
+    for(int p = 0; p < m->ncols; p++)
+    {
+        temp = MATP(m, i, p);
+        MATP(m, i, p) = MATP(m, j, p);
+        MATP(m, j, p) = temp;
+    }
+}
 
+void matc_setv(const MatrixC *A, double complex x)
+{
+    for(int row = 0; row < A->nrows; row++)
+        for(int col = 0; col < A->ncols; col++)
+            MATP(A, row, col) = x;
+}
 
+void matc_mult(const MatrixC *A, const MatrixC *B, MatrixC *dest)
+{
+    if(A->ncols != B->nrows)
+        raiseErr("A and B are not compatible for multiplication");
 
+    bool is_dest_factor = (dest == A) || (dest == B);
+
+    MatrixC temp = {0};
+    MatrixC *out = dest;
+
+    if(is_dest_factor)
+    {
+        temp = matc_new(A->nrows, B->ncols);
+        out = &temp;
+    }
+    else
+    {
+        matc_init(dest, A->nrows, B->ncols);
+    }
+
+    matc_setv(out, 0);
+
+    for(int i = 0; i < A->nrows; i++)
+        for(int j = 0; j < B->ncols; j++)
+            for(int p = 0; p < A->ncols; p++)
+                MATP(out, i, j) += MATP(A, i, p) * MATP(B, p, j);
+
+    if(is_dest_factor)
+    {
+        matc_cp(out, dest);
+        matc_free(out);
+    }
+}
+
+MatrixC matc_mult_new(const MatrixC *A, const MatrixC *B)
+{
+    MatrixC C = matc_new(A->nrows, B->ncols);
+    matc_mult(A, B, &C);
+    return C;
+}
+
+void matc_vecmult(const MatrixC *A, const ArrayC *x, ArrayC *dest)
+{
+    if(A->ncols != x->size)
+        raiseErr("A and x are not compatible for multiplication");
+
+    arrc_init(dest, A->nrows);
+    arrc_setv(dest, 0);
+
+    for(int i = 0; i < A->nrows; i++)
+        for(int p = 0; p < A->ncols; p++)
+            ARRP(dest, i) += MATP(A, i, p) * ARRP(x, p);
+}
+
+ArrayC matc_vecmult_new(const MatrixC *A, const ArrayC *x)
+{
+    ArrayC dest = arrc_new(A->nrows);
+    matc_vecmult(A, x, &dest);
+    return dest;
+}
+
+void matc_cp(const MatrixC *src, MatrixC *dest)
+{
+    matc_init(dest, src->nrows, src->ncols);
+
+    memcpy(dest->data, src->data,
+           src->nrows * src->ncols * sizeof *dest->data);
+}
+
+void matc_scale(MatrixC *A, double complex alpha)
+{
+    for(int i = 0; i < A->nrows * A->ncols; i++)
+        A->data[i] *= alpha;
+}
+
+void matc_axpy(MatrixC *y, double complex alpha, const MatrixC *x)
+{
+    if(y->nrows != x->nrows || y->ncols != x->ncols)
+        raiseErr("matrices should be of same dimension");
+
+    for(int i = 0; i < y->nrows * y->ncols; i++)
+        y->data[i] += alpha * x->data[i];
+}
+
+/*
+ * Given a matrix A, constructs the Hermitian Gram matrix A^H A.
+ *
+ * G(i,j) = sum_p conj(A(p,i)) * A(p,j)
+ */
+
+void matc_gram(const MatrixC *A, MatrixC *G)
+{
+    matc_init(G, A->ncols, A->ncols);
+
+    for(int row = 0; row < A->ncols; row++)
+        for(int col = row; col < A->ncols; col++)
+        {
+            double complex sum = 0;
+
+            for(int p = 0; p < A->nrows; p++)
+                sum += conj(MATP(A, p, row)) * MATP(A, p, col);
+
+            MATP(G, row, col) = sum;
+            MATP(G, col, row) = conj(sum);
+        }
+}
+
+double complex matc_dot_col_col(const MatrixC *m, int c1, int c2)
+{
+    double complex sum = 0;
+
+    for(int r = 0; r < m->nrows; r++)
+        sum += conj(MATP(m, r, c1)) * MATP(m, r, c2);
+
+    return sum;
+}
+
+double complex matc_dot_col_arr(const MatrixC *m, int c, const ArrayC *arr)
+{
+    double complex sum = 0;
+
+    for(int r = 0; r < m->nrows; r++)
+        sum += conj(MATP(m, r, c)) * ARRP(arr, r);
+
+    return sum;
+}
+
+void matc_aug_arr(const MatrixC *A, const ArrayC *b, MatrixC *dest)
+{
+    if(A->nrows != b->size)
+        raiseErr("A and b must be of same height");
+
+    matc_init(dest, A->nrows, A->ncols + 1);
+
+    for(int i = 0; i < A->nrows; i++)
+    {
+        memcpy(*(dest->rows + i),
+               *(A->rows + i),
+               A->ncols * sizeof *dest->data);
+
+        MATP(dest, i, A->ncols) = ARRP(b, i);
+    }
+}
+
+MatrixC matc_aug_arr_new(const MatrixC *A, const ArrayC *b)
+{
+    MatrixC dest = {0};
+    matc_aug_arr(A, b, &dest);
+    return dest;
+}
+
+void matc_col_scale(MatrixC *A, int c, double complex x)
+{
+    if(A->ncols <= c)
+        raiseErr("c selects out of bounds column");
+
+    for(int i = 0; i < A->nrows; i++)
+        MATP(A, i, c) *= x;
+}
+
+void matc_axpy_col_col(MatrixC *y, int cy, double complex alpha,
+                       const MatrixC *x, int cx)
+{
+    if(x->nrows != y->nrows)
+        raiseErr("mats should be of same height");
+
+    for(int i = 0; i < x->nrows; i++)
+        MATP(y, i, cy) += alpha * MATP(x, i, cx);
+}
+
+void matc_col_to_arr(const MatrixC *mat, ArrayC *arr, int col)
+{
+    if(col >= mat->ncols)
+        raiseErr("Index out of bounds");
+
+    arrc_init(arr, mat->nrows);
+
+    for(int i = 0; i < mat->nrows; i++)
+        ARRP(arr, i) = MATP(mat, i, col);
+}

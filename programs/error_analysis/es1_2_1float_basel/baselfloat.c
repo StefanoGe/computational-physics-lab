@@ -28,8 +28,8 @@ float revSumSquaresFloat( int maxIndex )
 
 void sumSquaresAnalysis( int maxIndex )
 {
-	ArrayF err_incr = arrf_new(maxIndex+1);
-	ArrayF err_decr = arrf_new(maxIndex+1);
+	ArrayF err_incr = farr_new(maxIndex+1);
+	ArrayF err_decr = farr_new(maxIndex+1);
 	const float true_value = (float)(PI*PI) / 6 ;
 	
 	ARR(err_incr,0)=0;
@@ -41,8 +41,14 @@ void sumSquaresAnalysis( int maxIndex )
 		ARR(err_decr,i) = true_value - revSumSquaresFloat( i ) ;
 	}
 	
-	Array err_incrD = arr_from_float(&err_incr);
-	Array err_decrD = arr_from_float(&err_decr);
+	Array err_incrD = arr_new(err_incr.size);
+	Array err_decrD = arr_new(err_incr.size);
+	
+	for(int i=0; i<maxIndex+1; i++)
+	{
+		ARR(err_incrD,i)=ARR(err_incr,i);
+		ARR(err_decrD,i)=ARR(err_decr,i);
+	}
 	
 	Array xaxis = arr_new(maxIndex+1);
 	for(int i=0; i<=maxIndex; i++)

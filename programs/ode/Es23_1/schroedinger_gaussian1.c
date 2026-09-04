@@ -9,7 +9,7 @@
 #include "array.h"
 #include <math.h>
 #include <string.h>
-
+/*
 void init_output(int ntsteps, int nxsteps,
 					Array *t_output, MatrixC *f_output)
 {
@@ -27,26 +27,33 @@ void init_output(int ntsteps, int nxsteps,
 // Discretizzo l'hamiltoniana, producendo la matrice
 // Applico ripetutamente rk e a ogni step temporale calcolo poi lo step dopo.
 // 
-
-void disc_h(MatrixC *M, double xstep_size, int nxsteps)
+*/
+void disc_h(MatrixC *M, double xstep_size)
 {
+	if(!matc_is_squared(M))
+		raiseErr("matrix was not initialized correctly");
+	
+	const int nxsteps = M->nrows;
+	
 	const double complex a=I/24/xstep_size/xstep_size;
 	const double complex g=-I*5/4/xstep_size/xstep_size;
-	matc_set_value(M, 0);
+	matc_setv(M, 0);
 	for(int i=0; i<nxsteps; i++)
 		MATP(M,i,i)=g;
-	for(int i=0; i<nxsteps-1; i++){
+	for(int i=0; i<nxsteps-1; i++)
+	{
 		MATP(M,i,i+1)=16*a;
 		MATP(M,i+1,i)=16*a;
 	}
-	for(int i=0; i<nxsteps-2; i++){
+	for(int i=0; i<nxsteps-2; i++)
+	{
 		MATP(M,i,i+2)=-a;
 		MATP(M,i+2,i)=-a;
 	}
 }
 
-typedef double (*WavePacket)(double, void*);
-
+typedef double (*WavePacketGen)(double, void*);
+/*
 double gaussian(double x, void *params)
 {
 	const double xm=((double*)params)[0];
@@ -55,7 +62,7 @@ double gaussian(double x, void *params)
 }
 
 
-void schrod( WavePacket wavepacket, void *wp_params, MatrixC *sol,
+void schrod( WavePacketGen wavepacket, void *wp_params, MatrixC *sol,
 			Array *time, int ntsteps, int nxsteps, double t0, double tf,
 			double x0, double xf)
 {
@@ -128,15 +135,18 @@ void test( double xm, double sigma, int nxsteps, int ntsteps,
 	matc_free(&sol);
 	arr_free(&time);
 }
-
+*/
 // Remark: we could diagonalize following a routine designed for banded matrices
 
 int main()
 {
 
 	
-	
 	return 0;
 }
-
-
+/*
+	MatrixC test=matc_new(7,7);
+	disc_h(&test,1);
+	matc_print_stdout(&test, "%+.2lf","%+.2lfi",true);
+	matc_free(&test);
+*/

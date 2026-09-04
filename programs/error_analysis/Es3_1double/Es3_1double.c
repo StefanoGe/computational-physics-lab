@@ -1,111 +1,72 @@
 // Es 3_1double.c
-
-#include "comp_physics.h"
+#include "array.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
 
 
-double aveArrD( ArrayDouble array )
+double average( const Array *arr )
 {
 	double sum = 0;
-	for (int i = 0; i < array.length; i++)
-		sum += array.val[i];
+	for (int i = 0; i < arr->size; i++)
+		sum += ARRP(arr,i);
 	
-	return sum / (double) array.length;
+	return sum / (double) arr->size;
 }
 
-double badVariance( ArrayDouble array )
+double bad_variance( const Array *arr )
 {
-	if (array.length == 1)
+	if (arr->size == 1)
 		return 0;
 	
-	double ave = aveArrD( array );
+	double ave = average( arr );
 	double sum = 0;
-	for( int i = 0; i < array.length; i++ )
-		sum += ( array.val[i] - ave )*( array.val[i] - ave );
+	for( int i = 0; i < arr->size; i++ )
+		sum += ( ARRP(arr,i) - ave )*( ARRP(arr,i) - ave );
 		
-	return sum / (double) (array.length - 1);
+	return sum / (double) (arr->size - 1);
 }
 
-double betterVariance( ArrayDouble array )
+double better_variance( const Array *arr )
 {
 	double sum_squares = 0;
 	double sum = 0;
 	
-	for (int i = 0; i < array.length; i++)
+	for (int i = 0; i < arr->size; i++)
 	{
-		sum_squares += array.val[i] * array.val[i];
-		sum += array.val[i];
+		sum_squares += ARRP(arr,i)*ARRP(arr,i);
+		sum += ARRP(arr,i);
 	}
 	
 	printf("sum = %f\n", sum);
 	printf("sum squares = %f\n", sum_squares);
 	
-	return ( sum_squares - sum*sum / (double)array.length ) / 
-		(double) (array.length - 1);
+	return ( sum_squares - sum*sum / (double)arr->size ) / 
+		(double) (arr->size - 1);
 }
 
-void testVar(ArrayDouble array)
+void test_var(double values[])
 {
-	printf( "Bad variance is %lf\n", badVariance( array ) );
-	printf( "Better Variance is %lf\n", betterVariance(array) );
+	Array arr=arr_asarr(values,3);
+	
+	printf( "Bad variance is %lf\n", bad_variance(&arr) );
+	printf( "Better Variance is %lf\n", better_variance(&arr) );
 }
 
-void testSample()
-{
-	ArrayDouble testArr1 = buildArrD(3, 1e3, 1+1e3, 2+1e3 );
-	ArrayDouble testArr2 = buildArrD(3, 1e6, 1+1e6, 2+1e6 );
-	ArrayDouble testArr3 = buildArrD(3, 1e7, 1+1e7, 2+1e7 );
-	ArrayDouble testArr4 = buildArrD(3, 1e8, 1+1e8, 2+1e8 );
-	
-	testVar(testArr1);
-	testVar(testArr2);
-	testVar(testArr3);
-	testVar(testArr4);
-	
-	freeArrD(testArr1);
-	freeArrD(testArr2);
-	freeArrD(testArr3);
-	freeArrD(testArr4);
-}
 
 int main()
 {
+	double sample1[] = {1e3, 1+1e3, 2+1e3};
+	double sample2[] = {1e6, 1+1e6, 2+1e6};
+	double sample3[] = {1e7, 1+1e7, 2+1e7};
+	double sample4[] = {1e8, 1+1e8, 2+1e8};
 	
-	testSample();
+	test_var(sample1);
+	test_var(sample2);
+	test_var(sample3);
+	test_var(sample4);
 	
 	exit(EXIT_SUCCESS);
 }
-/*
-void testAve()
-{
 
-	
-	ArrayDouble testArr1 = buildArrD(3, 1.0,2.1,3.4);
-	printArrDPar( testArr1 );
-	printf( "Average is %lf\n", aveArrD( testArr1 ) );
-	printf("Hello world!");
-	
-	freeArrD( testArr1 );
-	
-}
 
-void testVar1()
-{
-	ArrayDouble testArr = allocArrD(10);
-	setValueArrD( testArr, 1 );
-
-	
-	ArrayDouble testArr1 = buildArrD(3, 1.0, 2.0, 3.0);
-	printArrDPar( testArr1 );
-	printf( "Variance is %lf\n", badVariance( testArr1 ) );
-	
-	printf( "Better Variance is %lf\n", betterVariance(testArr) );
-	printf( "Better Variance is %lf\n", betterVariance( testArr1 ) );
-	
-	freeArrD( testArr );
-	freeArrD( testArr1 );
-}
-
-*/

@@ -6,9 +6,9 @@
 void arr_init( Array *arr, int size )
 {
 	if(arr->owns_data)
-		free(arr->data);
+		SAFE_FREE(arr->data);
 	
-	arr->data = malloc(sizeof(double) * size);
+	SAFE_ALLOC(arr->data,size);
 	if( !arr->data )
 		raiseErr("Error in memory allocation");
 		
@@ -20,7 +20,7 @@ void arr_init( Array *arr, int size )
 void arr_free(Array *arr)
 {
 	if(arr->owns_data)
-		free( arr->data );
+		SAFE_FREE( arr->data );
 	arr->data=NULL;
 	arr->size=0;
 	arr->capacity=0;
@@ -67,6 +67,7 @@ Array arr_asarr(double *data, int size)
 	arr.data=data;
 	arr.size=size;
 	arr.owns_data=false;
+	arr.capacity=size;
 	return arr;
 }
 
