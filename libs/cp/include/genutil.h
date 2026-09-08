@@ -23,6 +23,7 @@
 } while (0)
 
 #define MAX(a,b) ((a)>(b) ? (a) : (b))
+#define MIN(a,b) ((a)<(b) ? (a) : (b))
 
 #define UNUSED(expr) do { (void)(expr); } while(0)
 
@@ -53,7 +54,7 @@
         (ptr) = NULL;         \
     } while (0)
 
-FILE * openFile( const char * fileName, const char * mode );
+FILE *openFile( const char *fileName, const char *mode );
 
 void mypause ( void );
 

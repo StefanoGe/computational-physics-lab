@@ -3,6 +3,7 @@
 
 #include <complex.h>
 #include "arrayc.h"
+#include "matrix.h"
 
 #ifndef MAT_ACCESS
 	#define MAT_ACCESS
@@ -74,5 +75,22 @@ void matc_axpy_col_col(MatrixC *y, int cy, double complex alpha,
                        const MatrixC *x, int cx);
 
 void matc_col_to_arr(const MatrixC *mat, ArrayC *arr, int col);
+
+void matc_carrc_mult(const MatrixC *m, const double complex *arr, ArrayC *dest);
+
+void arrc_cp_from_carr(const double complex *src, int size, ArrayC *dest);
+
+void matc_carrc_mult_banded(const MatrixC *m, const double complex *arr, ArrayC *dest,
+	int bandwidth);
+
+typedef void(*ComplexPrinter)(FILE *,const char*,double complex,double complex);
+
+void matc_print_abs(const MatrixC *m, FILE *file,const char *format);
+
+Matrix matc_cabs(const MatrixC *m);
+
+Matrix matc_real_part(const MatrixC *m);
+
+Matrix matc_imag_part(const MatrixC *m);
 
 #endif

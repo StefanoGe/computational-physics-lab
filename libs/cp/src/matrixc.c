@@ -362,3 +362,98 @@ void matc_col_to_arr(const MatrixC *mat, ArrayC *arr, int col)
     for(int i = 0; i < mat->nrows; i++)
         ARRP(arr, i) = MATP(mat, i, col);
 }
+
+void matc_carrc_mult(const MatrixC *m, const double complex *arr, ArrayC *dest)
+{
+	if(dest->size!=m->nrows||dest->data==NULL)
+		arrc_init(dest, m->nrows);
+	
+	for(int i=0; i<m->nrows; i++)
+	{
+		ARRP(dest,i)=0;
+		for(int j=0; j<m->ncols; j++)
+			ARRP(dest,i)+=MATP(m,i,j)*arr[j];
+	}
+}
+
+void matc_carrc_mult_banded(const MatrixC *m, const double complex *arr, 
+	ArrayC *dest,int bandwidth)
+{	
+	if(!matc_is_squared(m))
+		raiseErr("mat must be squared");
+    
+	if(dest->size!=m->nrows || dest->data == NULL)
+			arrc_init(dest, m->nrows);
+	
+	int first_occupied_col=0;
+	int last_occupied_col =0;
+	
+	for(int i=0; i<m->nrows; i++)
+	{
+		ARRP(dest,i)=0;
+		first_occupied_col=MAX(0,i-bandwidth);
+		last_occupied_col=MIN(m->nrows-1,i+bandwidth);
+		
+		for(int j=first_occupied_col; j<=last_occupied_col; j++)
+		{
+			ARRP(dest,i)+=MATP(m,i,j)*arr[j];
+		}
+	}
+}
+
+void arrc_cp_from_carr(const double complex *src, int size, ArrayC *dest)
+{
+	if( !dest->owns_data || dest->size!=size )
+		arrc_init(dest, size);
+	memcpy(dest->data, src, size*sizeof(double complex));
+}
+
+void matc_print_generic(const MatrixC *m,
+	FILE *file,ComplexPrinter print_function,
+	const char *format)
+{
+	for(int i=0; i<m->nrows; i++)
+	{
+		for(int j=0; j<m->ncols; j++)
+			print_function(file,format,creal(MATP(m,i,j)),cimag(MATP(m,i,j)));
+		fputc('\n',file);
+	}
+}
+
+void matc_print_abs(const MatrixC *m, FILE *file,const char *format)
+{
+	for(int i=0; i<m->nrows; i++)
+	{
+		for(int j=0; j<m->ncols; j++)
+			fprintf(file,format,cabs(MATP(m,i,j)));
+		fputc('\n',file);
+	}
+}
+
+Matrix matc_cabs(const MatrixC *m)
+{
+	Matrix new = mat_new(m->nrows,m->ncols);
+	for(int i=0; i<m->nrows; i++)
+		for(int j=0; j<m->ncols; j++)
+			MAT(new,i,j)=cabs(MATP(m,i,j));
+	
+	return new;
+}
+
+Matrix matc_real_part(const MatrixC *m)
+{
+	Matrix new = mat_new(m->nrows,m->ncols);
+	for(int i=0; i<m->nrows; i++)
+		for(int j=0; j<m->ncols; j++)
+			MAT(new,i,j)=creal(MATP(m,i,j));
+	return new;
+}
+
+Matrix matc_imag_part(const MatrixC *m)
+{
+	Matrix new = mat_new(m->nrows,m->ncols);
+	for(int i=0; i<m->nrows; i++)
+		for(int j=0; j<m->ncols; j++)
+			MAT(new,i,j)=cimag(MATP(m,i,j));
+	return new;
+}

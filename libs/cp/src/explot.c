@@ -74,7 +74,7 @@ void eplot_set_global(FILE *gp, const Global *settings )
 void eplot_set_terminal_and_plot(FILE *gp, char *plot_command, const char *output_name)
 {
 	char qt[5'000];
-	sprintf(qt,
+	snprintf(qt, sizeof qt,
 		"set terminal qt size 1020,700 font \'CMU Serif, 16\' enhanced\n"
 		"set for [i=1:8] linetype i lw 4 pt 7 ps 1.6\n"
 		"%s\n"
@@ -173,10 +173,11 @@ void eplot_2carr(double *xaxis, double *yaxis, int size, const Global *gb_settin
 
 
 void multi_data_plt_command_helper(const SeriesSpec *series, char *plot_command,
-										const char *build_name, int i)
+										const char *build_name, int i,size_t *len,
+										size_t plot_command_max_size)
 {
 	char data_path[100];
-	sprintf(data_path, "data/%s_%d_%d.dat", build_name, gb_counter, i);
+	snprintf(data_path,sizeof data_path, "data/%s_%d_%d.dat", build_name, gb_counter, i);
 	double *carrs[2]={series->x,series->y};
 	carrs_to_filename(data_path, carrs, series->size, 2);
 	
@@ -184,9 +185,9 @@ void multi_data_plt_command_helper(const SeriesSpec *series, char *plot_command,
 	char *style=(series->style) ? series->style : "lp";
 	
 	char plot_line[400];
-	sprintf(plot_line, "\"%s\" with %s title \"%s\"", data_path,
+	snprintf(plot_line, sizeof plot_line,"\"%s\" with %s title \"%s\"", data_path,
 				style, label);
-	strcat(plot_command, plot_line);
+	*len+=snprintf(plot_command+*len,plot_command_max_size-*len, plot_line);
 }
 
 void eplot_multi(const SeriesSpec *series, int count, const Global *gb_settings)
@@ -200,13 +201,15 @@ void eplot_multi(const SeriesSpec *series, int count, const Global *gb_settings)
 	
 	eplot_set_global(gp, gb_settings);
 	
-	char plot_command[2'000]={0};
-	strcat(plot_command, "plot ");
+	char plot_command[2'000];
+	size_t len=snprintf(plot_command,sizeof plot_command, "plot ");
 	
 	for(int i=0; i<count; i++)
 	{	
-		multi_data_plt_command_helper(series+i, plot_command, build_name, i);
-		strcat(plot_command, (i==count-1)?"\n":", \\" "\n");
+		multi_data_plt_command_helper(series+i, plot_command, build_name, i,&len,
+			sizeof plot_command);
+		len+=snprintf(plot_command+len,sizeof plot_command - len,
+												(i==count-1)?"\n":", \\" "\n");
 	}
 	
 	eprint("%s", plot_command);
@@ -216,7 +219,116 @@ void eplot_multi(const SeriesSpec *series, int count, const Global *gb_settings)
 	fclose(gp);
 
 	char shell_command[200];
-	sprintf(shell_command, "gnuplot %s", script_path);
+	snprintf(shell_command, sizeof shell_command, "gnuplot %s", script_path);
+	system(shell_command);
+	
+	gb_counter++;
+}
+
+void anim_data_plt_command_helper1(char *plot_command,
+										const char *build_name, int i,
+										size_t *len,
+										size_t plot_command_max_size)
+{
+	*len+=snprintf(plot_command+*len,plot_command_max_size-*len,
+				"file%d = sprintf(\"data/%s_%d_%d_",
+				i, build_name,gb_counter,i);
+	*len+=snprintf(plot_command+*len,plot_command_max_size-*len,"%%");
+	*len+=snprintf(plot_command+*len,plot_command_max_size-*len,
+				"05d.dat\", i)\n");
+	
+	
+}
+
+void anim_data_plt_command_helper2(const AnimSpec *series, char *plot_command,
+										const char *build_name, int i,
+										size_t *len,
+										size_t plot_command_max_size,int nframes)
+{
+	
+	int frames_bottleneck=MIN(nframes,series->ntimes/series->frameskip);
+	
+	int time = 0;
+	
+	for(int j=0; j<frames_bottleneck; j++)
+	{
+		char data_path[100];
+		snprintf(data_path,sizeof data_path, "data/%s_%d_%d_%05d.dat", 
+			build_name, 
+			gb_counter, i,j);
+		time = j*series->frameskip;
+		double *carrs[2]={series->spatial_grid,series->values[time]};
+		carrs_to_filename(data_path, carrs, series->npoints, 2);
+	}
+	
+	char *label=(series->label) ? series->label : "";
+	char *style=(series->style) ? series->style : "lp";
+	
+	*len+=snprintf(plot_command+*len,plot_command_max_size-*len,
+				"file%d using 1:2 with %s title \"%s\"",i,style, label);
+}
+
+void anim_set_terminal_and_plot(FILE *gp, char *plot_command, 
+	const char *output_name,double delay)
+{
+	char script[5'000];
+	char output_path[100];
+	sprintf(output_path, "\'plot/%s.gif\'", output_name);
+	sprintf(script,
+		"set terminal gif animate delay %.2lf size 1000,700 font \"CMU Serif,16\" enhanced\n"
+		"set for [i=1:8] linetype i lw 4.5 pt 7 ps 0.65\n"
+		"set output %s\n"
+		"%s\n"
+		"unset output\n", delay,output_path, plot_command );
+	fputs(script, gp);
+
+}
+
+void eplot_anim(const AnimSpec *series, int count, const Global *gb_settings,
+			int nframes,const char *additional_in_loop,double delay)
+{	
+	char *build_name=get_build_name(gb_settings);
+	
+	char script_path[100]; 
+	FILE *gp=set_and_open_script(build_name, script_path);
+	
+	eplot_set_common(gp);
+	
+	eplot_set_global(gp, gb_settings);
+	
+	char plot_command[2'000];
+	size_t len=snprintf(plot_command,sizeof plot_command, "do for [i=0:%d] {\n",
+		nframes);
+		
+	for(int i=0; i<count; i++)
+	{
+		anim_data_plt_command_helper1(plot_command,build_name,i,&len,
+			sizeof plot_command);
+	}
+	
+	len+=snprintf(plot_command+len,sizeof plot_command-len,"%s\n",
+		additional_in_loop);
+	
+	len+=snprintf(plot_command+len,sizeof plot_command - len,"plot ");
+	
+	for(int i=0; i<count; i++)
+	{	
+		anim_data_plt_command_helper2(series+i, plot_command, build_name, i,&len,
+			sizeof plot_command,nframes);
+		len+=snprintf(plot_command+len,sizeof plot_command - len,
+												(i==count-1)?"\n":", \\" "\n");
+	}
+	
+	len+=snprintf(plot_command+len,sizeof plot_command - len,"}\n");
+	
+	eprint("%s", plot_command);
+	anim_set_terminal_and_plot(gp, plot_command, gb_settings->output_name,delay);
+
+	fflush(gp);
+	fclose(gp);
+
+	char shell_command[200];
+	snprintf(shell_command, sizeof shell_command, "gnuplot %s", script_path);
 	system(shell_command);
 	
 	gb_counter++;
@@ -258,6 +370,29 @@ SeriesSpec eplot_init_series(
 		x,
 		y,
 		size,
+		style,
+		label,
+		color
+	};
+	return series;
+}
+
+AnimSpec eplot_init_animseries(
+	double *spatial_grid,
+	int npoints,
+	double **values,
+	int ntimes,
+	int frameskip,
+	char *style,
+	char *label,
+	char *color)
+{
+	AnimSpec series ={
+		spatial_grid,
+		npoints,
+		values,
+		ntimes,
+		frameskip,
 		style,
 		label,
 		color

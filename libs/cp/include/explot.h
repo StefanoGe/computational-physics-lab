@@ -29,6 +29,18 @@ typedef struct{
 	char *color;
 } SeriesSpec;
 
+typedef struct{
+	double *spatial_grid;
+	int npoints;
+	double **values;
+	int ntimes;
+	int frameskip;
+	char *style;
+	char *label;
+	char *color;
+} AnimSpec;
+
+
 static const Global NULL_GLOBAL_SETTINGS={nullptr, nullptr, nullptr, nullptr, 
 				nullptr, nullptr, nullptr, nullptr};
 
@@ -57,6 +69,16 @@ SeriesSpec eplot_init_series(
 	char *label,
 	char *color);
 
+AnimSpec eplot_init_animseries(
+	double *spatial_grid,
+	int npoints,
+	double **values,
+	int ntimes,
+	int frameskip,
+	char *style,
+	char *label,
+	char *color);
+
 void eplot_set_global( FILE *gp, const Global *settings);
 
 void eplot_2carr(double *xaxis, double *yaxis, int size, const Global *gb_settings,
@@ -64,6 +86,9 @@ void eplot_2carr(double *xaxis, double *yaxis, int size, const Global *gb_settin
 
 void eplot_multi(const SeriesSpec *series, int count, const Global *gb_settings);
 
+
+void eplot_anim(const AnimSpec *series, int count, const Global *gb_settings,
+			int nframes,const char *additional_in_loop,double delay);
 
 
 #endif
