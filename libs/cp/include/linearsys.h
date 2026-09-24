@@ -74,4 +74,15 @@ int linst_inv_qr(const Matrix *A, Matrix *invA);
 
 double linst_cond_numb_inf(const Matrix *A);
 
+void linst_pure_qr_iter(const Matrix *A, Array *eigenvalues, Matrix *evecs, 
+	int n_iter, bool print_progress);
+
+void linst_hessenberg_householder(Matrix *A);
+
+void linst_shifted_qr(Matrix *A, Array *eigenvalues, Matrix *evecs, int max_iter,
+	bool print_progress);
+	
+void linst_shifted_qr_optimized_pentadiagonal(Matrix *A, Array *eigenvalues, 
+	Matrix *evecs, int max_iter, bool print_progress);
+
 #endif

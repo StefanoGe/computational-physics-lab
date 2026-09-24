@@ -142,6 +142,19 @@ void arr_print_inline(const Array *arr, const char *format, bool parentheses,
 		putchar('\n');
 }
 
+Array arr_new_from_file(const char *filename, int size)
+{
+	FILE *file = openFile( filename, "r" );
+	
+	Array arr = arr_new( size );
+	for( int i = 0; i < size; i ++ )
+		if (fscanf(file, "%lf", &ARR(arr, i)) != 1)
+			raiseErr("Invalid or incomplete array file");
+	
+	fclose(file);
+	return arr;
+}
+
 void arr_cp(const Array *src, Array *dest)
 {
 	arr_init(dest, src->size);

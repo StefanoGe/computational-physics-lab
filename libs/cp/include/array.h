@@ -71,4 +71,6 @@ Array arr_slice(const Array *arr,int start, int end);
 
 double arr_max(const Array *arr);
 
+Array arr_new_from_file(const char *filename, int size);
+
 #endif

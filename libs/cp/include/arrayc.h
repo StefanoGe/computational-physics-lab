@@ -5,6 +5,7 @@
 #include <stdbool.h>
 #include <complex.h>
 #include "genutil.h"
+#include "array.h"
 
 // -----------------
 #ifndef ARR_ACCESS
@@ -71,5 +72,7 @@ void arrc_reserve(ArrayC *arr, int capacity);
 void arrc_null(ArrayC *arr);
 
 ArrayC arrc_slice(const ArrayC *arr, int start, int end);
+
+Array arrc_real(const ArrayC *arr);
 
 #endif

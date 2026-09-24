@@ -72,4 +72,11 @@ void mat_axpy_col_col(Matrix *y, int cy, double alpha, const Matrix *x, int cx);
 
 void mat_col_to_arr(const Matrix *mat, Array *arr, int col);
 
+void mat_init_if_wrong_dimension(Matrix *mat, int nrows, int ncols);
+
+void mat_print( const Matrix *mat, FILE *stream,char *format_entry,
+	char *end_line);
+
+
+
 #endif

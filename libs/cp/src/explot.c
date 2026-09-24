@@ -228,16 +228,15 @@ void eplot_multi(const SeriesSpec *series, int count, const Global *gb_settings)
 void anim_data_plt_command_helper1(char *plot_command,
 										const char *build_name, int i,
 										size_t *len,
-										size_t plot_command_max_size)
+										size_t plot_command_max_size,
+										bool is_static)
 {
 	*len+=snprintf(plot_command+*len,plot_command_max_size-*len,
 				"file%d = sprintf(\"data/%s_%d_%d_",
 				i, build_name,gb_counter,i);
 	*len+=snprintf(plot_command+*len,plot_command_max_size-*len,"%%");
 	*len+=snprintf(plot_command+*len,plot_command_max_size-*len,
-				"05d.dat\", i)\n");
-	
-	
+				(is_static?"05d.dat\", 0)\n":"05d.dat\", i)\n"));
 }
 
 void anim_data_plt_command_helper2(const AnimSpec *series, char *plot_command,
@@ -250,15 +249,26 @@ void anim_data_plt_command_helper2(const AnimSpec *series, char *plot_command,
 	
 	int time = 0;
 	
-	for(int j=0; j<frames_bottleneck; j++)
+	if(series->is_static)
 	{
 		char data_path[100];
 		snprintf(data_path,sizeof data_path, "data/%s_%d_%d_%05d.dat", 
 			build_name, 
-			gb_counter, i,j);
-		time = j*series->frameskip;
-		double *carrs[2]={series->spatial_grid,series->values[time]};
+			gb_counter, i,0);
+		double *carrs[2]={series->spatial_grid,series->values[0]};
 		carrs_to_filename(data_path, carrs, series->npoints, 2);
+	}
+	else{
+		for(int j=0; j<frames_bottleneck; j++)
+		{
+			char data_path[100];
+			snprintf(data_path,sizeof data_path, "data/%s_%d_%d_%05d.dat", 
+				build_name, 
+				gb_counter, i,j);
+			time = j*series->frameskip;
+			double *carrs[2]={series->spatial_grid,series->values[time]};
+			carrs_to_filename(data_path, carrs, series->npoints, 2);
+		}
 	}
 	
 	char *label=(series->label) ? series->label : "";
@@ -298,18 +308,16 @@ void eplot_anim(const AnimSpec *series, int count, const Global *gb_settings,
 	
 	char plot_command[2'000];
 	size_t len=snprintf(plot_command,sizeof plot_command, "do for [i=0:%d] {\n",
-		nframes);
+		nframes-1);
 		
 	for(int i=0; i<count; i++)
 	{
 		anim_data_plt_command_helper1(plot_command,build_name,i,&len,
-			sizeof plot_command);
+			sizeof plot_command,series[i].is_static);
 	}
 	
-	len+=snprintf(plot_command+len,sizeof plot_command-len,"%s\n",
+	len+=snprintf(plot_command+len,sizeof plot_command-len,"%s\nplot ",
 		additional_in_loop);
-	
-	len+=snprintf(plot_command+len,sizeof plot_command - len,"plot ");
 	
 	for(int i=0; i<count; i++)
 	{	
@@ -321,7 +329,12 @@ void eplot_anim(const AnimSpec *series, int count, const Global *gb_settings,
 	
 	len+=snprintf(plot_command+len,sizeof plot_command - len,"}\n");
 	
-	eprint("%s", plot_command);
+	eprint( "-----------------------------------------\n"
+			"Creating animation '%s'\n"
+			"Plot command written in .gp script:\n"
+			"%s"
+			"-----------------------------------------", 
+			gb_settings->title,plot_command);
 	anim_set_terminal_and_plot(gp, plot_command, gb_settings->output_name,delay);
 
 	fflush(gp);
@@ -330,6 +343,9 @@ void eplot_anim(const AnimSpec *series, int count, const Global *gb_settings,
 	char shell_command[200];
 	snprintf(shell_command, sizeof shell_command, "gnuplot %s", script_path);
 	system(shell_command);
+	
+	puts("Plot was successful\n"
+		 "-----------------------------------------\n");
 	
 	gb_counter++;
 }
@@ -385,7 +401,8 @@ AnimSpec eplot_init_animseries(
 	int frameskip,
 	char *style,
 	char *label,
-	char *color)
+	char *color,
+	bool is_static)
 {
 	AnimSpec series ={
 		spatial_grid,
@@ -395,7 +412,8 @@ AnimSpec eplot_init_animseries(
 		frameskip,
 		style,
 		label,
-		color
+		color,
+		is_static
 	};
 	return series;
 }

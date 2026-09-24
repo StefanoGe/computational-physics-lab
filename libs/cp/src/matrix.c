@@ -6,17 +6,22 @@
 void mat_init(Matrix *mat, int nrows, int ncols)
 {
     if (mat->owns_data) {
-        free(mat->data);
+        SAFE_FREE(mat->data);
     }
-	free(mat->rows);
+	SAFE_FREE(mat->rows);
 	
-	mat->data = malloc(sizeof(double) * nrows * ncols);
-	if(!mat->data) raiseErr("Error in memory allocation");
+	SAFE_ALLOC(mat->data,nrows*ncols);
 	
 	mat->nrows = nrows;
 	mat->ncols = ncols;
 	mat->owns_data=true;
 	mat_build_rows(mat);
+}
+
+void mat_init_if_wrong_dimension(Matrix *mat, int nrows, int ncols)
+{
+	if(mat->nrows!=nrows || mat->ncols!=ncols || !mat->data || !mat->owns_data )
+		mat_init(mat,nrows,ncols);
 }
 
 void mat_free( Matrix *mat )
@@ -98,6 +103,19 @@ Matrix mat_new_from_file(const char * filename, int nrows, int ncols)
 	return mat;
 }
 
+void mat_print( const Matrix *mat, FILE *stream,char *format_entry,
+	char *end_line)
+{
+	for(int row=0; row<mat->nrows; row++)
+	{
+		for(int col=0; col<mat->ncols; col++ )
+		{
+			fprintf(stream,format_entry, MATP(mat,row, col));
+		}
+		fputs(end_line, stream);
+	}
+}
+
 void mat_print_stdout( const Matrix *mat, char *format, bool newline)
 {
 	const int last_col=mat->ncols-1;
@@ -157,7 +175,7 @@ void mat_mult(const Matrix *A, const Matrix *B, Matrix *dest)
     }
     else
     {
-        mat_init(dest, A->nrows, A->ncols);
+			mat_init_if_wrong_dimension(dest, A->nrows, B->ncols);
     }
 	
 	mat_setv(out,0);
@@ -191,6 +209,18 @@ void mat_vecmult(const Matrix *A, const Array *x, Array *dest)
 	for(int i=0; i<A->nrows; i++)
 		for(int p=0; p<A->ncols; p++)
 			ARRP(dest,i)+=MATP(A,i,p)*ARRP(x,p);
+}
+
+void mat_carr_mult(const Matrix *A, double *carr, Array *dest)
+{
+	arr_init(dest, A->nrows);
+
+	for(int i=0; i<A->nrows; i++)
+	{
+		ARRP(dest,i)=0;
+		for(int p=0; p<A->ncols; p++)
+			ARRP(dest,i)+=MATP(A,i,p)*carr[p];
+	}
 }
 
 Array mat_vecmult_new(const Matrix *A, const Array *x)

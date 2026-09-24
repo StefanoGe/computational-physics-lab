@@ -38,6 +38,7 @@ typedef struct{
 	char *style;
 	char *label;
 	char *color;
+	bool is_static;
 } AnimSpec;
 
 
@@ -77,7 +78,8 @@ AnimSpec eplot_init_animseries(
 	int frameskip,
 	char *style,
 	char *label,
-	char *color);
+	char *color,
+	bool is_static);
 
 void eplot_set_global( FILE *gp, const Global *settings);
 

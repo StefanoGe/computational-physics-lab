@@ -41,9 +41,13 @@ double root_bis( ParamFuncPtr fnc, void *params,
 	
 	while( fabs( x1 - x2 ) > tol + add_tol )
 	{
-		curr = x1 + x2 / 2;
+		curr = (x1 + x2) / 2;
 		if(bis_next_step(&curr,&sign1,&sign_curr,&x1,&x2,fnc,params))
+		{
+			if(debug)
+				arr_append( debug, curr );
 			return curr;
+		}
 		if(debug)
 			arr_append( debug, curr );
 	}

@@ -383,20 +383,82 @@ void matc_carrc_mult_banded(const MatrixC *m, const double complex *arr,
 		raiseErr("mat must be squared");
     
 	if(dest->size!=m->nrows || dest->data == NULL)
-			arrc_init(dest, m->nrows);
+		arrc_init(dest, m->nrows);
 	
 	int first_occupied_col=0;
 	int last_occupied_col =0;
 	
 	for(int i=0; i<m->nrows; i++)
 	{
-		ARRP(dest,i)=0;
 		first_occupied_col=MAX(0,i-bandwidth);
 		last_occupied_col=MIN(m->nrows-1,i+bandwidth);
 		
 		for(int j=first_occupied_col; j<=last_occupied_col; j++)
 		{
 			ARRP(dest,i)+=MATP(m,i,j)*arr[j];
+		}
+	}
+}
+
+#define BW 2
+#define BW2 4
+void matc_mult_banded2(const MatrixC *A, const MatrixC *B,
+	MatrixC *dest)
+{	
+	if(!matc_is_squared(A)||!matc_is_squared(B))
+		raiseErr("A and B must be squared");
+		
+	if(A->nrows!=B->nrows)
+		raiseErr("A and B must have same dimension");
+    
+	if(dest->nrows!=A->nrows || dest->ncols != A->ncols || dest->data == NULL)
+		matc_init(dest, A->nrows,B->ncols);
+
+	matc_setv(dest,0);
+	
+	for(int i=0; i<A->nrows; i++)
+	{
+		
+		for(int j=MAX(0,i-BW2); j<=MIN(B->ncols-1,i+BW2); j++)
+		{
+			const int pmin = MAX(0, MAX(i - BW, j - BW));
+			const int pmax = MIN(A->nrows - 1, MIN(i + BW, j + BW));
+
+			double complex sum = 0.0;
+
+			for (int p = pmin; p <= pmax; ++p)
+				sum += MATP(A, i, p) * MATP(B, p, j);
+
+			MATP(dest, i, j) = sum;
+		}
+	}
+}
+#undef BW
+#undef BW2
+
+void matc_mult_banded(const MatrixC *A, const MatrixC *B,
+	MatrixC *dest,int bandwidth)
+{	
+	if(!matc_is_squared(A)||!matc_is_squared(B))
+		raiseErr("A and B must be squared");
+		
+	if(A->nrows!=B->nrows)
+		raiseErr("A and B must have same dimension");
+    
+	if(dest->nrows!=A->nrows || dest->ncols != A->ncols || dest->data == NULL)
+		matc_init(dest, A->nrows,A->ncols);
+	
+	matc_setv(dest,0);
+	
+	const int bandwidth2 = 2*bandwidth;
+	
+	for(int i=0; i<A->nrows; i++)
+	{	
+		for(int j=MAX(0,i-bandwidth2); j<=MAX(B->ncols,i-bandwidth2); j++)
+		{
+			for(int p=MAX(MAX(i-bandwidth2,j-bandwidth2),0); 
+					p<MAX(A->nrows,MAX(i+bandwidth2,i+bandwidth2)); p++)
+				MATP(dest,i,j)+=MATP(A,i,p)*MATP(B,p,j);
 		}
 	}
 }

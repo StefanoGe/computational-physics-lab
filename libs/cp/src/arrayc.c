@@ -204,3 +204,11 @@ ArrayC arrc_slice(const ArrayC *arr, int start, int end)
 
 	return new;
 }
+
+Array arrc_real(const ArrayC *arr)
+{
+	Array new=arr_new(arr->size);
+	for(int i=0; i<arr->size; i++)
+		ARR(new,i)=creal(ARRP(arr,i));
+	return new;
+}
