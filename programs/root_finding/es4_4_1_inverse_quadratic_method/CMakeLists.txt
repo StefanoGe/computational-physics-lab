@@ -1,0 +1,4 @@
+add_executable(inverse_quadratic inverse_quadratic.c)
+target_link_libraries(inverse_quadratic PRIVATE cp)
+set_target_properties(inverse_quadratic PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/programs/root_finding/es4_4_1_inverse_quadratic_method")
+

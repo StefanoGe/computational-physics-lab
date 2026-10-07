@@ -1,4 +1,0 @@
-add_executable(db_exp_gauss_legendre db_exp_gauss_legendre.c)
-target_link_libraries(db_exp_gauss_legendre PRIVATE cp)
-set_target_properties(db_exp_gauss_legendre PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/programs/integration/Es20_2")
-

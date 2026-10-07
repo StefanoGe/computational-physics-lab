@@ -202,7 +202,7 @@ int linst_lup_factor(Matrix *A, int *pivots, double tol)
 		// Subtract in A
 		for(int row=n+1; row<dim; row++)
 			for(int col=n+1; col<dim; col++)
-				MATP(A, row, col) = MATP(A,row,col)-MATP(A,row,n)*MATP(A,n,col);
+				MATP(A, row, col) -= MATP(A,row,n)*MATP(A,n,col);
 	}
 	return 0;
 }

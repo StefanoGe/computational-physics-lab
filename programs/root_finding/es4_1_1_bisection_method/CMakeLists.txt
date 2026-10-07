@@ -1,0 +1,4 @@
+add_executable(bisection_method bisection_method.c)
+target_link_libraries(bisection_method PRIVATE cp)
+set_target_properties(bisection_method PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/programs/root_finding/es4_1_1_bisection_method")
+

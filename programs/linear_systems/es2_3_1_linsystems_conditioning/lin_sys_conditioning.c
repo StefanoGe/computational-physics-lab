@@ -47,7 +47,7 @@ void cond_numb_study( double eps, bool swap_rows )
 	printf("U is:\n");
 	mat_print_stdout( &U, "%g", true );
 
-	linst_forwsubst_inplace( &LU, &b, true );
+	linst_forwsubst_inplace( &LU, &b, false );
 	linst_backsubst_inplace( &LU, &b );
 	
 	printf("x found by solving LUx=b: \n");

@@ -1,0 +1,4 @@
+add_executable(gaussian_packet_in_infinite_well gaussian_packet_in_infinite_well.c)
+target_link_libraries(gaussian_packet_in_infinite_well PRIVATE cp)
+set_target_properties(gaussian_packet_in_infinite_well PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/programs/schroedinger/es7_1_1_gaussian_infinite_well")
+

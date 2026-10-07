@@ -92,5 +92,7 @@ void eplot_multi(const SeriesSpec *series, int count, const Global *gb_settings)
 void eplot_anim(const AnimSpec *series, int count, const Global *gb_settings,
 			int nframes,const char *additional_in_loop,double delay);
 
+void eplot_multi_options(const SeriesSpec *series, int count, 
+	const Global *gb_settings, bool print_plot_command);
 
 #endif

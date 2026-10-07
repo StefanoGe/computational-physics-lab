@@ -1,0 +1,4 @@
+add_executable(newton_method_initial_guess newton_method_initial_guess.c)
+target_link_libraries(newton_method_initial_guess PRIVATE cp)
+set_target_properties(newton_method_initial_guess PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/programs/root_finding/es4_2_2_newton_initial_guess")
+

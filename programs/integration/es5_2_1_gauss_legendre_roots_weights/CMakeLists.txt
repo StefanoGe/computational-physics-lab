@@ -1,0 +1,4 @@
+add_executable(gauss_legendre_weights gauss_legendre_weights.c)
+target_link_libraries(gauss_legendre_weights PRIVATE cp)
+set_target_properties(gauss_legendre_weights PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/programs/integration/es5_2_1_gauss_legendre_roots_weights")
+

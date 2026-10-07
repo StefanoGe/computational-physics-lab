@@ -1,0 +1,4 @@
+add_executable(newton_method_error_study newton_method_error_study.c)
+target_link_libraries(newton_method_error_study PRIVATE cp)
+set_target_properties(newton_method_error_study PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/programs/root_finding/es4_2_1_newton_method")
+

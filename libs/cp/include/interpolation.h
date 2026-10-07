@@ -6,11 +6,13 @@
 #include "matrix.h"
 #include <float.h>
 
-#define SINGULAR 0
-#define NONSINGULAR 1
 
+typedef enum {
+	SINGULAR,
+	NONSINGULAR
+} MatrixType;
 
-int interp_polyn_vand_lup(const Array *x, const Array *y, Array *coeffs,
+MatrixType interp_polyn_vand_lup(const Array *x, const Array *y, Array *coeffs,
 								double *cond_number);
 
 typedef struct {
@@ -56,5 +58,10 @@ void interp_barf_add_fvalues_realline(BarFit *barf,
 double interp_real_line_to_unit( double z );
 
 double interp_unit_to_real_line( double x );
+
+double* interp_build_eq_weights(int n);
+
+double* interp_build_weights( const double *points, int npoints);
+
 
 #endif

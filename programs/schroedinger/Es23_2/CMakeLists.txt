@@ -1,4 +1,0 @@
-add_executable(gaussian_schroedinger2 gaussian_schroedinger2.c)
-target_link_libraries(gaussian_schroedinger2 PRIVATE cp)
-set_target_properties(gaussian_schroedinger2 PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/programs/schroedinger/Es23_2")
-

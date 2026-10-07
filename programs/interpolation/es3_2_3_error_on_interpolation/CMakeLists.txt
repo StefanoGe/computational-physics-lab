@@ -1,0 +1,4 @@
+add_executable(error_on_interpolation error_on_interpolation.c)
+target_link_libraries(error_on_interpolation PRIVATE cp)
+set_target_properties(error_on_interpolation PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/programs/interpolation/es3_2_3_error_on_interpolation")
+

@@ -2,7 +2,7 @@
 #include "linearsys.h"
 #include <math.h>
 
-#define LOW_NUMBER 0.0001
+#define LOW_NUMBER 1e-10
 
 double interp_real_line_to_unit( double z )
 {
@@ -14,7 +14,7 @@ double interp_unit_to_real_line( double x )
 	return 2 * x / ( 1 - x * x );
 }
 
-int interp_polyn_vand_lup(const Array *x, const Array *y, Array *coeffs, 
+MatrixType interp_polyn_vand_lup(const Array *x, const Array *y, Array *coeffs, 
 	double *cond_number)
 {
 	if(x->size != y->size)
@@ -46,7 +46,11 @@ int interp_polyn_vand_lup(const Array *x, const Array *y, Array *coeffs,
 	}
 	
 	if( linst_lup_factor(&vandermont, pivots, -1) != 0 )
+	{	
+		mat_free(&vandermont);
+		SAFE_FREE(pivots);
 		return SINGULAR;
+	}
 	
 	linst_lup_solve_inplace(&vandermont, pivots, coeffs);
 
@@ -55,20 +59,20 @@ int interp_polyn_vand_lup(const Array *x, const Array *y, Array *coeffs,
 	return NONSINGULAR;
 }
 
-static inline double* interp_build_weights( const double *points, int npoints)
+double* interp_build_weights( const double *points, int npoints)
 {
 	double *weights;
 	SAFE_ALLOC(weights,npoints);
 	double prod = 1;
 
-	for( int w = 0; w < npoints; w++ )
+	for( int w=0; w<npoints; w++ )
 	{
 		prod = 1;
-		for( int j = 0; j < npoints; j++ )
-			if( w != j )
-				prod *= ( points[w] - points[j] );
+		for( int j=0; j<npoints; j++ )
+			if(w != j)
+				prod *= (points[w]-points[j]);
 				
-		weights[w] = 1 / prod;
+		weights[w] = 1/prod;
 	}
 	return weights;
 }
@@ -90,13 +94,13 @@ BarFit interp_barf_new_points(const Array *points)
 	return barf;
 }
 
-static inline double* interp_build_eq_weights(int n)
+double* interp_build_eq_weights(int n)
 {
 	double *weights;
 	SAFE_ALLOC(weights,n);
-	weights[ 0 ] = 1;
+	weights[0] = n;
 	for( int i = 1; i < n; i++ )
-		weights[i] = weights[ i -1 ] * ( i - n ) / i;
+		weights[i] = weights[i-1]*(i-n)/i;
 	return weights;
 }
 
@@ -218,13 +222,13 @@ double* interp_build_cheb2_weights( int num )
 {
 	double *weights;
 	SAFE_ALLOC(weights,num);
-	for( int i = 0; i < num; i ++ )
+	for( int i=0; i < num; i ++ )
 	{
 		weights[i] = 1;
-		if( i % 2 )
+		if( i%2 )
 			weights[i] *= -1;
 		if( i == 0 || i == num-1 )
-			weights[ i ] /= 2;
+			weights[i] /= 2;
 	}
 	return weights;
 }

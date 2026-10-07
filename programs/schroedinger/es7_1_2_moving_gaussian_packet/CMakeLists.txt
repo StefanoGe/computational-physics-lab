@@ -1,0 +1,4 @@
+add_executable(moving_gaussian_packet moving_gaussian_packet.c)
+target_link_libraries(moving_gaussian_packet PRIVATE cp)
+set_target_properties(moving_gaussian_packet PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/programs/schroedinger/es7_1_2_moving_gaussian_packet")
+

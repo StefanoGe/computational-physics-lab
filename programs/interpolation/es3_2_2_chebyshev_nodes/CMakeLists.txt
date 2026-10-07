@@ -1,0 +1,4 @@
+add_executable(chebyshev_nodes_interpolation chebyshev_nodes_interpolation.c)
+target_link_libraries(chebyshev_nodes_interpolation PRIVATE cp)
+set_target_properties(chebyshev_nodes_interpolation PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/programs/interpolation/es3_2_2_chebyshev_nodes")
+

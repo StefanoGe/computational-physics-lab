@@ -4,7 +4,7 @@
 
 #define DEFAULT_XTOLERANCE DBL_EPSILON * 100
 #define DEFAULT_FTOLERANCE DBL_EPSILON * 10'000
-#define MAX_ITERATION 1'000
+#define MAX_ITERATION 1000
 
 static inline int sign( double x )
 {
@@ -16,9 +16,10 @@ static inline int sign( double x )
 }
 
 static inline bool bis_next_step(double *curr, int *sign1, int *sign_curr,
-	double *x1, double *x2, ParamFuncPtr fnc, void *params)
+	double *x1, double *x2, ParamFuncPtr fnc, void *params, double *fcurr)
 {
-	*sign_curr = sign( fnc(*curr,params) );
+	*fcurr = fnc(*curr, params);
+	*sign_curr = sign( *fcurr );
 	if( *sign1 == *sign_curr )
 	{
 		*x1 = *curr;
@@ -34,15 +35,21 @@ static inline bool bis_next_step(double *curr, int *sign1, int *sign_curr,
 double root_bis( ParamFuncPtr fnc, void *params, 
 			double x1, double x2, double tol, Array *debug)
 {
-	const double add_tol = DBL_EPSILON * MAX( fabs(x1), fabs(x2) );
 	int sign1 = sign( fnc(x1,params) );
 	int sign_curr = 0;
 	double curr = 0;
+	double fcurr = 0;
 	
-	while( fabs( x1 - x2 ) > tol + add_tol )
+	if(tol == DEF_TOL)
+		tol = DBL_EPSILON * 10;
+	tol += DBL_EPSILON * MAX( fabs(x1), fabs(x2) );
+	
+	int i=0;
+	
+	for(; i<MAX_ITERATION && fabs( x1 - x2 ) > tol; i++)
 	{
 		curr = (x1 + x2) / 2;
-		if(bis_next_step(&curr,&sign1,&sign_curr,&x1,&x2,fnc,params))
+		if( bis_next_step(&curr,&sign1,&sign_curr,&x1,&x2,fnc,params, &fcurr) )
 		{
 			if(debug)
 				arr_append( debug, curr );
@@ -51,6 +58,10 @@ double root_bis( ParamFuncPtr fnc, void *params,
 		if(debug)
 			arr_append( debug, curr );
 	}
+	
+	if(i >= MAX_ITERATION)
+		raiseErr("loop did not terminate after %d iterations", MAX_ITERATION);
+	
 	return curr;
 }
 
@@ -63,9 +74,9 @@ static inline void set_default_tolerance_if_requested( double * xtol, double * f
 		*ftol = DEFAULT_FTOLERANCE;
 }
 
-static inline void newt_next_step( ParamFuncPtr f, void *params_f,
-								   ParamFuncPtr derivative, void *params_der,
-							double * prev_x, double * curr_x, Array *debug )
+static inline void newt_next_step( ParamFuncPtr derivative, void *params_der,
+							double *prev_x, double *curr_x, double *fcurr,
+							Array *debug )
 {
 //	static int count = 0;
 //	count++;
@@ -73,38 +84,39 @@ static inline void newt_next_step( ParamFuncPtr f, void *params_f,
 //		eprint("%d\n", count);
 	
 	*prev_x = *curr_x;
-	*curr_x -= f(*curr_x,params_f) / derivative(*curr_x,params_der);
+	*curr_x -= *fcurr / derivative(*prev_x, params_der);
 	if(debug)
 		arr_append(debug, *curr_x);
-		
 }
 
 double root_newt( ParamFuncPtr f, void *params_f, 
 				  ParamFuncPtr derivative, void *params_der,
 				  double start, double xtol, double ftol, Array *debug )
 {
+
 	set_default_tolerance_if_requested( &xtol, &ftol );
 	
 	if(debug)
 	{
 		arr_free(debug);
-		arr_append( debug, start );
+		arr_append(debug, start);
 	}
 	
 	double prev_x = 0;
 	double curr_x = start;
+	double fcurr = f(curr_x, params_f);
 	bool found_root = false;
 	
 	int i = 0;
 	
 	for( ; i < MAX_ITERATION && !found_root; i++ )
 	{
-		newt_next_step(f,params_f,derivative,params_der, &prev_x, &curr_x, debug );
+		newt_next_step(derivative, params_der, &prev_x, &curr_x, 
+			&fcurr, debug );
+		fcurr = f(curr_x, params_f);
 		found_root = fabs( prev_x - curr_x ) <= xtol 
-					&& fabs( f(curr_x,params_f) ) <= ftol;
+					&& fabs( fcurr ) <= ftol;
 	}
-	
-//	printf("%d\n", i);
 	
 	if( !found_root )
 	{
@@ -117,44 +129,57 @@ double root_newt( ParamFuncPtr f, void *params_f,
 
 double root_newt_bracket( ParamFuncPtr f, void *params_f, 
 				  ParamFuncPtr derivative, void *params_der,
-				  double x1,double x2, double xtol, double ftol, Array debug[] )
+				  double x1, double x2, double xtol, double ftol, Array *debug)
 {
 	set_default_tolerance_if_requested( &xtol, &ftol );
+	
+	bool found_root = false;
+	
+	double curr = (x2+x1)/2;
+	double fcurr = f(curr, params_f);
+	double prev=0;
+	int sign1 = sign( f(x1,params_f) );
+	int sign_curr = 0;
 	
 	if(debug)
 	{
 		arr_free(debug);
-		arr_free(debug+1);
-		arr_append( debug, x1);
-		arr_append( debug, x2);
+		arr_append(debug, curr);
 	}
-	
-	bool found_root = false;
-	
-	double curr = 0;
-	double prev_x1=x1;
-	int sign1 = sign( f(x1,params_f) );
-	int sign_curr = 0;
 	
 	int i = 0;
 	
-	for( ; i < MAX_ITERATION && !found_root; i++ )
+	for( ; i<MAX_ITERATION && !found_root; i++ )
 	{
-		prev_x1=x1;
-		newt_next_step(f,params_f,derivative,params_der, &prev_x1, &curr,NULL);
+		newt_next_step(derivative, params_der, &prev, &curr,
+			&fcurr, NULL);
+			
 		if( x1<curr && curr<x2)
 		{
-			bis_next_step(&curr,&sign1,&sign_curr,&x1,&x2,f,params_f);
+			if(bis_next_step(&curr, &sign1, &sign_curr, &x1, &x2, f, params_f,
+				&fcurr))
+			{
+				if(debug)
+					arr_append(debug, curr);
+				return curr;
+			}
 		}else{
 			curr = ( x1 + x2 ) / 2;
-			bis_next_step(&curr,&sign1,&sign_curr,&x1,&x2,f,params_f);
+			if(bis_next_step(&curr, &sign1, &sign_curr, &x1, &x2, f, params_f,
+				&fcurr))
+			{
+				if(debug)
+					arr_append(debug, curr);
+				return curr;
+			}
 		}
-		
-		found_root = fabs( x1 - x2 ) <= xtol 
-					&& fabs( f(curr,params_f) ) <= ftol;
 					
-		arr_append(debug,x1);
-		arr_append(debug,x2);
+		found_root = (fabs(curr - prev) <= xtol || fabs(x2 - x1) <= xtol)
+			&& fabs(fcurr) <= ftol;
+
+		
+		if(debug)
+			arr_append(debug,curr);
 	}
 	
 //	printf("%d\n", i);

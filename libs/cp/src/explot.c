@@ -85,7 +85,7 @@ void eplot_set_terminal_and_plot(FILE *gp, char *plot_command, const char *outpu
 	{
 		char pdfcairo[5'000];
 		char output_path[100];
-		sprintf(output_path, "\'plot/%s.pdf\'", output_name);
+		sprintf(output_path, "\'plot/%s_%d.pdf\'", output_name, gb_counter);
 		sprintf(pdfcairo,
 			"set terminal pdfcairo size 6.4,4 font \"CMU Serif,16\" enhanced\n"
 			"set for [i=1:8] linetype i lw 4.5 pt 7 ps 0.65\n"
@@ -132,7 +132,7 @@ static inline char *get_build_name(const Global *gb_settings)
 {return (gb_settings->build_name) ? gb_settings->build_name :"my_plot";}
 
 static inline FILE *set_and_open_script(char *build_name, char *script_path){
-	sprintf(script_path, "script/%s.gp", build_name);
+	sprintf(script_path, "script/%s_.gp", build_name);
 	FILE *gp=openFile(script_path, "w");
 	return gp;
 }
@@ -140,7 +140,13 @@ static inline FILE *set_and_open_script(char *build_name, char *script_path){
 void eplot_2carr(double *xaxis, double *yaxis, int size, const Global *gb_settings,
 					const DatasetDesc *data_settings)
 {
-	char *build_name=get_build_name(gb_settings);
+	char build_name[100];
+	if(gb_settings->build_name)
+		snprintf(build_name, sizeof build_name, "%s_%d", gb_settings->build_name,
+		gb_counter);
+	else
+		snprintf(build_name, sizeof build_name, "my_plot_%d", gb_counter);
+
 	
 	char script_path[100]; 
 	FILE *gp=set_and_open_script(build_name, script_path);
@@ -149,8 +155,8 @@ void eplot_2carr(double *xaxis, double *yaxis, int size, const Global *gb_settin
 	
 	eplot_set_global(gp, gb_settings);
 
-	char data_path[100];
-	sprintf(data_path, "data/%s_%d_0.dat", build_name, gb_counter);
+	char data_path[200];
+	sprintf(data_path, "data/%s_0.dat", build_name);
 	double *carrs[2]={xaxis,yaxis};
 	carrs_to_filename(data_path, carrs, size, 2);
 
@@ -177,22 +183,38 @@ void multi_data_plt_command_helper(const SeriesSpec *series, char *plot_command,
 										size_t plot_command_max_size)
 {
 	char data_path[100];
-	snprintf(data_path,sizeof data_path, "data/%s_%d_%d.dat", build_name, gb_counter, i);
+	snprintf(data_path,sizeof data_path, "data/%s_%d.dat", build_name, i);
 	double *carrs[2]={series->x,series->y};
 	carrs_to_filename(data_path, carrs, series->size, 2);
 	
 	char *label=(series->label) ? series->label : "";
 	char *style=(series->style) ? series->style : "lp";
+	char color[50]="";
+	if(series->color)
+		snprintf(color, sizeof color, " lc %s", series->color);
 	
 	char plot_line[400];
-	snprintf(plot_line, sizeof plot_line,"\"%s\" with %s title \"%s\"", data_path,
-				style, label);
+	snprintf(plot_line, sizeof plot_line,"\"%s\" with %s title \"%s\"%s", 
+				data_path,
+				style, label, color);
 	*len+=snprintf(plot_command+*len,plot_command_max_size-*len, plot_line);
 }
 
-void eplot_multi(const SeriesSpec *series, int count, const Global *gb_settings)
+void eplot_multi(const SeriesSpec *series, int count, 
+	const Global *gb_settings)
 {
-	char *build_name=get_build_name(gb_settings);
+	eplot_multi_options(series, count, gb_settings, true);
+}
+
+void eplot_multi_options(const SeriesSpec *series, int count, 
+	const Global *gb_settings, bool print_plot_command)
+{
+	char build_name[200];
+	if(gb_settings->build_name)
+		snprintf(build_name, sizeof build_name, "%s_%d", gb_settings->build_name,
+		gb_counter);
+	else
+		snprintf(build_name, sizeof build_name, "my_plot_%d", gb_counter);
 	
 	char script_path[100]; 
 	FILE *gp=set_and_open_script(build_name, script_path);
@@ -211,8 +233,8 @@ void eplot_multi(const SeriesSpec *series, int count, const Global *gb_settings)
 		len+=snprintf(plot_command+len,sizeof plot_command - len,
 												(i==count-1)?"\n":", \\" "\n");
 	}
-	
-	eprint("%s", plot_command);
+	if(print_plot_command)
+		eprint("%s", plot_command);
 	eplot_set_terminal_and_plot(gp, plot_command, gb_settings->output_name);
 
 	fflush(gp);

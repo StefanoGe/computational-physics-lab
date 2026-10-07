@@ -1,0 +1,4 @@
+add_executable(real_line_interpolation real_line_interpolation.c)
+target_link_libraries(real_line_interpolation PRIVATE cp)
+set_target_properties(real_line_interpolation PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/programs/interpolation/es3_2_4_interpolation_over_real_line")
+

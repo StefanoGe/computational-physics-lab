@@ -1,0 +1,4 @@
+add_executable(lagrange_evenly_spaced lagrange_evenly_spaced.c)
+target_link_libraries(lagrange_evenly_spaced PRIVATE cp)
+set_target_properties(lagrange_evenly_spaced PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/programs/interpolation/es3_2_1_lagrange_evenly_spaced")
+

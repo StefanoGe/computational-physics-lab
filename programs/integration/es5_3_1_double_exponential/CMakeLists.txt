@@ -1,0 +1,4 @@
+add_executable(double_exp_gauss_legendre double_exp_gauss_legendre.c)
+target_link_libraries(double_exp_gauss_legendre PRIVATE cp)
+set_target_properties(double_exp_gauss_legendre PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/programs/integration/es5_3_1_double_exponential")
+

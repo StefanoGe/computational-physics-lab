@@ -1,0 +1,4 @@
+add_executable(nonsmooth_chebyshev_interpolation nonsmooth_chebyshev_interpolation.c)
+target_link_libraries(nonsmooth_chebyshev_interpolation PRIVATE cp)
+set_target_properties(nonsmooth_chebyshev_interpolation PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/programs/interpolation/es3_2_5_nonsmooth_chebyshev")
+
