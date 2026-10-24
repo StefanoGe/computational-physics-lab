@@ -1,4 +1,3 @@
-// Es16_1.c 
 // Secant method implementation and study of convergence
 
 #include <stdio.h>
@@ -55,7 +54,7 @@ void plot_graph(ParamFuncPtr f, double x1, double x2, const Array *roots,
 
 	SeriesSpec series[]={graph,root_graph};
 	
-	eplot_multi(series,2,&gb_settings);
+	eplot_multi_options(series, 2, &gb_settings, false);
 }
 
 void convergence_study(const Array *debug, const Array *roots_found, 

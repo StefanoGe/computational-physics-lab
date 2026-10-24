@@ -1,4 +1,3 @@
-
 #include "integration.h"
 #include <math.h>
 #include <limits.h>
@@ -117,7 +116,7 @@ void plot_error(const Array *true_value_deviation_dbe,
 //		"set xrange [0:80]\n"
 			);
 	
-	eplot_multi(series,nfs*2,&gb_settings);
+	eplot_multi_options(series, nfs*2, &gb_settings, false);
 	
 	arr_free(&n_nodes);
 	SAFE_FREE(series);

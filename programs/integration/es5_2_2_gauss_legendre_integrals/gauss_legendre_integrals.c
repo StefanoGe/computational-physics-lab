@@ -39,8 +39,6 @@ void computation_result_analysis( int max_n_nodes, ParamFuncPtr f, double true_v
 			ANSI_YELLOW"between endpoints [%.2lf,%.2lf]\n"
 			"True value is "ANSI_RED"%.4lf\n\n",fname,x1,x2,true_value);
 	
-	
-	
 	puts(ANSI_YELLOW"n° nodes | diff with true value"ANSI_RESET);
 	
 	for(int i = 0; i<n_estimations; i++)
@@ -53,10 +51,7 @@ void computation_result_analysis( int max_n_nodes, ParamFuncPtr f, double true_v
 		printf("%8d | %.3e\n",n_nodes[i],ARRP(true_value_deviation,i));
 	}
 	
-
-	
 	puts("\n-------------------------------------\n");
-
 
 	arr_free(&evaluated_integrals);
 }
@@ -83,7 +78,7 @@ void plot_error(const Array *true_value_deviation, int nfs,
 		"set label \"{/Symbol e}_{mach} zone\" at 1,4e-13\n"
 			);
 	
-	eplot_multi(series,nfs,&gb_settings);
+	eplot_multi_options(series, nfs, &gb_settings, false);
 	
 	arr_free(&n_nodes);
 	SAFE_FREE(series);

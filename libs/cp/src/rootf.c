@@ -44,9 +44,9 @@ double root_bis( ParamFuncPtr fnc, void *params,
 		tol = DBL_EPSILON * 10;
 	tol += DBL_EPSILON * MAX( fabs(x1), fabs(x2) );
 	
-	int i=0;
+	bool found_root = false;
 	
-	for(; i<MAX_ITERATION && fabs( x1 - x2 ) > tol; i++)
+	for(int i=0; i<MAX_ITERATION; i++)
 	{
 		curr = (x1 + x2) / 2;
 		if( bis_next_step(&curr,&sign1,&sign_curr,&x1,&x2,fnc,params, &fcurr) )
@@ -57,9 +57,14 @@ double root_bis( ParamFuncPtr fnc, void *params,
 		}
 		if(debug)
 			arr_append( debug, curr );
+			
+		found_root = fabs(x1 - x2) < tol;
+			
+		if(found_root)
+			break;
 	}
 	
-	if(i >= MAX_ITERATION)
+	if(!found_root)
 		raiseErr("loop did not terminate after %d iterations", MAX_ITERATION);
 	
 	return curr;
@@ -107,15 +112,15 @@ double root_newt( ParamFuncPtr f, void *params_f,
 	double fcurr = f(curr_x, params_f);
 	bool found_root = false;
 	
-	int i = 0;
-	
-	for( ; i < MAX_ITERATION && !found_root; i++ )
+	for(int i=0; i < MAX_ITERATION; i++ )
 	{
 		newt_next_step(derivative, params_der, &prev_x, &curr_x, 
 			&fcurr, debug );
 		fcurr = f(curr_x, params_f);
 		found_root = fabs( prev_x - curr_x ) <= xtol 
 					&& fabs( fcurr ) <= ftol;
+		if(found_root)
+			break;
 	}
 	
 	if( !found_root )
@@ -147,9 +152,7 @@ double root_newt_bracket( ParamFuncPtr f, void *params_f,
 		arr_append(debug, curr);
 	}
 	
-	int i = 0;
-	
-	for( ; i<MAX_ITERATION && !found_root; i++ )
+	for(int i=0; i<MAX_ITERATION; i++)
 	{
 		newt_next_step(derivative, params_der, &prev, &curr,
 			&fcurr, NULL);
@@ -173,13 +176,15 @@ double root_newt_bracket( ParamFuncPtr f, void *params_f,
 				return curr;
 			}
 		}
-					
-		found_root = (fabs(curr - prev) <= xtol || fabs(x2 - x1) <= xtol)
-			&& fabs(fcurr) <= ftol;
-
 		
 		if(debug)
 			arr_append(debug,curr);
+			
+		found_root = (fabs(curr - prev) <= xtol || fabs(x2 - x1) <= xtol)
+			&& fabs(fcurr) <= ftol;
+			
+		if(found_root)
+			break;
 	}
 	
 //	printf("%d\n", i);
@@ -232,13 +237,16 @@ double root_sec( const ParamFuncPtr f, void *params,
 	
 	//eprint( "%lf %lf %lf %lf %lf\n", x_prev, x_curr1, x_curr2, fx_curr1, fx_curr2 );
 	
-	for( int i = 0; i < MAX_ITERATION && !found_root; i++ )
+	for( int i = 0; i < MAX_ITERATION; i++ )
 	{
 		sec_next_step( f, params, &x_prev , &x_curr1,  &x_curr2,  &fx_curr1,  
 		&fx_curr2, debug );
 		
 		found_root = fabs( x_curr1 - x_curr2 ) <= xtol 
 					&& fabs( fx_curr2 ) <= ftol;
+					
+		if(found_root)
+			break;
 	}
 	
 	if( !found_root )
@@ -328,7 +336,7 @@ double root_inv_quad_int(const ParamFuncPtr f, void *params, double x1,
 	int newer_x_index=2;
 	bool found_root=0;
 	
-	for( int i = 0; i < MAX_ITERATION && !found_root; i++ )
+	for( int i = 0; i < MAX_ITERATION; i++ )
 	{
 		inv_quad_next_step(f,params,xs,fxs,&older_x_index,
 			&second_x_index,&newer_x_index);
@@ -338,6 +346,9 @@ double root_inv_quad_int(const ParamFuncPtr f, void *params, double x1,
 		found_root = fabs( xs[second_x_index] - 
 						xs[newer_x_index] ) <= xtol 
 					&& fabs( fxs[newer_x_index] ) <= ftol;
+					
+		if(found_root)
+			break;
 	}
 	
 	if( !found_root )
@@ -353,6 +364,3 @@ double root_inv_quad_int(const ParamFuncPtr f, void *params, double x1,
 	
 	return xs[newer_x_index];
 }
-
-
-

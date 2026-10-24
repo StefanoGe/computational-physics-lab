@@ -113,7 +113,8 @@ void plot_graph(const Array *errors,char *fnames[])
 }
 
 void integration_study( const ParamFuncPtr f, double x1, double x2, 
-			double true_value, Array *errors,int f_index, int n_to_use_in_fit)
+			double true_value, Array *errors,int f_index, int n_to_use_in_fit,
+			int starting_log_n)
 {
 	printf(
 			ANSI_GREEN "Study of convergence of the integral of"
@@ -131,16 +132,21 @@ void integration_study( const ParamFuncPtr f, double x1, double x2,
 		printf( "%6d  | %e\n", n_nodes, error );
 	}
 
-	Array log_nodes = arr_linspace(1,MAX_NODE_POWER,n_to_use_in_fit);
-	Array log_errs = arr_map(errors,log2);
-	Array sliced_log_errs = arr_slice(&log_errs,0,n_to_use_in_fit);
+	Array log_nodes = arr_linspace(starting_log_n, 
+		starting_log_n + n_to_use_in_fit-1,
+		n_to_use_in_fit);
+	Array log_errs = arr_map(errors, log2);
+	Array sliced_log_errs = arr_slice(&log_errs, starting_log_n-1, 
+		n_to_use_in_fit+starting_log_n-1);
 	Array coeffs_fit = {0};
 	
 	ParamFuncPtr fs[] = {id,one};
-	linst_lsqr_fit_linear_qr_wrap(&log_nodes,&sliced_log_errs,fs,NULL,2,&coeffs_fit);
+	linst_lsqr_fit_linear_qr_wrap(&log_nodes, &sliced_log_errs,
+		fs, NULL, 2, &coeffs_fit);
 	
 	printf( ANSI_YELLOW"\nParameters of fitted line in log-scale:\n"
-			ANSI_RESET"m = %.3lf | q = %.3lf\n",ARR(coeffs_fit,0),ARR(coeffs_fit,1));
+			ANSI_RESET"m = %.10lf | q = %.3lf\n", ARR(coeffs_fit,0), 
+			ARR(coeffs_fit,1));
 	
 	puts( "\n----------------------------\n");
 	
@@ -157,12 +163,14 @@ int main()
 		arr_null(errors+i);
 
 	puts("----------------------------\n");	
-	integration_study( f1, 0, 1, 0.25,errors,1,MAX_NODE_POWER-4);
-	integration_study( f2, 0, 1, (PI - 2 + 2 * log(2)) / 12, errors+1,2,MAX_NODE_POWER-4);	
-	integration_study( f3, 0, PI/2, ( exp( PI/2 ) - 1 ) / 2,errors+2,3,MAX_NODE_POWER-3);
-	integration_study( f4, 0, 1, 5 * PI*PI/96,errors+3,4,MAX_NODE_POWER-5);
-	integration_study( f5, 0, 1, -4.0/9,errors+4,5,MAX_NODE_POWER);
-	integration_study( f6, 0, 1, PI/4,errors+5,6,MAX_NODE_POWER);
+	integration_study( f1, 0, 1, 0.25, errors,1, MAX_NODE_POWER-4, 1);
+	integration_study( f2, 0, 1, (PI - 2 + 2 * log(2)) / 12, 
+		errors+1, 2, MAX_NODE_POWER-4,1);	
+	integration_study( f3, 0, PI/2, ( exp( PI/2 ) - 1 ) / 2,
+		errors+2, 3, MAX_NODE_POWER-3,1);
+	integration_study( f4, 0, 1, 5 * PI*PI/96, errors+3, 4, MAX_NODE_POWER-6, 1);
+	integration_study( f5, 0, 1, -4.0/9, errors+4, 5, MAX_NODE_POWER, 1);
+	integration_study( f6, 0, 1, PI/4, errors+5, 6, MAX_NODE_POWER, 1);
 	
 	
 	char *fnames[]={"f_1(x)","f_2(x)","f_3(x)",

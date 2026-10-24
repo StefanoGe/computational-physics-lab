@@ -22,45 +22,6 @@ const double leg_weights[3][4] = {
 			0.652145154862546142627,0.347854845137453857373,}
 };
 
-/*
-
-void plot_polynomials()
-{
-	VectorD xaxis = vec_range( -1, 1, 100);
-	MatrixDouble yvalues = allocMatD( 2, 100 );
-	for( int i = 0; i < 100; i++)
-	{
-		double x = xaxis.val[i];
-		yvalues.val[0][i] = legendre( x, 2 );
-		yvalues.val[1][i] = ( 3*x*x - 1 ) / 2;
-	}
-	
-	tmplot_carrs( "plot_pol", xaxis.val, yvalues.val, 100, 2 );
-	
-	freeMatD(yvalues);
-	free_vecD(&xaxis);
-}
-
-
-void plot_polynomials24()
-{
-	int n_points = 1000;
-	
-	VectorD xaxis = vec_range( -1, 1, n_points);
-	MatrixDouble yvalues = allocMatD( 1, n_points );
-	for( int i = 0; i < n_points; i++)
-	{
-		double x = xaxis.val[i];
-		yvalues.val[0][i] = legendre( x, 24 );
-	}
-	
-	tmplot_carrs( "plot_pol", xaxis.val, yvalues.val, n_points, 1 );
-	
-	freeMatD(yvalues);
-	free_vecD(&xaxis);
-}
-*/
-
 void test_roots(){
 	
 	Array debug={0};
@@ -129,7 +90,7 @@ void plot_polynomials(int max_deg)
 		"x","y",NULL,"leg_pol",NULL,"bottom right",
 		"set xrange [-1.1:1.3]\nset yrange [-1.1:1.1]\n");
 	
-	eplot_multi(series,max_deg+1,&gb_settings);
+	eplot_multi_options(series, max_deg+1, &gb_settings, false);
 	
 	SAFE_FREE(series);
 	arr_free(&domain);
@@ -145,9 +106,6 @@ void plot_polynomials(int max_deg)
 
 int main()
 {
-//	eprint("setup ok");
-//	plot_polynomials24();
-//	eprint("plot ok");
 	test_roots();
 	plot_polynomials(5);
 

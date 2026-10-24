@@ -4,7 +4,7 @@
 #include "interpolation.h"
 #include <limits.h>
 
-#define MAX_LEG 10'000
+#define MAX_LEG 10'000 // maximum degree of a requestable Legendre polynomial
 #define ORDER_AUTO -1
 #define DOUBLE_EXP_T_TOL DBL_EPSILON*10
 

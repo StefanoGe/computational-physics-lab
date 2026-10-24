@@ -86,13 +86,13 @@ void plot_graph(const Array *errors,char *fnames[])
 	Array n_node_list = arr_new(MAX_NODE_POWER);
 	for( int i = 1; i <= MAX_NODE_POWER; i++ )
 		ARR(n_node_list,i-1) = 10 * pown(2, i);
-	Array y_second_order_reference_line = arr_map(&n_node_list,power_minus_two);
+	Array y_second_order_reference_line = arr_map(&n_node_list, power_minus_two);
 	
-	Global gb_settings = eplot_init_global("",
+	Global gb_settings = eplot_init_global("Trapezoidal rule error plot",
 		"Number of nodes","Error","xy","trap_err","trap_err","bottom left",NULL);
 	
 	SeriesSpec *series;
-	SAFE_ALLOC(series,NTESTS+1);
+	SAFE_ALLOC(series, NTESTS+1);
 	
 	for(int i=0; i<NTESTS; i++)
 		series[i] = eplot_init_series(n_node_list.data,
@@ -100,19 +100,16 @@ void plot_graph(const Array *errors,char *fnames[])
 	
 	series[NTESTS] = eplot_init_series(n_node_list.data,
 		y_second_order_reference_line.data,n_node_list.size,
-			"l","1/x^2 ref line",NULL);
-/*
-	char title[100];
-	sprintf(title,"%s",fname);
-*/	
-	eplot_multi(series,NTESTS+1,&gb_settings);
+			"l" ,"1/x^2 ref line",NULL);
+
+	eplot_multi_options(series, NTESTS+1, &gb_settings, false);
 	
 	SAFE_FREE(series);
 	arr_free(&n_node_list);
 }
 
 void integration_study( const ParamFuncPtr f, double x1, double x2, 
-			double true_value, Array *errors,int f_index)
+			double true_value, Array *errors, int f_index)
 {
 	printf(
 			ANSI_GREEN "Study of convergence of the integral of"
@@ -127,10 +124,10 @@ void integration_study( const ParamFuncPtr f, double x1, double x2,
 		double error = true_value - integral;
 		//Absolute error or no? Yes for the log plot
 		arr_append( errors, fabs(error) );
-		printf( "%6d  | %e\n", n_nodes, error );
+		printf( "%6d  | %.2e\n", n_nodes, error );
 	}
 
-	Array log_nodes = arr_linspace(1,MAX_NODE_POWER,MAX_NODE_POWER);
+	Array log_nodes = arr_linspace(1, MAX_NODE_POWER, MAX_NODE_POWER);
 	Array log_errs = arr_map(errors,log2);
 	Array coeffs_fit = {0};
 	
@@ -138,15 +135,17 @@ void integration_study( const ParamFuncPtr f, double x1, double x2,
 	linst_lsqr_fit_linear_qr_wrap(&log_nodes,&log_errs,fs,NULL,2,&coeffs_fit);
 	
 	printf( ANSI_YELLOW"\nParameters of fitted line in log-scale:\n"
-			ANSI_RESET"m = %.3lf | q = %.3lf\n",ARR(coeffs_fit,0),ARR(coeffs_fit,1));
+			ANSI_RESET"m = %.3lf | q = %.3lf\n",
+			ARR(coeffs_fit,0),
+			ARR(coeffs_fit,1));
 	
 	puts( "\n----------------------------\n");
 	
 	arr_free(&log_nodes);
 	arr_free(&log_errs);
 	arr_free(&coeffs_fit);
-
 }
+
 int main()
 {	
 	Array *errors;

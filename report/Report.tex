@@ -4,6 +4,12 @@
 \usepackage{amsmath,amsfonts,amssymb}
 \usepackage{siunitx}   % units
 
+\DeclareMathOperator{\sech}{sech}
+
+% You can render figure and tables numbers without caption text
+\usepackage{caption}
+\captionsetup[table]{labelformat=empty}   
+
 \sisetup{
 	output-exponent-marker = \ensuremath{\mathrm{e}},
 	exponent-product= {},
@@ -20,6 +26,8 @@
     % hidelinks,
 ]{hyperref}
 
+\usepackage{comment}
+
 \usepackage{listings}
 % Define a command to mimic Markdown inline code
 \lstset{
@@ -32,6 +40,23 @@
 }
 \newcommand{\mdcode}[1]{\lstinline[backgroundcolor=\color{gray!10}, frame=single, frameround=tttt]|#1|}
 
+\usepackage[T1]{fontenc}
+
+
+\usepackage{array}
+\newcounter{rowcount}
+\setcounter{rowcount}{0}
+
+\usepackage{environ}
+\NewEnviron{mylist}{%
+\begin{flushleft}
+\renewcommand{\arraystretch}{2}
+\begin{tabular}{@{\stepcounter{rowcount}\makebox[2em][r]{\therowcount)}\hspace*{\tabcolsep}}%
+>{\bfseries\raggedright\arraybackslash}p{.3\linewidth}>{$}l<{$}}        
+\BODY
+\end{tabular}
+\end{flushleft}
+}
 
 % Optional: better-looking bookmarks in PDF viewer sidebar
 \usepackage{bookmark}   % usually loads automatically with recent hyperref
@@ -979,7 +1004,7 @@ The results are shown in ADD REFERENCE AND FIGURES
 
 
 
-\subsection{Bisection method}\label{ssection:bis_method}
+\subsection{Bisection method}\label{ssec:bis_method}
 
 In order to test our routine for rootfinding with the bisection method,
 we searched for the roots of the function $x^3-7x^2+14x-6$ in the interval 
@@ -1043,7 +1068,9 @@ the order of the quantity above, so it is a safety check.
 
 \subsection{Newton method}
 
-\subsubsection{Convergence rate study}
+% change to the termination criteria proposed by dahlquist?
+
+\subsubsection{Convergence rate study}\label{sssec:text_newt}
 
 We seek to check the correctness of our routine and study the convergence 
 rate of Newton's method by applying it to the functions 
@@ -1112,6 +1139,17 @@ where we use for $q$ the value that we calculated analytically (see Remarks).
 		constant $C = 0.5$. Root the root of $f_{3}$ satisfies this condition.
 		In our analysis we see that most ratios $a_{n+1}/a_{n}$ agree wih 0.5,
 		except for the last few values.
+		
+		This is the same order of convergence and asymptotic error constant of
+		bisection method. However, in bisection method only a single 
+		function evaluation is required at each step, while in 
+		Newton method both the function and its derivative must be evaluated.
+		Thus, in the case $f'(r) = 0$, for 
+		the same precision gained at each step, 
+		Newton method is twice as expensive,
+		compared to bisection method, if we assume the evaluation of the 
+		derivative to be comparable to evaluation of the function in 
+		computational cost.
 	}
 	\item{
 		For root $r=0$ of $f_{3}$ the estimated order of convergence is about 3.
@@ -1186,6 +1224,18 @@ root that gets found will be inside of the interval from which we started.
 ADD FIGURE AND REFERENCE shows the root found inside the arbitrality chosen 
 intervals $[0.5,\,2]$, $[2,\,5]$, $[5,\,8]$ and $[8,\,10]$.
 
+\begin{comment}
+
+\paragraph{Comments on bracketing}
+
+\begin{itemize}
+	\item{
+		
+	}
+\end{itemize}
+
+\end{comment}
+
 \subsubsection{Eros' true anomaly}
 
 As an application of Newton method, we seek to evaluate the \textit{true anomaly}
@@ -1224,15 +1274,96 @@ Nonetheless, we can also simply observe that for $\psi$ such that $f(\psi) = 0$:
 \]
 
 that is, if we safeguard Newton method with bracketing and we take as starting
-interval $[\frac{2\pi t}{\tau} - \epsilon, \frac{2\pi t}{\tau} + \epsilon]$
+interval $[\frac{2\pi t}{\tau} - \epsilon, \frac{2\pi t}{\tau} + \epsilon]$,
 then we are guaranteed to find the root.
 
+In ADD FIGURE AND REFERENCES we have plotted the graph of $\theta(t)$ thus 
+obtained. $\theta(t)$ was chosen to be in the interval $[0, 2\pi]$ to ensure
+continuity.
 
 \subsection{Secant method}
 
+We seek to test our implementation of the secant method and study its 
+convergence rate by searching the roots of the same functions examined in 
+\ref{sssec:text_newt}.
+
+\paragraph{Results}
+
+In ADD FIGURES AND REFERENCES we plotted the functions and the roots found.
+
+In table \ref{table:newt_conv_data} we quote the roots found and the numerical 
+estimates for the values of $q$, estimated as in \ref{sssec:text_newt}.
+
+
+\begin{table}[ht]
+	\centering
+	\begin{tabular}{l|c|c}
+		f(x) & Root & \approx q\\
+		\hline
+		$x^{2} - \exp(-x)$    & 0.703  & 1.65\\
+		$\tan(x) - 2x$        & 0.000  & 1.86\\
+		                      & 1.166  & 1.58\\
+		$\exp(x + 1) - x - 2$ & -1.000 & 1.03
+	\end{tabular}
+	\caption{}
+	\label{table:sec_conv_data}
+\end{table}
+
+The values of $q$ quoted above must not be taken to be asymptotically accurate
+estimates. In contrast with our analysis of Newton method, the estimated values
+were not settling around a value. With our precision we likely were not able
+to reach accurately the asymptotic behaviour; yet our rough estimation confirms 
+a rate of convergence between linear and quadratic for the first 3 roots 
+examined. In the case of $f_{3}(x)$, $f'(r) = 0$, therefore convergence is 
+not guaranteed to be superlinear and appears to be linear instead.
+
+\paragraph{Secant method is the inverse interpolation method with degree 1}
+
+We prove the above statement as an exercise.
+
+Suppose that we have calculated the approximations $x_{k}$ and $x_{k-1}$
+for a root of the function $f(x)$ by using
+the inverse interpolation method of $m = 1$. Next approximation is $q(0)$,
+where $q(x)$ is a polynomial of degree 1 such that $q(f(x_{k}) = x_{k}$ and
+$q(f(x_{k-1}) = x_{k-1}$. But a polynomial of degree 1 is just a line. We can 
+write it explicitely as:
+
+\[
+	q(y) - x_{k} = \frac{x_{k}-x_{k-1}}{f(x_{k})-f(x_{k-1})}(y - f(x_{k}))
+\]
+
+By substituting 0 in place of y in the previous expression we find 
+$x_{k+1} = q(0)$. We see that it is the same $x_{k+1}$ that would be 
+calculated by the secant method.
+
 \subsection{Inverse quadratic interpolation}
 
+We now repeat the same study with the inverse quadratic interpolation
+method.
 
+\paragraph{Results}
+
+In ADD FIGURES AND REFERENCES we plotted the functions and the roots found.
+
+In table \ref{table:newt_conv_data} we quote the roots found and the numerical 
+estimates for the values of $q$, estimated as in \ref{sssec:text_newt}.
+
+
+\begin{table}[ht]
+	\centering
+	\begin{tabular}{l|c|c}
+		f(x) & Root & \approx q\\
+		\hline
+		$x^{2} - \exp(-x)$    & 0.703  & 1.6-2.0\\
+		$\tan(x) - 2x$        & 0.000  & 1.6-2.0\\
+		                      & 1.166  & 1.6-1.8\\
+		$\exp(x + 1) - x - 2$ & -1.000 & 1.04
+	\end{tabular}
+	\caption{}
+	\label{table:sec_conv_data}
+\end{table}
+
+We confirm again an order of convergence between 1.6 and 2.0.
 
 %--------------------------------------------------------------------------
 %--------------------------------------------------------------------------
@@ -1241,17 +1372,151 @@ then we are guaranteed to find the root.
 %--------------------------------------------------------------------------
 
 %-------------------------------------
-\subsection{Newton-Cotes formulas}
+\subsection{Newton-Cotes formulas}\label{ssec:newt_cotes}
 %-------------------------------------
 
+In the following paragraphs we will test different integration rules on the 
+integrals listed down here:
+
+\begin{mylist}
+$f_{1}(x) :$ & \int_0^1 x\log(1+x)\, dx = \frac{1}{4} \\
+$f_{2}(x) :$ & \int_0^1 x^2 \tan^{-1}x\, dx = \frac{\pi-2+2\log 2}{12} \\
+$f_{3}(x) :$ & \int_0^{\pi/2}e^x \cos x\, dx = \frac{e^{\pi/2}-1}{2} \\
+$f_{4}(x) :$ & \int_0^1 \frac{\tan^{-1}(\sqrt{2+x^2})}{(1+x^2)\sqrt{2+x^2}}dx=\frac{5\pi^2}{96} \\
+$f_{5}(x) :$ & \int_0^1 \sqrt{x} \log(x) \, dx = -\frac{4}{9} \\
+$f_{6}(x) :$ & \int_0^1 \sqrt{1-x^2}\,\, dx = \frac{\pi}{4} \\
+\end{mylist}
+
+We will sometimes refer to the definite integrals above simply by the 
+integrand functions.
 
 \subsubsection{Trapezoidal rule}
 
+\paragraph{Results}
 
+In ADD FIGURE AND REFERENCES, we plot the error $\Delta I$ between the exact 
+value of the integrals and 
+the approximation obtained using the trapezoidal rule, as a function of 
+the number of subintervals used.
 
+Since the spacing between the nodes $h$ is inversely proportional to the 
+number of nodes $n$, if $\Delta I$ is asymptotically $O(h^{m})$, then it must
+also be asymptotically $O(\frac{1}{n^{m}})$.
+
+Given this, we can estimate $m$ by linearizing the asymptotic relationship 
+between $\Delta I$ and $n$. $m$ will be the opposite of the slope of 
+the line thus obtained.
+In Table \ref{table:trap_rule_conv_data} we list the values of $m$ found 
+for every integral.
+
+\begin{table}[ht]
+	\centering
+	\begin{tabular}{l|c}
+		$f$ & m \\
+		\hline
+		$f_{1}(x)$ & 2.00\\
+		$f_{2}(x)$ & 2.00\\
+		$f_{3}(x)$ & 2.00\\
+		$f_{4}(x)$ & 2.00\\
+		$f_{5}(x)$ & 1.37\\
+		$f_{6}(x)$ & 1.50\\
+	\end{tabular}
+	\caption{Table \ref{table:trap_rule_conv_data}}
+	\label{table:trap_rule_conv_data}
+\end{table}
+
+\paragraph{Remarks}
+
+\begin{itemize}
+	\item{
+		All integrals except those of functions $f_{5}$ and $f_{6}$ to the
+		exact value at second order with respect to the subinterval length.
+		Indeed, the integrand functions are all smooth in the integration
+		interval. This assures by expanding with Taylor that the truncation 
+		error is quadratic in $h$ as $h$ goes to zero.
+	}
+	\item{
+		$f_{5}$ is not differentiable in 0, hence the linear interpolation 
+		fails at producing a "good" approximation of the function in 
+		$x=0$. We can try to estimate the truncation error analitically. We will
+		consider only the subinterval $[0,\epsilon]$, since in all others
+		the function is smooth and will converge quadratically. We have:
+		\[
+		\begin{aligned}
+			R &= \int^{\epsilon}_{0}\sqrt{x}\log(x)\mathrm{d}x - 
+				\frac{\epsilon^{\frac{3}{2}}}{2}\log(\epsilon) = \\
+			&= \left[\frac{2}{3}\epsilon^{\frac{3}{2}}\log(x)\right]^{\epsilon}_{0} 
+			- \frac{2}{3}\int^{\epsilon}_{0}\sqrt{x}\mathrm{d}x 
+				- \frac{\epsilon^{\frac{3}{2}}}{2}\log(\epsilon) = \\
+			&= \epsilon^{\frac{3}{2}}\log(\epsilon)\left( \frac{1}{6}
+			\log(\epsilon) - \frac{4}{9} \right){}
+			\end{aligned}
+		\]
+		Hence the truncation error is $O(h^{\frac{3}{2}}\log(h))$. Note that
+		as h goes to zero, $\log(|R|) \sim m \log(\epsilon)$, hence the estimated
+		$m$ value should be asymptotically $1.5$.
+	}
+	\item{
+		$f_{5}$ is not differentiable in 1. As in previous point we can try
+		to estimate the truncation error analitically:
+\[
+		\begin{aligned}
+			R &= \int^{1}_{1-\epsilon} \sqrt{1-x^{2}}\mathrm{d}x - 
+			\frac{\epsilon}{2}\sqrt{1-(1-\epsilon)^{2}} = \\
+			&= \int^{\epsilon}_{0} \sqrt{2y - y^{2}} \mathrm{d}y -
+			\frac{\epsilon}{2}\sqrt{2\epsilon-\epsilon^{2}} = \\
+			&= \int^{\epsilon}_{0} \sqrt{2y}(1 + O(y)) \mathrm{d}y -
+				\frac{\epsilon}{2}\sqrt{2\epsilon}(1 + O(y)) = \\
+			&= \frac{2\sqrt{2}}{3}\epsilon^{\frac{3}{2}} -
+			\frac{\sqrt{2}\epsilon^{\frac{3}{2}}}{2} + O(y^{\frac{5}{2}})= \\
+			&= \frac{\sqrt{2}}{6}\epsilon^{\frac{3}{2}} + 
+			O(\epsilon^{\frac{5}{2}})
+		\end{aligned}
+\]
+		Hence the truncation error is $O(h^{\frac{3}{2}})$, as hinted in the
+		Results paragraph.
+	}
+\end{itemize}
+% maybe verify the claim in the program?
+% too much work for not much gain!
 \subsubsection{Simpson's rule}
 
+Exactly like in previous section, we test our implementation of Simpson's rule
+on the functions in \ref{ssec:newt_cotes}.
 
+In ADD FIGURE AND REFERENCES we show again the truncation error as a function
+of the number of subintervals used.
+
+In Table \ref{table:simp_rule_conv_data} we report the estimated values for 
+the orders of $m$.
+
+\begin{table}[ht]
+	\centering
+	\begin{tabular}{l|c}
+		$f$ & m \\
+		\hline
+		$f_{1}(x)$ & 4.00\\
+		$f_{2}(x)$ & 4.00\\
+		$f_{3}(x)$ & 4.00\\
+		$f_{4}(x)$ & 4.01\\
+		$f_{5}(x)$ & 1.40\\
+		$f_{6}(x)$ & 1.50\\
+	\end{tabular}
+	\caption{Table \ref{table:simp_rule_conv_data}}
+	\label{table:simp_rule_conv_data}
+\end{table}
+
+The first four functions are smooth in the integration interval, hence
+for Simpson's rule fourth-order convergence is guaranteed.
+
+Calculations analogous to those in previous section would show that the 
+truncation errors of $f_{5}(x)$ and $f_{6}(x)$ are, respectively,
+$O(h^{\frac{3}{2}\log(h)}$ and $O(h^{\frac{3}{2}}$.
+
+One might point out that the estimated value of $m$ for function $f_{5}(x)$
+is very close to $\frac{7}{2}$. It is a coincidence. If we changed the program
+\mdcode{simpson_rule.c} in order to remove some initial points from the fit, 
+we would see that the value of $m$ would get closer and closer to $1.5$.
 
 %-------------------------------------
 \subsection{Gauss-Legendre rule}
@@ -1260,16 +1525,117 @@ then we are guaranteed to find the root.
 
 \subsubsection{Nodes and weights of Gauss-Legendre rule}
 
+In this section we designed and tested some routines for evaluating Legendre
+polynomials, their roots and the weights in Gauss-Legendre integration.
+
+\paragraph{Results}
+
+In Table \ref{table:legendre_nodes_weights} we report the values of roots and
+weights Legendre polynomials with degree 2--4 that we found with our 
+routines. In the program \mdcode{gauss_legendre_weights.c} we also compare 
+them to the exact values, to which they agree with an error lower than the 
+tolerance requested in the rootfinding routine.
+
+In ADD FIGURE AND PLOT we also show the plot of the first 6 Legendre polynomials
+calculated with our routines.
+
+\begin{table}[ht]
+	\centering
+	\begin{tabular}{c | c | c | c}
+		Degree & Root index & Root value & Weight \\
+		\hline
+		2 & 1 &  0.577 & 1.000 \\
+		  & 2 & -0.577 & 1.000 \\
+		3 & 1 &  0.775 & 0.556 \\
+		  & 2 &  0.000 & 0.889 \\
+		  & 3 & -0.775 & 0.556 \\
+		4 & 1 &  0.861 & 0.348 \\
+		  & 2 &  0.340 & 0.652 \\
+		  & 3 & -0.340 & 0.652 \\
+		  & 4 & -0.861 & 0.348
+	\end{tabular}
+	\caption{Table \ref{table:legendre_nodes_weights}}
+	\label{table:legendre_nodes_weights}
+\end{table}
 
 \paragraph{Remarks}
 
+\begin{itemize}
+	\item{
+		For evaluating the $n$th Legendre polynomial for $L_{n}(x)$, the values
+		for all lower degrees must be computed recursively for the same $x$.
+		As a micro-optimization, these are stored inside an \mdcode{static} 
+		array. Since \mdcode{static} arrays in C are conserved between 
+		function calls, this saves time if $L_{m}(x)$ for the same $x$ 
+		is requested in the following function call. Our routine will compute
+		values of $L_{n}(x)$ only if they are not already stored, otherwise it
+		will use the values already present to evaluate a higher degree
+		polynomial. The array size count resets only when the caller 
+		asks for a different value of $x$.
+	}
+	\item{
+		For this reason, evaluating derivatives is extremely cheap and justifies
+		the use of Newton method for finding the roots. The algorithm has
+		complexity $O(nk)$, where $n$ is the degree of the polynomial and 
+		$k$ is the number of steps in Newton method. It should be a low 
+		number, reasonably independent from $n$, and most likely less than 10.
+	}
+\end{itemize}
+
 \subsubsection{Integrals with Gauss-Legendre rule}
+
+We now test our routine for calculating integrals with Gauss-Legendre rule and
+we study the convergence rate. We compute the integrals of the functions:
+
+\setcounter{rowcount}{0}
+\begin{mylist}
+$\int^{1}_{-1}e^{-4x}\mathrm d x$ \\
+$\int_{-1}^{1}e^{-9x^{2}}\mathrm d x$ \\
+$\int^{1}_{-1}\sech(x)\mathrm d x$ \\
+$\int^{1}_{-1}\frac{1}{1+9x^{2}}\mathrm d x$ \\
+$\int^{\pi}_{\pi/2}x^{2}\sin(8x)\mathrm d x$ \\
+\end{mylist}
+
+In ADD FIGURE AND REFERENCE we plot the error in integral estimation as 
+a function of the degree of the interpolant polynomial.
+
+The convergence is very fast and is exponential or superexponential.
+But why do some functions appear to converge much faster than others?
+
+The remainder term in Gauss-Legendre rule is guaranteed to be at most:
+\[
+    R_P[f]=\frac{2^{2n+1}(n!)^4}{(2n+1)[(2n!)]^3}f^{(2n)}(\xi)\,
+    \qquad
+    \xi\in(-1,1)
+\]
+
+where $f$ is the integrand function after we have changed variables in 
+the integration interval.
+
+The function $\frac{1}{1+25x^{2}}$ converges as the slowest. In fact:
+
+\[
+	\begin{aligned}
+		\frac{\mathrm d^{n}}{\mathrm d x^{n}} \frac{1}{1+25x^{2}} &= 
+			5^{n} \frac{\mathrm d^{n}}{\mathrm d y^{n}} \frac{1}{1+y^{2}} =\\
+		& = 5^{n}\frac{(-1)^{n}n!}{2i}\left( \frac{1}{(y-i)^{n+1}}
+			- \frac{1}{(y+i)^{n+1}}\right) \\
+		& = 5^{n}\frac{(-1)^{n}n!}{2i}\left( \frac{(y+i)^{n+1}-(y-1)^{n+1}}
+			{(y^{2}+1)^{n+1}} \right) \\
+		& = 5^{n}\frac{(-1)^{n}n!}{(y^{2}+1)^{\frac{n+1}{2}}}
+			\sin\left((n+1)\arctan\left(\frac{1}{y}\right)\right) \\
+		& = 5^{n}\frac{(-1)^{n}n!}{(y^{2}+1)^{\frac{n+1}{2}}}
+			\sin((n+1)\arctan y - \frac{n\pi}{2})
+	\end{aligned}
+\]
 
 %-------------------------------------
 \subsection{Double exponential rule}
 %-------------------------------------
 
 \subsubsection{Comparison of double exponential and Gauss-Legendre rules}
+
+
 
 \subsubsection{Improper integrals with double exponential rule}
 
