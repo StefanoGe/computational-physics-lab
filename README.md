@@ -22,7 +22,7 @@ The code is written in **C23** and built using **CMake**.
 
 - C compiler supporting C23
 - CMake version 3.10 or newer
-- Make or Ninja (on Linux/macOS)
+- Make or Ninja
 - **(optional)** LAPACKE and dependencies (BLAS, LAPACK, libgfortran)
 
 ## Downloading the repository
