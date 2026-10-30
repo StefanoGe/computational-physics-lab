@@ -35,6 +35,13 @@ double f5(double x, void *unused){
 	if(x==PI/2)
 		return NAN;
 	return sqrt(tan(x));}
+	
+double f5_changed_variables(double x, void *unused)
+{
+		UNUSED(unused);
+	
+	return sqrt(x)/(1+x*x);
+}
 
 void computation_result_analysis( ParamFuncPtr f, double true_value,
 			Array *true_value_deviation_dbe,Array *true_value_deviation_gl,
@@ -64,10 +71,10 @@ void computation_result_analysis( ParamFuncPtr f, double true_value,
 	for(int i=0; i<n_estimations; i++)
 	{
 		n_nodes[i] = MINN+i*STEPN;
-		ARR(evaluated_integrals_dbe,i)=intg_double_exp( f,NULL, n_nodes[i],BOUNDED,
-			endpoint1,endpoint2,tol);
-		ARR(evaluated_integrals_gl,i)=intg_gauss_legendre(f,NULL,n_nodes[i],
-			endpoint1,endpoint2);
+		ARR(evaluated_integrals_dbe,i)=intg_double_exp(f, NULL, n_nodes[i]/2,
+			BOUNDED, endpoint1,endpoint2,tol);
+		ARR(evaluated_integrals_gl,i)=intg_gauss_legendre(f,NULL, n_nodes[i],
+			endpoint1, endpoint2);
 		ARRP(true_value_deviation_dbe, i)=fabs(true_value - ARR(evaluated_integrals_dbe,i));
 		ARRP(true_value_deviation_gl,i)=fabs(true_value - ARR(evaluated_integrals_gl,i));
 		printf("%8d | %.3e | %.3e\n",n_nodes[i],ARRP(true_value_deviation_dbe,i),
@@ -106,9 +113,9 @@ void plot_error(const Array *true_value_deviation_dbe,
 
 	
 	Global gb_settings = eplot_init_global("Convergence of double exp. "
-		"rule vs Gauss-Legendre in bounded intervals",
-		"n. nodes","|I_n - I|","y","improper_conv_plot",
-		"improper_conv_plot","outside",
+		"rule vs Gauss-Legendre",
+		"n. nodes","|I_n - I|","y","db_exp_gl_conv_plot",
+		"db_exp_gl_conv_plot","outside",
 		"set object 1 rect from -20,1e-14 to 60,1e-17 fc rgb \"light-red\" " 
 		"fs transparent solid 0.2 border lc rgb \"#b0f03232\" lw 1.5\n"
 		"set object 1 front\n"
@@ -170,6 +177,13 @@ int main()
 		arr_free(true_value_deviation_dbe+i);
 		arr_free(true_value_deviation_gl+i);
 	}
+	
+	printf(ANSI_GREEN"After changing variables, the difference between the \n"
+		"numerical integral evaluated with the double exponential rule \n"
+		"and the exact value is, for "ANSI_RESET"N = %d:\n""%e\n\n"
+		, 18,
+		fabs( PI/sqrt(2) - intg_double_exp(f5_changed_variables, 
+		NULL, 18, HALF_LINE, 0, 0, DEF_TOL) ));
 	
 	exit(EXIT_SUCCESS);
 }

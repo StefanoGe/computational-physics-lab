@@ -76,13 +76,14 @@ void schrod_disc_h(MatrixC *M, double x0,double dx, StaticPotential V,
 		MATP(M,i,i+2)=-a;
 		MATP(M,i+2,i)=-a;
 	}
+//	matc_print_stdout(M, "%.10lf", "%+.10lf", true);
 }
 
 void schrod_disc_free_h(MatrixC *M, double dx)
 {
-	schrod_disc_h(M,0,dx,NULL,NULL);
+	schrod_disc_h(M, 0, dx, NULL, NULL);
 }
-
+/*
 void schrod_disc_h_improved(MatrixC *P, double x0,double dx, StaticPotential V,
 		void *potential_params)
 {
@@ -90,13 +91,11 @@ void schrod_disc_h_improved(MatrixC *P, double x0,double dx, StaticPotential V,
 		raiseErr("matrix was not initialized correctly");
 	
 	MatrixC M=matc_new(P->nrows,P->ncols);
-	schrod_disc_h(&M,x0,dx,V,potential_params);
-	
-	
-	
+	schrod_disc_h(&M, x0, dx, V, potential_params);
 }
-
-void schrod_rk4_core(const MatrixC *M,int nxpoints, int ntsteps,double dt,MatrixC *sol)
+*/
+void schrod_rk4_core(const MatrixC *M,int nxpoints, int ntsteps,
+		double dt, MatrixC *sol)
 {
 	ArrayC k1=arrc_new(nxpoints);
 	ArrayC k2=arrc_new(nxpoints);
@@ -114,23 +113,23 @@ void schrod_rk4_core(const MatrixC *M,int nxpoints, int ntsteps,double dt,Matrix
 			mypause();
 		#endif
 		// Make k1
-		matc_carrc_mult_banded(M, sol->rows[t], &k1,2 );
+		matc_carrc_mult_banded(M, sol->rows[t], &k1, 2);
 		// Make k2
 		arrc_cp_from_carr(sol->rows[t], nxpoints, &temp);
 		arrc_axpy(&temp, dt/2, &k1);
-		matc_carrc_mult_banded(M, temp.data, &k2,2);
+		matc_carrc_mult_banded(M, temp.data, &k2, 2);
 		// Make k3
 		arrc_cp_from_carr(sol->rows[t], nxpoints, &temp);
 		arrc_axpy(&temp, dt/2, &k2);
-		matc_carrc_mult_banded(M, temp.data, &k3,2);
+		matc_carrc_mult_banded(M, temp.data, &k3, 2);
 		// Make k4
 		arrc_cp_from_carr(sol->rows[t], nxpoints, &temp);
 		arrc_axpy(&temp, dt, &k3);
-		matc_carrc_mult_banded(M, temp.data, &k4,2);
+		matc_carrc_mult_banded(M, temp.data, &k4, 2);
 		// Update
 		for(int j=0; j<nxpoints; j++)
-			MATP(sol,t+1,j)=MATP(sol,t,j)+dt/6*(ARR(k1,j)+2*ARR(k2,j)
-						+2*ARR(k3,j)+ARR(k4,j));
+			MATP(sol,t+1,j)= MATP(sol,t,j)+ dt/6*(ARR(k1,j)+ 2*ARR(k2,j)
+						+2*ARR(k3,j)+ ARR(k4,j));
 	}
 	
 	ArrayC *arrc_to_free[]={&k1,&k2,&k3,&k4,&temp};
@@ -148,7 +147,7 @@ void schrod_rk4_inf_well( WavePacketGen wavepacket, void *wp_params,
 	const int ntimes=ntsteps+1;
 	
 	// Allocate output data structs
-	schrod_init_output(t0,tf,ntimes, nxpoints, time, sol);
+	schrod_init_output(t0, tf, ntimes, nxpoints, time, sol);
 
 	// Discretize hamiltonian. M represents -iH
 	MatrixC M=matc_new(nxpoints, nxpoints);

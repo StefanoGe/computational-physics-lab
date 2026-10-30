@@ -52,10 +52,10 @@ void computation_result_analysis( ParamFuncPtr f, double true_value,
 	for(int i=0; i<n_estimations; i++)
 	{
 		n_nodes[i] = MINN+i*STEPN;
-		ARR(evaluated_integrals,i)=intg_double_exp( f,NULL, n_nodes[i],mode,0,0,
-				DEF_TOL);
+		ARR(evaluated_integrals,i)=intg_double_exp(f, NULL, n_nodes[i]/2, mode,
+				0,0, DEF_TOL);
 		ARRP(true_value_deviation, i)=fabs(true_value - ARR(evaluated_integrals,i));
-		printf("%8d | %.3e\n",n_nodes[i],ARRP(true_value_deviation,i));
+		printf("%8d | %+.3e\n",n_nodes[i], true_value - ARR(evaluated_integrals,i));
 	}
 	puts("\n-------------------------------------\n");
 	arr_free(&evaluated_integrals);
@@ -83,7 +83,7 @@ void plot_error(const Array *true_value_deviation, int nfs,
 		"set label \"{/Symbol e}_{mach} zone\" at 1,4e-14\n"
 			);
 	
-	eplot_multi(series,nfs,&gb_settings);
+	eplot_multi_options(series, nfs, &gb_settings, false);
 	
 	arr_free(&n_nodes);
 	SAFE_FREE(series);
@@ -91,16 +91,6 @@ void plot_error(const Array *true_value_deviation, int nfs,
 
 int main()
 {
-	// Problem: we need to tabulate some values to understand and decide
-	// how to choose tM
-/*
-	printf("Maximum double: %e\n",DBL_MAX);
-
-	for(int i=0; i<100; i++)
-	{
-		printf("%.2lf %e\n",i*0.1,sinh(PI/2*sinh(i*0.1)));
-	}
-*/
 	Array true_value_deviation[NTESTS]={0};
 	char fnames[][MAX_LABEL_LENGTH]={
 		{"1/(1+x^2+x^4)"},

@@ -22,13 +22,22 @@ void norm_analysis(const MatrixC *sol, int ntsteps, int nxpoints, double dx,
 	double full_norm = schrod_wavefunction_norm(wider_starting_wp.data,
 		wider_starting_wp.size,dx);
 		
-	printf( "Without setting the function at 0 outside the well,the norm-1 at "
-			"time 0 is:\n %e\n",full_norm-1);
+	printf( ANSI_GREEN"Without setting the function "
+			"at 0 outside the well, \nthe norm at "
+			"time 0 is: "ANSI_RED"%g\n"
+			ANSI_GREEN"The difference with 1 is "
+			ANSI_RED"%g\n\n",full_norm, full_norm-1);
 	
 	double starting_norm=schrod_wavefunction_norm(sol->rows[0],nxpoints,dx);
 
+
+	printf(ANSI_GREEN"Norm at time "ANSI_YELLOW"t=0"
+		ANSI_GREEN" is "ANSI_YELLOW"%g\n", starting_norm);
+	printf(ANSI_GREEN"Study of norm at each time:\n");
+	printf(ANSI_YELLOW"t    | Difference with starting norm\n"ANSI_RESET);
+
 	for(int i=0; i<=ntsteps; i++)
-		printf("At time t=%.2lf diff with starting norm is %+.4e\n",i*dt,
+		printf("%.2lf | %+.4e\n",i*dt,
 				schrod_wavefunction_norm(sol->rows[i],nxpoints,dx)-starting_norm);
 				
 	arr_free(&wider_grid);
@@ -53,7 +62,7 @@ void animation(const MatrixC *sol,double x0, double xf,int nxpoints,int ntsteps)
 	
 	AnimSpec series[]={cabs_psi,real_psi,imag_psi};
 	
-	Global gb_setting = eplot_init_global("\"Moving\" gaussian wavepacket in a box",
+	Global gb_setting = eplot_init_global("Moving gaussian wavepacket in a box",
 		"x","",NULL,
 		"schrodinger_gaussian2","schrodinger_gaussian2",NULL,"set yrange [-0.5:0.5]");
 	

@@ -4,6 +4,8 @@
 \usepackage{amsmath,amsfonts,amssymb}
 \usepackage{siunitx}   % units
 
+\usepackage{braket}
+
 \DeclareMathOperator{\sech}{sech}
 
 % You can render figure and tables numbers without caption text
@@ -52,7 +54,7 @@
 \begin{flushleft}
 \renewcommand{\arraystretch}{2}
 \begin{tabular}{@{\stepcounter{rowcount}\makebox[2em][r]{\therowcount)}\hspace*{\tabcolsep}}%
->{\bfseries\raggedright\arraybackslash}p{.3\linewidth}>{$}l<{$}}        
+>{\bfseries\raggedright\arraybackslash}p{.5\linewidth}>{$}l<{$}}        
 \BODY
 \end{tabular}
 \end{flushleft}
@@ -64,6 +66,11 @@
 \usepackage{graphicx}
 \graphicspath{ {./images/} }
 
+% Command for derivatives
+\newcommand{\derivative}[3]{\frac{\mathrm{d}^{#2} #3 }{\mathrm{d} #1^{#2}}}
+
+% Command for differentials
+\newcommand{\df}{\mathrm{d}}
 
 \title{Computational Physics Laboratory report}
 \author{Stefano Ge}
@@ -1459,22 +1466,32 @@ for every integral.
 	\item{
 		$f_{5}$ is not differentiable in 1. As in previous point we can try
 		to estimate the truncation error analitically:
-\[
-		\begin{aligned}
-			R &= \int^{1}_{1-\epsilon} \sqrt{1-x^{2}}\mathrm{d}x - 
-			\frac{\epsilon}{2}\sqrt{1-(1-\epsilon)^{2}} = \\
-			&= \int^{\epsilon}_{0} \sqrt{2y - y^{2}} \mathrm{d}y -
-			\frac{\epsilon}{2}\sqrt{2\epsilon-\epsilon^{2}} = \\
-			&= \int^{\epsilon}_{0} \sqrt{2y}(1 + O(y)) \mathrm{d}y -
-				\frac{\epsilon}{2}\sqrt{2\epsilon}(1 + O(y)) = \\
-			&= \frac{2\sqrt{2}}{3}\epsilon^{\frac{3}{2}} -
-			\frac{\sqrt{2}\epsilon^{\frac{3}{2}}}{2} + O(y^{\frac{5}{2}})= \\
-			&= \frac{\sqrt{2}}{6}\epsilon^{\frac{3}{2}} + 
-			O(\epsilon^{\frac{5}{2}})
-		\end{aligned}
-\]
+		\[
+			\begin{aligned}
+				R &= \int^{1}_{1-\epsilon} \sqrt{1-x^{2}}\mathrm{d}x - 
+				\frac{\epsilon}{2}\sqrt{1-(1-\epsilon)^{2}} = \\
+				&= \int^{\epsilon}_{0} \sqrt{2y - y^{2}} \mathrm{d}y -
+				\frac{\epsilon}{2}\sqrt{2\epsilon-\epsilon^{2}} = \\
+				&= \int^{\epsilon}_{0} \sqrt{2y}(1 + O(y)) \mathrm{d}y -
+					\frac{\epsilon}{2}\sqrt{2\epsilon}(1 + O(y)) = \\
+				&= \frac{2\sqrt{2}}{3}\epsilon^{\frac{3}{2}} -
+				\frac{\sqrt{2}\epsilon^{\frac{3}{2}}}{2} + O(y^{\frac{5}{2}})= \\
+				&= \frac{\sqrt{2}}{6}\epsilon^{\frac{3}{2}} + 
+				O(\epsilon^{\frac{5}{2}})
+			\end{aligned}
+		\]
 		Hence the truncation error is $O(h^{\frac{3}{2}})$, as hinted in the
 		Results paragraph.
+	}
+	\item{
+		Since the trapezoidal rule approximates the integrand function with
+		linear interpolations, intervals in which the function is convex 
+		produce underestimates, while intervals where the function is concave
+		produce overstimated integrals. 
+		In fact, $f_{1}$, $f_{2}$ and $f_{5}$ are convex within the bounds 
+		of integration: the error is negative.
+		On the other hand, $f_{3}$ and $f_{6}$ are concave: the error is 
+		positive.
 	}
 \end{itemize}
 % maybe verify the claim in the program?
@@ -1602,32 +1619,75 @@ a function of the degree of the interpolant polynomial.
 The convergence is very fast and is exponential or superexponential.
 But why do some functions appear to converge much faster than others?
 
-The remainder term in Gauss-Legendre rule is guaranteed to be at most:
-\[
-    R_P[f]=\frac{2^{2n+1}(n!)^4}{(2n+1)[(2n!)]^3}f^{(2n)}(\xi)\,
+The remainder term in Gauss-Legendre rule is guaranteed to be:
+\begin{equation}\label{eq:Gauss-Legendre_remainder}
+    R_P[f]=\frac{2^{2n+1}(n!)^4}{(2n+1)[(2n)!]^3}f^{(2n)}(\xi)\,
     \qquad
     \xi\in(-1,1)
-\]
+\end{equation}
 
 where $f$ is the integrand function after we have changed variables in 
 the integration interval.
 
-The function $\frac{1}{1+25x^{2}}$ converges as the slowest. In fact:
+The function $f_{4} = \frac{1}{1+9x^{2}}$ converges as the slowest. In fact:
 
 \[
 	\begin{aligned}
-		\frac{\mathrm d^{n}}{\mathrm d x^{n}} \frac{1}{1+25x^{2}} &= 
-			5^{n} \frac{\mathrm d^{n}}{\mathrm d y^{n}} \frac{1}{1+y^{2}} =\\
-		& = 5^{n}\frac{(-1)^{n}n!}{2i}\left( \frac{1}{(y-i)^{n+1}}
+		\frac{\mathrm d^{n}}{\mathrm d x^{n}} \frac{1}{1+9x^{2}} &= 
+			3^{n} \frac{\mathrm d^{n}}{\mathrm d y^{n}} \frac{1}{1+y^{2}} =\\
+		& = \frac{(-1)^{n}3^{n}n!}{2i}\left( \frac{1}{(y-i)^{n+1}}
 			- \frac{1}{(y+i)^{n+1}}\right) \\
-		& = 5^{n}\frac{(-1)^{n}n!}{2i}\left( \frac{(y+i)^{n+1}-(y-1)^{n+1}}
-			{(y^{2}+1)^{n+1}} \right) \\
-		& = 5^{n}\frac{(-1)^{n}n!}{(y^{2}+1)^{\frac{n+1}{2}}}
+		& = \frac{(-1)^{n}3^{n}n!}{2i(y^{2}+1)^{\frac{n+1}{2}}}
+			\left( e^{i(n+1)\theta} - e^{-i(n+1)\theta}\right) \\
+		& = \frac{(-1)^{n}3^{n}n!}{(y^{2}+1)^{\frac{n+1}{2}}}
 			\sin\left((n+1)\arctan\left(\frac{1}{y}\right)\right) \\
-		& = 5^{n}\frac{(-1)^{n}n!}{(y^{2}+1)^{\frac{n+1}{2}}}
-			\sin((n+1)\arctan y - \frac{n\pi}{2})
+		& = \frac{(-1)^{n}3^{n}n!}{(9x^{2}+1)^{\frac{n+1}{2}}}
+			\cos\left((n+1)\arctan 3x - \frac{n\pi}{2}\right)
 	\end{aligned}
 \]
+
+Since we took $\theta = \arctan(\frac{1}{y})$, this technically would be valid 
+only if $\theta \in [-\frac{\pi}{2},\frac{\pi}{2}]$, i.e. if $y = 3x > 0$, 
+but this will not matter since all derivatives are either even or odd, and 
+we are interested only in the absolute value of them.
+Plugging this into Equation \ref{eq:Gauss-Legendre_remainder} we find,
+after some simplifications:
+
+\[
+    R_P[f]\approx k\left(\frac{3}{2}\right)^{2n}(-1)^{n}
+	\frac{\cos\left( (2n+1)\arctan(3\xi)\right)}{(9\xi^{2}+1)^{n+\frac{1}{2}}}\,
+    \qquad
+    \xi\in(-1,1)
+\]
+where $k$ is a constant factor.
+This... is not great help, since, depending on the value that $\xi$ takes,
+the above expression can be, in absolute value, anything between 0 and 
+$\left(\frac{3}{2}\right)^{2n}$. The point is that in this case the remainder 
+theorem does not guarantee a superexponential convergence as we will see
+in other cases, and it has to do with the the magnitude of the derivatives of
+$\frac{1}{1+3x^{2}}$.
+
+Nonetheless, $f_{4}$ is analytic and bounded in a Bernstein ellipse
+$E_{\rho}$ with $\rho < 3$. Therefore convergence is guaranteed to be
+exponential, but it is not faster than that, as we can see from our plot.
+
+With $f(x) = e^{-4x}$ the calculations are easier and convergence
+is much faster. We have $f^{(n)}(x) = (-4)^{n}e^{-4x}$. Plugging into
+equation \ref{eq:Gauss-Legendre_remainder} we find the remainder:
+
+\[
+\begin{aligned}
+    R_P[f]&=\approx\frac{\sqrt{n}e^{-4\xi}}{(n!)^{2}}
+    \qquad{}
+    \xi\in(-1,1) \\
+    &\leq k \frac{\sqrt{n}e^{4}}{[(n)!]^{2}}
+\end{aligned}
+\]
+
+With $k$ constant.
+That is, we have squared-factorial convergence guaranteed!
+
+
 
 %-------------------------------------
 \subsection{Double exponential rule}
@@ -1635,9 +1695,154 @@ The function $\frac{1}{1+25x^{2}}$ converges as the slowest. In fact:
 
 \subsubsection{Comparison of double exponential and Gauss-Legendre rules}
 
+We now test our routine for the double-exponential rule on the integrals:
 
+\setcounter{rowcount}{0}
+\begin{mylist}
+	$\int^{1}_{0} \sqrt{x}\log(x) \mathrm d x = -\frac{4}{9}$\\
+	$\int_{0}^{1} \sqrt{1-x^{2}} \mathrm d x = \frac{\pi}{4}$\\
+	$\int^{0}_{1} (\log x)^{2}\mathrm d x = 2$\\
+	$\int^{\pi}_{\pi/2} \log(\cos x) \mathrm d x = -\frac{\pi}{2}\log 2$ \\
+	$\int^{\pi}_{\pi/2} \sqrt{\tan x} \mathrm d x = \frac{\pi}{\sqrt{2}}$ \\
+\end{mylist}
+
+and we study the the error as a function of $n$, comparing it
+with that of the Gauss-Legendre rule. Here $n$ is the number of nodes in the 
+Gauss-Legendre rule and the number of 
+subintervals in the double-exponential rule.
+
+
+In ADD FIGURE AND REFERENCES we plot the error as a function of $n$.
+
+
+\paragraph{Remarks}
+
+\begin{itemize}
+	\item{
+		Our routine is highly modular in the sense that it is possible
+		to inject into \mdcode{double_exp_base} the double
+		exponential diffeomorphism suited for the needs of the caller.
+		
+		In \mdcode{intg_double_exp} it is possible to choose between 
+		four different diffeomorphisms that we implemented, one for 
+		bounded intervals, the other two for the whole real line and half line.
+	}
+	\item{
+		The double-exponetial rule maps the integration interval $I$ into the
+		real line, and calculates the resulting integral with the trapezoidal 
+		rule. Determing where to truncate the latter integral requires some care.
+		
+		Let $t_{M}>0$ so that the transformed integral is truncated to the
+		interval $[-t_{M}, t_{M}]$. In order to determine $t_{M}$, our routine
+		sets initially its value to 0.1, and then adds 0.1 until both $|g(t_{M})|$ 
+		and $|g(-t_{M})|$ are lower than a certain \mdcode{tol}, where $g$
+		is the integrand function of the transformed integral. We also check
+		against \mdcode{NaN} that could be returned by some functions on 
+		singular points.
+		
+		Since we are dealing with double exponential functions, which grow
+		extremely fast, it is necessary to safeguard for overflow and underflow
+		cases. Even for just $t_{M}=6.6$, $e^{e^{t_{M}}}\approx 10^{319}$, which
+		overflows double precision floating representation. The sinh-tanh 
+		quadrature rule is even more delicate. As t becomes "big" (when dealing
+		with double exponentials "big" numbers are reached very fast...) we 
+		have:
+		\[
+			\phi(t) = \tanh \left(\frac{\pi}{2}\sinh t \right) 
+			\approx 1 - 2 e^{-\frac{\pi}{2}e^{t}}
+		\]
+		when $t_{M} = 3.2$, $2 e^{-\frac{\pi}{2}e^{t_{M}}} \approx 3.7 \times 
+		10^{-17} < \epsilon_{\text{mach}}$, therefore we have an underflow and
+		$\psi(t_{M}) = 1$. A proper and implementation should take into account 
+		the possibilities of underflow and overflow for every diffeomorphism 
+		used. However, due to the overall design and time constraints, we only
+		check the overflow for integrals over real line, and we leave to the
+		caller the responsibility to guard against overflows in the 
+		tanh-sinh case, by adjusting the \mdcode{tol} required and therefore
+		allowing the routine to settle on a lower value of $t_{M}$.
+	}
+	\item{
+		All the integrand functions of the integrals considered are either 
+		infinite or non differentiable at the bounds of integration.
+		Unsurprisingly, convergence is slow with the Gauss-Legendre rule.
+		In fact, all functions have unbounded derivatives, and 
+		functions 3-5 are not even bounded themselves. Although the integrals
+		appear to converge nonetheless, it is yet very slow and likely 
+		algebraic.
+		
+		On the contrary, the approximations with double-exponential quadrature
+		rule converge exponentially with $n$. For this rule, fast convergence
+		is guaranteed even if the integrand is not analytic at the limits of
+		integration, as it is the case for the integrand functions above.
+	}
+	\item{
+		The only exceptions appear to be $f_{3}$ and $f_{5}$, which, after 
+		a phase of exponential convergence, the errors appear to stop shrinking
+		and start growing slowly at $10^{-8}$ and $10^{-13}$.
+		The problem here is not the theoretical convergence of 
+		double-exponential rule, but the truncation error due to considering the
+		transformed integral only in $[-t_{M}, t_{M}]$.
+		In these two cases, indeed, we had to lower manually the tolerance
+		\mdcode{tol} in the routine for determining $t_{M}$, as otherwise 
+		it would push for a value of $t_{M}$ too high, resulting in an 
+		underflow.
+		Setting a high tolerance in truncation determination has of 
+		naturally the effect of adding a constant error which cannot be 
+		lowered by adding more points.
+		
+		A smart way to achieve more accuracy for the integral of function 
+		$f_{5}$ is to use a change of variables: 
+		\[
+			\int^{\frac{\pi}{2}}_{0}\sqrt{\tan(x)} \mathrm d x = 
+			\int^{\infty}_{0}\frac{\sqrt{y}}{1+y^{2}} \mathrm d y
+		\]
+		As observed above, the double-exponential rule for infinite intervals 
+		is more safeguarded from the risk of overflow. A quick function call in 
+		the program shows indeed that the estimate reaches 
+		$\epsilon_{\text{mach}}$ levels of precision by using 
+		just $n = 36$ nodes.
+	}
+\end{itemize}
 
 \subsubsection{Improper integrals with double exponential rule}
+
+We now test our implementation of the double-exponential rule on
+integrals over infinite intervals, and study the convergence:
+
+\setcounter{rowcount}{0}
+\begin{mylist}
+    $\int_{-\infty}^\infty \frac{1}{1+x^2+x^4}\, \mathrm d x = \frac{\pi}{\sqrt{3}}$ \\
+  
+    $\int_{-\infty}^\infty e^{-x^2}\cos(x)\, \mathrm d x = e^{-1/4}\sqrt{\pi}$ \\
+  
+    $\int_{-\infty}^\infty (1+x^2)^{-2/3}\, \mathrm d x 
+		= \frac{\sqrt{\pi}\,\Gamma(1/6)}{\Gamma(2/3)}$  \\
+
+    $\int_{0}^{\infty} {1\over 1+x^2}\, \mathrm d x = \frac{\pi}{2}$ \\
+
+    $\int_0^\infty \frac{e^{-x}}{\sqrt{x}}\, \mathrm d x = \sqrt{\pi}$ \\
+\end{mylist}
+
+For integrals 1-3 we use as change of variables:
+\begin{alignat*}{2}
+	&I=\int_{-\infty}^\infty f(x)\, \mathrm d x& \qquad &x=\sinh\left({\pi\over 2}\sinh(t)\right) \\
+	\intertext{For integral 4 we use:}
+	&I=\int_0^\infty f(x)\,\mathrm d x & \qquad &x=\exp\left({\pi\over 2}\sinh(t)\right) \\
+	\intertext{For integral 5 we use:}
+	&I=\int_0^\infty f(x)e^{-x}\,\mathrm d x & \qquad &x=\exp\left(t-\exp(-t)\right)
+\end{alignat*}
+after putting $f(x) = \sqrt x$.
+
+In ADD FIGURE AND REFERENCES we show the plot of the absolute value of the 
+error as a function of the number of function evaluations $n$. 
+Despite oscillations, the errors appears to decay linearly with $n$ in the 
+semi-log scale, for all the above integrals. We then conclude that it 
+shrinks exponentially. The oscillations are due to the fact that the transformed
+integrand functions have varying concavity, producing therefore
+both positive and negative errors that can "accidentally" cancel out, 
+resulting in a numerical estimate more precise
+than the subsequent estimate with more nodes.
+
 
 %--------------------------------------------------------------------------
 %--------------------------------------------------------------------------
@@ -1649,20 +1854,30 @@ The function $\frac{1}{1+25x^{2}}$ converges as the slowest. In fact:
 \subsection{Euler's method}
 %-------------------------------------
 
+%-------------------------------------
 \subsubsection{First order application}
+%-------------------------------------
 
+%-------------------------------------
 \subsubsection{Second order application}
+%-------------------------------------
 
 %-------------------------------------
 \subsection{Runge-Kutta methods}
 %-------------------------------------
 
+%-------------------------------------
 \subsubsection{Improved Euler's and Runge-Kutta fourth order methods}
+%-------------------------------------
 
+%-------------------------------------
 \subsubsection{Non-linear equation application of Runge-Kutta}
+%-------------------------------------
 
+
+%-------------------------------------
 \subsubsection{Predator-prey model}
-
+%-------------------------------------
 
 
 %--------------------------------------------------------------------------
@@ -1671,19 +1886,115 @@ The function $\frac{1}{1+25x^{2}}$ converges as the slowest. In fact:
 %--------------------------------------------------------------------------
 %--------------------------------------------------------------------------
 
-%-------------------------------------
+In the following paragraphs we solve the one-dimensional
+Time-Dependant Schrödinger Equation
+(TDSE) and Time-Independant Schrödinger Equation (TISE).
 
+To discretize the Hamiltonian, we first discretize space in equally spaced 
+nodes and use the following finite difference 
+approximation for the second derivative:
+
+\[
+    \frac{d^2 \psi}{dx^2}\Big|_{x_j} \approx
+    \frac{-\psi_{j+2} + 16 \psi_{j+1} - 30 \psi_j + 16 \psi_{j-1} - \psi_{j-2}}{12 (\Delta x)^2} 
+    + \mathcal{O}(\Delta x^4)\,.
+\]
+
+We use Dirichlet boundary condition, that is, we consider fixed at 0 the 
+wavefunction outside the simulation interval. This is equivalent to putting 
+the system inside an infinite potential well.
+
+%-------------------------------------
 \subsection{Time-dependant Schrödinger equation}
 %-------------------------------------
 
+For solving TDSE, we use a fourth-order
+Runge-Kutta algorithm specialized for time-independant potentials. 
+This time discretization is equivalent to a fourth order expansion of time 
+evolution operator. In natural units:
+
+\newcommand{\ham}{\mathrm{H}}
+
+\begin{alignat*}{2}
+	\bra{\psi(t+\df t)} &= U( \df t) \bra{\psi(t)} \\
+	&= e^{-iH \df t} \bra{\psi(t)} \\
+	&=\left( \mathrm I +  i\ham\df t - \frac{1}{2}\ham^{2} \df t^{2} 
+	- i \frac{1}{6}\ham^{3}\df t^{3} + \frac{1}{24}\ham^{4} \df t^{4}
+	 \right)\bra{\psi(t)}
+\end{alignat*}
+
+%-------------------------------------
 \subsubsection{Gaussian packet in an infinite well}
+%-------------------------------------
 
+We first test our algorithm by studying time evolution of a free Gaussian wave 
+packet with average momentum zero. The result can be visualised in the 
+\mdcode{plot} folder of the program as \mdcode{.gif} animation file.
+Considering only the square modulus of the wave function,
+as expected the packet first spreads out, its peak falling, while its 
+tails expanding. Then it gets reflected back when it hits the walls of the well,
+giving rise to standing waves.
+
+Note that in our test $\Delta x = 0.1$ and $\Delta t = 0.01$ satisfies 
+the stability condition for the free case
+
+\[
+	\Delta t \lesssim = {m(\Delta x)^2\over \hbar}
+\]
+
+Raising $\Delta t$ even so slightly as to $0.02$ causes the solution to 
+explode.
+
+% if you have time: workout the analytic solution!
+
+\paragraph{Norm conservation}
+
+Schrödinger equation preserves probabilities over time, and we want to check
+how good our numerical solver reproduces this property.
+To evaluate the square norm we just integrate the square modulus of the
+wave function with a midpoint rule, considering even the values at the endpoints
+since the function should ideally continue beyond them if we were not to 
+truncate space.
+
+First we evaluate the square norm of the packet at time $t = 0$. 
+We find $0.995$. This is sensibly different than the expected value 1.
+Is it because the quadrature rule that we used was not accurate enough with 
+these many grid points or we cut off the tails of the gaussian? Definitely the 
+latter, as repeating the calculation with a grid 100 times larger yields 
+a square norm value of $0.99995$.
+
+Using $|\bra{\psi}|^{2} = 0.995$ as norm reference value, we can compare at 
+each time the difference between the square norm at that time and the
+reference value. At time $t = 20$ in time evolution the difference is maximum
+at 0.006, i.e. 0.6\%. Our numerical solver then preserves quite well
+probabilities for the parameters and time scales provided.
+
+%-------------------------------------
 \subsubsection{Moving gaussian packet}
+%-------------------------------------
 
+We test again our routine on a gaussian wavepacket, this time with nonzero
+starting average momentum $k_{0}$. The result can be again visualised in the 
+\mdcode{plot} folder of the program as \mdcode{.gif} animation file, as 
+it will be in subsequent paragraphs for TDSE.
+The animation shows clearly two concurrent phenomena: first, the packet as a 
+whole is moving towards the right. In fact, its group velocity is different 
+than zero,
+since we prepared nonzero average momentum. Second, the packet appears 
+to flatten and spread like in the zero momentum case.
+
+As in the previous example, the norm is roughly conserved with a loss 
+of probability at last time of $\approx 0.5\%$.
+
+%-------------------------------------
 \subsubsection{Finite barrier scattering}
+%-------------------------------------
 
+
+
+%-------------------------------------
 \subsubsection{Pöschl-Teller potential}
-
+%-------------------------------------
 
 %-------------------------------------
 \subsection{Time-independant Schrödinger equation}

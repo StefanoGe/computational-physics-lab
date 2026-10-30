@@ -122,9 +122,8 @@ void integration_study( const ParamFuncPtr f, double x1, double x2,
 		int n_nodes = 10 * pow_int(2, i);
 		double integral = intg_trap( f, NULL, x1, x2, n_nodes );
 		double error = true_value - integral;
-		//Absolute error or no? Yes for the log plot
 		arr_append( errors, fabs(error) );
-		printf( "%6d  | %.2e\n", n_nodes, error );
+		printf( "%6d  | %+.2e\n", n_nodes, error );
 	}
 
 	Array log_nodes = arr_linspace(1, MAX_NODE_POWER, MAX_NODE_POWER);

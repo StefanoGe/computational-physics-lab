@@ -392,6 +392,7 @@ void matc_carrc_mult_banded(const MatrixC *m, const double complex *arr,
 	{
 		first_occupied_col=MAX(0,i-bandwidth);
 		last_occupied_col=MIN(m->nrows-1,i+bandwidth);
+		ARRP(dest,i)=0;
 		
 		for(int j=first_occupied_col; j<=last_occupied_col; j++)
 		{

@@ -205,18 +205,62 @@ static inline double bounded_add(double t,ParamFuncPtr f,void *params)
     const double h = (add_params->b-add_params->a)/2;
 
     const double u = double_exp_bounded_cov(t);
-	
-//	eprint("t = %.5e f(t)=%.5e\n",c+h*u,f(c+h*u,add_params->params) );
-/*
-	const double x = c+h*u;
-	eprint("t = %.17g u = %.17g  x2-x = %.17g",
-		   t,u,add_params->b-x);
-*/
+
 	return f(c+h*u,add_params->params) * h
-					* double_exp_bounded_cov_der(t);}
+					* double_exp_bounded_cov_der(t);
+}
+
+static inline double double_exp_findTM(ParamFuncPtr f, void *params,
+	double tol, double (*diffeomorphism)(double),
+	double (*addend_calc)(double,ParamFuncPtr,void *))
+{
+	double tM=0;
+	double curr_add_plus=0;
+	double curr_add_minus=0;
+	do{
+		tM+=0.1;
+		curr_add_plus=fabs(addend_calc(tM,f,params));
+		curr_add_minus=fabs(addend_calc(-tM,f,params));
+		if(tM>5.7)
+			raiseErr("f(x) is not approaching zero fast enough\n"
+					 "g(tM) = %g g(-tM) = %g\n"
+					 "f(x) = %g f(-x) = %g\n",
+						addend_calc(tM,f,params),
+						addend_calc(-tM,f,params),
+						f(diffeomorphism(tM),params),
+						f(diffeomorphism(-tM),params));
+		
+	}while( curr_add_plus > tol 
+		|| curr_add_minus > tol 
+		|| isnan(curr_add_plus) || isnan(curr_add_minus));
+	return tM;
+}
+
+static inline double double_exp_base(ParamFuncPtr f, void *params, int N,
+	double tol, double (*diffeomorphism)(double),
+	double (*addend_calc)(double,ParamFuncPtr,void *))
+{
+	const double tM=double_exp_findTM(f, params, tol, diffeomorphism, 
+		addend_calc);
+	
+	double sum_plus=0;
+	double sum_minus=0;
+	const double stepsize=tM/N;
+	
+	if(N<=0)
+		raiseErr("order N must be greater than 0\n"
+				 "order N = %d",N);
+	
+	for(int i=N; i>0; i--)
+	{
+		sum_plus+=addend_calc(stepsize*i,f,params);
+		sum_minus+=addend_calc(-stepsize*i,f,params);
+	}
+	return (sum_plus+sum_minus+addend_calc(0,f,params))*stepsize;
+}
 
 double intg_double_exp(ParamFuncPtr f, void *params, int N, Dbexp_mode mode,
-	double a,double b,double tol)
+	double a, double b, double tol)
 {
 	if(tol==DEF_TOL)
 		tol=DOUBLE_EXP_T_TOL;
@@ -248,62 +292,5 @@ double intg_double_exp(ParamFuncPtr f, void *params, int N, Dbexp_mode mode,
 			diffeomorphism=double_exp_bounded_cov;
 	}
 	
-	double tM=0.1;
-	double curr_add_plus=0;
-	double curr_add_minus=0;
-	do{
-		curr_add_plus=fabs(addend_calc(tM,f,params));
-		curr_add_minus=fabs(addend_calc(-tM,f,params));
-		if(tM>5.7)
-			raiseErr("f(x) is not approaching zero fast enough\n"
-					 "g(tM) = %g g(-tM) = %g\n"
-					 "f(x) = %g f(-x) = %g\n",
-						addend_calc(tM,f,params),
-						addend_calc(-tM,f,params),
-						f(diffeomorphism(tM),params),
-						f(diffeomorphism(-tM),params));
-/*	
-		eprint(	"tM = %lf\n"
-					 "g(tM) = %g g(-tM) = %g\n"
-					 "x = %g -x = %g\n"
-					 "f(x) = %g f(-x) = %g\n",tM,
-						addend_calc(tM,f,params),
-						addend_calc(-tM,f,params),
-						diffeomorphism(tM),
-						diffeomorphism(-tM),
-						f(diffeomorphism(tM),params),
-						f(diffeomorphism(-tM),params));
-*/	
-		tM+=0.1;
-	}while( curr_add_plus > tol 
-		|| curr_add_minus > tol 
-		|| isnan(curr_add_plus) || isnan(curr_add_minus));
-	
-//	eprint("%lf\n",tM);
-	
-	double sum_plus=0;
-	double sum_minus=0;
-	const double stepsize=tM/N;
-	
-	if(N<=0)
-		raiseErr("order N must be greater than 0\n"
-				 "order N = %d",N);
-	
-	for(int i=N; i>0; i--)
-	{
-//		eprint("%lf, %lf\n",double_exp_real_line_cov(i*stepsize),
-//						double_exp_real_line_cov_der(i*stepsize));
-/*
-		eprint( "sum_plus =  %.3e addend = %.3e\n"
-				"sum_minus = %.3e addend = %.3e\n",sum_plus,
-					addend_calc(stepsize*i,f,params),
-					sum_minus,
-					addend_calc(-stepsize*i,f,params));
-*/
-		sum_plus+=addend_calc(stepsize*i,f,params);
-		sum_minus+=addend_calc(-stepsize*i,f,params);
-
-
-	}
-	return (sum_plus+sum_minus+addend_calc(0,f,params))*stepsize;
+	return double_exp_base(f, params, N, tol, diffeomorphism, addend_calc);
 }

@@ -1,9 +1,3 @@
-// Nota: 
-// algoritmo adattivo: confronto le soluzioni di una eq diff con la differenza
-// fra due metodi, di cui uno meno  euno più preciso. Tengo la soluzione soltanto
-// se differenzasarà minore o uguale a una certa tolleranza.
-// è un'operazione che faccio a ogni step, e a ogni step riaggiusto lo 
-// stepsize
 #include "matrixc.h"
 #include "arrayc.h"
 #include "array.h"
@@ -28,13 +22,21 @@ void norm_analysis(const MatrixC *sol, int ntsteps, int nxpoints, double dx,
 	double full_norm = schrod_wavefunction_norm(wider_starting_wp.data,
 		wider_starting_wp.size,dx);
 		
-	printf( "Without setting the function at 0 outside the well,the norm-1 at "
-			"time 0 is:\n %e\n",full_norm-1);
+	printf( ANSI_GREEN"Without setting the function "
+			"at 0 outside the well, \nthe norm at "
+			"time 0 is: "ANSI_RED"%g\n"
+			ANSI_GREEN"The difference with 1 is "
+			ANSI_RED"%g\n\n",full_norm, full_norm-1);
 	
 	double starting_norm=schrod_wavefunction_norm(sol->rows[0],nxpoints,dx);
 
+	printf(ANSI_GREEN"Norm at time "ANSI_YELLOW"t=0"
+		ANSI_GREEN" is "ANSI_YELLOW"%g\n", starting_norm);
+	printf(ANSI_GREEN"Study of norm at each time:\n");
+	printf(ANSI_YELLOW"t    | Difference with starting norm\n"ANSI_RESET);
+
 	for(int i=0; i<=ntsteps; i++)
-		printf("At time t=%.2lf diff with starting norm is %+.4e\n",i*dt,
+		printf("%.2lf | %+.4e\n",i*dt,
 				schrod_wavefunction_norm(sol->rows[i],nxpoints,dx)-starting_norm);
 				
 	arr_free(&wider_grid);
@@ -86,8 +88,8 @@ int main()
 	const double dx = 0.1;
 	const double dt= 0.01;
 	
-	const int nxpoints = 200;
-	const int ntsteps  = 2000;
+	const int nxpoints = (int)round((xf-x0)/dx);
+	const int ntsteps  = (int)round((tf-t0)/dt);
 	MatrixC sol = {0};
 	Array time = {0};
 	
