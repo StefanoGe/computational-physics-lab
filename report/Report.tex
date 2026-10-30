@@ -2,10 +2,13 @@
 
 \usepackage[utf8]{inputenc}
 \usepackage{amsmath,amsfonts,amssymb}
-\usepackage{siunitx}   % units
+% units
+\usepackage{siunitx}   
 
+% braket notation
 \usepackage{braket}
 
+% make sech operator
 \DeclareMathOperator{\sech}{sech}
 
 % You can render figure and tables numbers without caption text
@@ -28,6 +31,7 @@
     % hidelinks,
 ]{hyperref}
 
+% add multiline comments
 \usepackage{comment}
 
 \usepackage{listings}
@@ -44,11 +48,10 @@
 
 \usepackage[T1]{fontenc}
 
-
+% create indexed lists
 \usepackage{array}
 \newcounter{rowcount}
 \setcounter{rowcount}{0}
-
 \usepackage{environ}
 \NewEnviron{mylist}{%
 \begin{flushleft}
@@ -61,8 +64,9 @@
 }
 
 % Optional: better-looking bookmarks in PDF viewer sidebar
-\usepackage{bookmark}   % usually loads automatically with recent hyperref
+%\usepackage{bookmark}   % usually loads automatically with recent hyperref
 
+% add images
 \usepackage{graphicx}
 \graphicspath{ {./images/} }
 
@@ -72,26 +76,126 @@
 % Command for differentials
 \newcommand{\df}{\mathrm{d}}
 
+% Bibliography
+\usepackage[backend=bibtex, style=alphabetic]{biblatex}
+
+
+%-------------------------------------------------------------------
+%------- Title and other data --------------------------------------
+%-------------------------------------------------------------------
+
 \title{Computational Physics Laboratory report}
 \author{Stefano Ge}
 \date{Winter semester 2025}
 
-\setcounter{section}{-1}
+%-------------------------------------------------------------------
+\addbibresource{bibliography.bib}
 
 \begin{document}
 
 \maketitle
 
+% table of contents with links
+
 \begingroup
     \hypersetup{linkcolor=black}   % ← makes TOC links black (plain text color)
     \tableofcontents
 \endgroup
-{}
 
+\setcounter{section}{-1} % We want introduction starts with 0 numbering
 
+%--------------------------------------------------------------------------
+%--------------------------------------------------------------------------
 \section{Introduction}
+%--------------------------------------------------------------------------
+%--------------------------------------------------------------------------
 
+This is the report of the Computational Physics Laboratory experienced by
+Stefano Ge in winter semester of the 2025/2026 academic year.
+Aside from the last section on the Schrödinger equation, the laboratory
+mainly covered foundational topics in numerical mathematics.
 
+This report contains results and remarks on the numerical 
+exercises assigned during lectures.
+We do not explain throughly the assignments' text, found in \cite{brida},
+and we already assume the reader familiar with related theory.
+
+%-------------------------------------
+\subsection{Considerations on the C programming language}
+%-------------------------------------
+
+The numerical exercises are all programmed in C, as by choice of myself.
+Although valid alternatives have been developed, the C/C++ languages remain
+the standard of high-performance scientific computing. Compared to Python, they
+provide better performance and low-level control on the program.
+
+They however have some significant disadvantage: they are harder to use, leaving
+many responsibilities to the programmer, and are often meant to be used 
+with the programmer programming its custom libraries for common mathematical 
+routines. Also, C lacks compelling plot libraries, which forced us to use 
+Gnuplot.
+As a consequence, programming in C takes much more time than in 
+Python. Because of this, much more time had to be reserved to programming 
+than expected, and the overall experience involved less numerical mathematics
+than intended. Aside from Schrödinger equation, almost no other optional 
+exercise had been carried out. We do not have time to add more research
+on numerical mathematics or references to books aside from the lecture notes. 
+
+On the other hand, the experience taught us how to write very good C programs,
+a skill which is not trivial nor common among Physics
+undergraduates in these days. Due to the relevance of programming in our 
+experience, we write below some lessons that we learned.
+
+\paragraph{Programming lessons and skills learnt during the course}
+
+\begin{itemize}
+	\item{
+		Use of Gnuplot. C program \rightarrow plotting library
+		\rightarrow procedurally generated Gnuplot script workflow.
+	}
+	\item{
+		Use of CMake. Organisation of large library with header and source 
+		files. Organisation of folder tree for programming.
+	}
+	\item{
+		Use of Git and GitHub for versioning.
+	}
+	\item{
+		Consistent convention for clear and readable naming of variables and
+		functions. Understanding of when it is ideal to use a verbose syntax, 
+		typical of corporate-level programming, and when a concise 
+		mathematicla syntax should be used.
+	}
+	\item{
+		Implementation of efficient and versatile data structures like
+		\mdcode{Array} and \mdcode{Matrix}.
+	}
+\end{itemize}
+
+We chose C over C++ simply because did not have enough experience on the 
+language to use it efficiently. C++ has many features, but it is however much 
+harder to master fully than C.
+
+The experience with C in this course, however, has taught much on good 
+programming practices that would translate very well in C++. In the following 
+paragraph we list a few reasons why we would use C++ if we were to 
+rewrite our code.
+
+\paragraph{Preference for C++}
+
+\item{
+	Classes to build our containers more handily. The possibility of overloading
+	operators in order to make sense of addition and multiplication of 
+	matrices and arrays.
+}
+\item{
+	Less reliance on pointers thanks to dereferencing. Safer memory allocation
+	thanks to unique and shared pointers, constructors and destructors.
+}
+\item{
+	The ease in writing generic classes and functions for different data 
+	types (\mdcode{double}, \mdcode{float}, \mdcode{complex}, etc).
+}
 
 %--------------------------------------------------------------------------
 %--------------------------------------------------------------------------
@@ -2001,4 +2105,13 @@ of probability at last time of $\approx 0.5\%$.
 %-------------------------------------
 
 
+
+\nocite{*}
+
+\printbibliography[
+heading=bibintoc,
+title={Bibliography}
+]
+
 \end{document}
+

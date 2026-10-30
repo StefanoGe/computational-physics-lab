@@ -12,3 +12,9 @@ gihub.pub
 *data
 *script
 OLD/
+*.bbl
+*.bcf
+*.blg
+*.out
+*run.xml
+*blx.bib
