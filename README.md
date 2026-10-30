@@ -7,9 +7,9 @@ The code is written in **C23** and built using **CMake**.
 > **Development status**
 >
 > This repository is **work in progress**.
-> Most programs have been implemented and are functional,
-> but the accompanying **report is still being written**
-> and most of the codebase is planned to be **refactored**.
+> All programs have been implemented and are functional,
+> but the accompanying **report is still being written**.
+> Some programs might be further modified slightly.
 
 ## Repository structure
 
