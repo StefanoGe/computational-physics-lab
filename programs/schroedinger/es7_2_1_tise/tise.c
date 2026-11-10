@@ -162,8 +162,8 @@ void exact_energies_graph(double E1, double E2,void *params)
 
 	Global gb_settings = eplot_init_global(
 		"Helper graph for finding energies roots","E","f(E)",NULL,
-		"roots_helper_graph",NULL,NULL,"set yrange [-5:5]");
-		
+		"roots_helper_graph",NULL,NULL, "set yrange [-5:5]");
+	
 	SeriesSpec even = eplot_init_series(domain.data,even_E.data,domain.size,"l",
 		"Even",NULL);
 	

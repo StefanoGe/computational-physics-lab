@@ -183,19 +183,21 @@ rewrite our code.
 
 \paragraph{Preference for C++}
 
-\item{
-	Classes to build our containers more handily. The possibility of overloading
-	operators in order to make sense of addition and multiplication of 
-	matrices and arrays.
-}
-\item{
-	Less reliance on pointers thanks to dereferencing. Safer memory allocation
-	thanks to unique and shared pointers, constructors and destructors.
-}
-\item{
-	The ease in writing generic classes and functions for different data 
-	types (\mdcode{double}, \mdcode{float}, \mdcode{complex}, etc).
-}
+\begin{itemize}
+	\item{
+		Classes to build our containers more handily. The possibility of overloading
+		operators in order to make sense of addition and multiplication of 
+		matrices and arrays.
+	}
+	\item{
+		Less reliance on pointers thanks to dereferencing. Safer memory allocation
+		thanks to unique and shared pointers, constructors and destructors.
+	}
+	\item{
+		The ease in writing generic classes and functions for different data 
+		types (\mdcode{double}, \mdcode{float}, \mdcode{complex}, etc).
+	}
+\end{itemize}
 
 %--------------------------------------------------------------------------
 %--------------------------------------------------------------------------
@@ -2027,13 +2029,25 @@ evolution operator. In natural units:
 	 \right)\bra{\psi(t)}
 \end{alignat*}
 
+In all simulations, we use a Gaussian wave packet:
+
+\[
+    \psi(x,0) = \frac{1}{(2\pi\sigma^2)^{1/4}} e^{-(x-x_0)^2/4\sigma^2}e^{ik_0x}
+\]
+with Fourier transform:
+\[
+    \psi(k,0) = \left(2\sigma^2\over \pi\right)^{1/4}
+    e^{-(k-k_0)^2\sigma^2}e^{-ix_0(k-k_0)}
+\]
+
 %-------------------------------------
 \subsubsection{Gaussian packet in an infinite well}
 %-------------------------------------
 
 We first test our algorithm by studying time evolution of a free Gaussian wave 
 packet with average momentum zero. The result can be visualised in the 
-\mdcode{plot} folder of the program as \mdcode{.gif} animation file.
+\mdcode{gifs} folder inside the \mdcode{report} directory under the name
+\mdcode{schrodinger_gaussian.gif}.
 Considering only the square modulus of the wave function,
 as expected the packet first spreads out, its peak falling, while its 
 tails expanding. Then it gets reflected back when it hits the walls of the well,
@@ -2079,8 +2093,8 @@ probabilities for the parameters and time scales provided.
 
 We test again our routine on a gaussian wavepacket, this time with nonzero
 starting average momentum $k_{0}$. The result can be again visualised in the 
-\mdcode{plot} folder of the program as \mdcode{.gif} animation file, as 
-it will be in subsequent paragraphs for TDSE.
+\mdcode{gifs} folder inside the \mdcode{report} directory under the name
+\mdcode{schrodinger_gaussian2.gif}.
 The animation shows clearly two concurrent phenomena: first, the packet as a 
 whole is moving towards the right. In fact, its group velocity is different 
 than zero,
@@ -2094,11 +2108,57 @@ of probability at last time of $\approx 0.5\%$.
 \subsubsection{Finite barrier scattering}
 %-------------------------------------
 
+OPTIONAL: ADD THE STUDY OF R AND T AS FUNCTIONS OF $V_{0}$ AND $A$
+
+We now seek to study scattering from a finite square barrier:
+
+\[
+	V(x) = \begin{cases}
+		V_{0} & -a \leq x \leq a \\
+		0     & \text{elsewhere}
+	\end{cases}
+\]
+
+with $V_{0} > 0$ and $a > 0$.
+
+For $V_{0}=2$ and $a=1$ the result can be visualised in the 
+\mdcode{gifs} folder inside the \mdcode{report} directory under the name
+\mdcode{finite_barrier_gaussian.gif}.
+
+In the animation we see that the wave packet seems to divide into two separate
+chunks: one proceeding to the right, having passed through the barrier;
+the other being reflected in the opposite side. With initial conditions 
+requested in \cite{brida}, we find the reflection and transmission coefficients:
+
+\[
+	R = 0.690 \quad T = 0.303
+\]
+
+Summed up, these yield $R + T = 0.99344 \approx 1$, which differs from 
+the norm calculated at time 0 inside the simulation interval by $0.0061$.
+
+\paragraph{Study of the behavious of $R$ and $T$}
+
+The dependance of $R$ and $T$ on the parameters $V_{0}$ and
+$a$ is not simple. For an eigenfunction of definite energy $E<V_{0}$,
+the reflection and transmission coefficients are 
+\parencite[Complement~N\textsubscript{III}]{cohen}:
+
+\begin{alignat*}{2}
+	&T \,& = \frac{1}{\cosh^{2}(2a\sqrt{2(V_{0}-E)}) + \left( \frac{k^{2}-k_{0}^{2}}
+		{2kk_{0}}\sinh(2a\sqrt{2(V_{0}-E)}) \right)^{2}} \\
+	&R \,& = \frac{\left( \frac{k_{0}^{2}}{4k\rho}\sinh(2a\sqrt{2(V_{0}-E)})\right)^{2}}
+		{\cosh^{2}(2a\sqrt{2(V_{0}-E)}) + \left( \frac{k^{2}-k_{0}^{2}}
+		{2kk_{0}}\sinh(2a\sqrt{2(V_{0}-E)}) \right)^{2}}
+\end{alignat*}
+
 
 
 %-------------------------------------
 \subsubsection{Pöschl-Teller potential}
 %-------------------------------------
+
+
 
 %-------------------------------------
 \subsection{Time-independant Schrödinger equation}

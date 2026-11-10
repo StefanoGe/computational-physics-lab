@@ -1,5 +1,6 @@
 #include "schroedinger.h"
 #include "explot.h"
+#include <math.h>
 
 #define MAX_STR_LEN 200
 
@@ -77,8 +78,8 @@ void animation(const MatrixC *sol,double x0, double xf,int nxpoints,int ntsteps,
 	arr_free(&xgrid);
 }
 
-void test_poschl_teller(double omega, double V0, double tf, int ntsteps,
-	double xm, double sigma,double k0,bool update_animation,int frameskip,
+void test_poschl_teller(double omega, double V0, double tf,
+	double xm, double sigma, double k0, bool update_animation, int frameskip,
 	int nframes, char *add_name)
 {
 	double gaussian_params[]={xm,sigma,k0};
@@ -89,17 +90,18 @@ void test_poschl_teller(double omega, double V0, double tf, int ntsteps,
 	const double xf=100;
 	const double t0=0;
 	
-	const int nxpoints = 2000;
+	const double dx=0.1;
+	const double dt=0.01;
 	
-	const double dx=(xf-x0)/(nxpoints-1);
-	const double dt=(tf-t0)/ntsteps;
+	const int nxpoints = (int)round((xf-x0)/dx);
+	const int ntsteps  = (int)round((tf-t0)/dt)
 	
 	MatrixC sol = {0};
 	Array time = {0};
 	
 	schrod_rk4(schrod_gaussian,gaussian_params,schrod_poschl_teller,
 		pt_params,&sol,&time,ntsteps,nxpoints,t0,tf,x0,xf);
-		
+	
 	reflection_and_transmission(&sol,30,dt,-4,4,dx,x0,xf,nxpoints);
 		
 	if(update_animation)
@@ -110,11 +112,12 @@ void test_poschl_teller(double omega, double V0, double tf, int ntsteps,
 int main()
 {
 
-//	test_poschl_teller(1,2,40,-20,2,2,false);
-//	test_poschl_teller(0.5,-2,80,8000,-20,4,1,true,40,200,"negative");
+	test_poschl_teller(1,2,40,  -20,    2,2,false);
+	test_poschl_teller(0.5,-2,  -20,4,1,true,40,200,"negative");
 	const double omega=0.5;
 	const double l=4;
-	test_poschl_teller(0.5,-l*(l+1)/2/omega/omega,80,8000,-20,4,1,true,40,200,"special");
+	test_poschl_teller(0.5,-l*(l+1)/2/omega/omega,80,
+			8000,-20,4,1,true,40,200,"special");
 	
 	exit(EXIT_SUCCESS);
 }

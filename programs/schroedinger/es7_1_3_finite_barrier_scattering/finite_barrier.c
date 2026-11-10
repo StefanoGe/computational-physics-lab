@@ -1,31 +1,53 @@
 #include "schroedinger.h"
 #include "genutil.h"
 #include "explot.h"
+#include <math.h>
 
 #define UPDATE_ANIMATION false
+
+void reflection_and_transmission_helper(const MatrixC *sol, double tmax,
+		double dt, double x1,double x2,double dx,double x0,
+		int nxpoints, double *R, double *T, double *initial_norm,
+		double *norm_over_whole_interval)
+{
+	if(initial_norm)
+		*initial_norm = schrod_wavefunction_norm(
+			sol->rows[0], nxpoints, dx);
+	const int final_index_reflected = (int)round((x1-x0)/dx);
+	const int first_index_transmitted = (int)round((x2-x0)/dx);
+	const int time_index = (int)round(tmax/dt);
+	*R = schrod_wavefunction_norm(
+		sol->rows[time_index],final_index_reflected,dx);
+	*T = schrod_wavefunction_norm(
+		sol->rows[time_index]+first_index_transmitted,
+			nxpoints-first_index_transmitted,dx);
+	if(norm_over_whole_interval) 
+		*norm_over_whole_interval = schrod_wavefunction_norm(
+			sol->rows[time_index], nxpoints,dx);
+}
 
 void reflection_and_transmission(const MatrixC *sol, double tmax,double dt,
 		double x1,double x2,double dx,double x0,double xf,
 		int nxpoints)
 {
-	const int final_index_reflected = (int)((x1-x0)/dx);
-	const int first_index_transmitted = (int)((x2-x0)/dx);
-	const int time_index = (int)(tmax/dt);
-	const double reflected_norm = schrod_wavefunction_norm(
-		sol->rows[time_index],final_index_reflected,dx);
-	const double transmitted_norm = schrod_wavefunction_norm(
-		sol->rows[time_index]+first_index_transmitted,
-			nxpoints-first_index_transmitted,dx);
-	const double norm_over_whole_interval = schrod_wavefunction_norm(
-		sol->rows[time_index],nxpoints,dx);
-	printf( "Norm over the whole interval [%.0lf,%.0lf]: %.3lf\n"
+	double R=0;
+	double T=0;
+	double norm_over_whole_interval=0;
+	double initial_norm=0;
+	reflection_and_transmission_helper(sol, tmax, dt, x1, x2, dx, x0,
+		nxpoints, &R, &T, &initial_norm, &norm_over_whole_interval);
+	printf( "Norm over the whole interval [%.0lf,%.0lf] "
+			"at time %.2lf: %lf\n"
+			"at time %.2lf: %lf\n"
 			"R = %lf\n"
 			"T = %lf\n"
-			"R+T = %lf\n",x0,xf,
-			norm_over_whole_interval,
-			reflected_norm,
-			transmitted_norm,
-			reflected_norm+transmitted_norm);
+			"R+T = %lf\n", 
+			x0, xf, 
+			0.0, initial_norm,
+			tmax, norm_over_whole_interval,
+			R,
+			T,
+			R+T);
 }
 
 void animation(const MatrixC *sol,double x0, double xf,int nxpoints,int ntsteps,
@@ -69,6 +91,34 @@ void animation(const MatrixC *sol,double x0, double xf,int nxpoints,int ntsteps,
 	arr_free(&xgrid);
 }
 
+void study_coefficients_varying_length(double gaussian_params[], 
+	double V0, double x0, double xf, double t0, double tf, double dx, double
+	dt)
+{
+	const int nxpoints = (int)round((xf-x0)/dx);
+	const int ntsteps  = (int)round((tf-t0)/dt);
+	MatrixC sol = {0};
+	Array time = {0};
+	
+	// High length
+	const double max_length = 10;
+
+	
+	for(double a=1; a<=max_length; a+=1)
+	{
+		double barrier_params[]={V0, -a, a};
+		schrod_rk4(schrod_gaussian,gaussian_params,schrod_finite_barrier,
+			barrier_params,&sol,&time,ntsteps,nxpoints,t0,tf,x0,xf);
+		double R=0, T=0;
+		reflection_and_transmission_helper(&sol, 40, dt, -a, a, dx, x0, 
+				nxpoints, &R, &T, NULL, NULL);
+		printf("For a = %lf, T = %lf, R = %lf\n", a, T, R);
+	}
+	
+
+	
+}
+
 int main()
 {
 	const double xm=-20;
@@ -76,7 +126,7 @@ int main()
 	const double k0=2;
 	double gaussian_params[]={xm,sigma,k0};
 	
-	const double V0=2;
+	const double V0=4;
 	const double x1=-1;
 	const double x2=1;
 	double barrier_params[]={V0,x1,x2};
@@ -89,8 +139,8 @@ int main()
 	const double dx=0.1;
 	const double dt=0.01;
 	
-	const int nxpoints = 2000;
-	const int ntsteps  = 4000;
+	const int nxpoints = (int)round((xf-x0)/dx);
+	const int ntsteps  = (int)round((tf-t0)/dt);
 	MatrixC sol = {0};
 	Array time = {0};
 	
@@ -102,6 +152,9 @@ int main()
 				barrier_params);
 				
 	reflection_and_transmission(&sol,30,dt,x1,x2,dx,x0,xf,nxpoints);
+	
+	study_coefficients_varying_length(gaussian_params, V0, x0, xf, t0, tf, 
+			dx, dt);
 	
 	exit(EXIT_SUCCESS);
 }

@@ -75,6 +75,8 @@ void animation(const MatrixC *sol,double x0, double xf,int nxpoints,int ntsteps)
 	arr_free(&xgrid);
 }
 
+
+
 int main()
 {	
 	const double xm=20;
@@ -89,8 +91,8 @@ int main()
 	const double dx = 0.1;
 	const double dt= 0.01;
 	
-	const int nxpoints = 1000;
-	const int ntsteps  = 2000;
+	const int nxpoints = (int)round((xf-x0)/dx);
+	const int ntsteps  = (int)round((tf-t0)/dt);
 	MatrixC sol = {0};
 	Array time = {0};
 	
