@@ -76,6 +76,9 @@
 % Command for differentials
 \newcommand{\df}{\mathrm{d}}
 
+% Command for identity matrix
+\newcommand{\id}{\mathrm{I}}
+
 % Bibliography
 \usepackage[backend=bibtex, style=alphabetic]{biblatex}
 
@@ -1960,13 +1963,66 @@ than the subsequent estimate with more nodes.
 \subsection{Euler's method}
 %-------------------------------------
 
+In the following paragraphs we study the Euler's method for solving 
+Initial Value Problems (IVP) of ODEs. Given a diffential equation in the form
+$\mathbf{u}' = \mathbf{f}(\mathbf{u},t)$, forward Euler's method 
+approximates the solution at next timestep as:
+
+\[
+	\mathbf{u}(t_{i+1}) = \mathbf{u}(t_{i})+\mathbf{f}(\mathbf{u}(t_{i}),t_{i})
+\]
+
 %-------------------------------------
-\subsubsection{First order application}
+\subsubsection{First order application}\label{sssection:feuler_1_order}
 %-------------------------------------
+
+We first test our routine for Euler's method on the following first order 
+scalar IVPs:
+
+\begin{enumerate}
+	\item {$u' = -2t u$, $\ 0 \le t \le 2$, $\ u(0) = 2$; %$\quad$ $\hat{u}(t) = 2e^{-t^2}$
+		}
+	\item{$u' = u + t$, $\ 0 \le t \le 1$, $\ u(0) = 2$; %$\hat{u}(t) = -1-t+3e^t$
+	}
+	\item{$(1+t^3)uu' = t^2$, $\ 0 \le t \le 3$, $\ u(0) =1$;% $\quad$ $\hat{u}(t) = [1+(2/3)\ln (1+t^3)]^{1/2}$
+	}
+\end{enumerate}
+
+In ADD FIGURE AND REFERENCE we show the solutions calculated with $n=320$
+timesteps, after 
+normalizing their domains to [0,1] in order to fit them all in one plot.
+
+\paragraph{Study of convergence}
+
+In ADD FIGURE AND REFERENCES we show the error in our numerical estimates as a 
+function of the number of timesteps utilised. On the y axis we have drawn
+the error calculated in sup-norm as well as the error at the last time step.
+Since the the number of timesteps is inversely proportional to size of the 
+timesteps, in Graph ADD REFERENCE we can clearly see first order convergence  
+of the error $O(h)$, where $h$ is the length of the timestep, 
+by noting that the error lines are parallel to a first order convergence 
+reference line.
 
 %-------------------------------------
 \subsubsection{Second order application}
 %-------------------------------------
+
+We first test our routine for Euler's method on the following second order 
+scalar IVPs:
+
+\begin{enumerate}
+	\item {$y''+ 9y = \sin(2t)$, $\ 0< t< 2\pi$, $\ y(0) = 2$, $\ y'(0) = 1$}
+	\item{$y''- 4y = 4t$, $\: 0< t< 1.5$ $\: y(0) = 2$ $\: y'(0) = -1$ % $\quad$ $\hat{y}(t) = e^{2t} + e^{-2t}-t$
+	}
+	\item{$y''+ 4y'+ 4y = t$, $\: 0< t< 4$  $\: y(0) = 1$ $\: y'(0) = 3/4$ %$\quad$ $\hat{y}(t) = (3t+5/4)e^{-2t} + (t-1)/4$
+	}
+\end{enumerate}
+
+Each can be reduced to a first order IVP by introducing the variables
+$u_{0}=y$, $u_{1}=y'$ and the equation $u_{0}'=u_{1}$.
+
+In Graphs ADD FIGURES AND REFERENCES we show the functions thus calculated, 
+their derivatives and the deviations with the exact solutions.
 
 %-------------------------------------
 \subsection{Runge-Kutta methods}
@@ -1976,10 +2032,125 @@ than the subsequent estimate with more nodes.
 \subsubsection{Improved Euler's and Runge-Kutta fourth order methods}
 %-------------------------------------
 
+We now test our routine for Improved Euler (IE2) and Runge-Kutta 4 (RK4) on
+the IVP:
+\[
+   u' = -2t u, \; u(0) = 2, \; t\in [0,2] %$\hat{u}(t) = 2e^{-t^2}
+\]
+and study the convergence.
+
+The plot of the solution can be found in ADD REFERENCE, since the same
+problem was integrated in \ref{sssection:feuler_1_order}.
+In ADD FIGURE AND REFERENCE we plot the maximum error between the numerical
+solution and the exact solution as a function of the number of function 
+evaluations. Even though RK4 reuquires twice as many function evaluations as
+IE2, RK4 is way more accurate even when taking this into account, thanks to 
+fourth order convergence $O(h^{4})$ of RK4's error as stepsize $h$ becomes 
+small.
+
 %-------------------------------------
 \subsubsection{Non-linear equation application of Runge-Kutta}
 %-------------------------------------
 
+
+We now use RK4 to study the following two nonlinear systems of two equations
+of first order:
+
+\begin{equation}\label{eq:rk4_nonlinear1}
+    \mathbf{(a)} \begin{split}
+      x'(t) & = - 4y + x(1-x^2-y^2)\,,\\[2.5mm]
+      y'(t) & = 4x + y(1-x^2-y^2)\,,
+    \end{split}
+\end{equation}
+we test initial conditions $[x(0),y(0)]=[0.1,0]$ and $[x(0),y(0)]=[0,1.9]$;
+
+\[
+    \mathbf{(b)} \begin{split}
+      x'(t) & = - 4y - \tfrac{1}{4}x(1-x^2-y^2)(4-x^2-y^2)\,,\\[2.5mm]
+      y'(t) & = 4x - \tfrac{1}{4}y(1-x^2-y^2)(4-x^2-y^2)\,,
+    \end{split}
+\]
+in this system we test initial conditions $[x(0),y(0)]=[0.95,0]$, 
+$[0,1.05]$, and $[-2.5,0]$.
+
+In ADD FIGURES AND REFERENCES and ADD FIGURE AND REFERENCES we plot 
+the numerical solutions for time $t\in [0,10]$ and $n=1000$ timesteps.
+
+\paragraph{Validity of numerical solutions}
+
+Since we have no analytical solution to compare our result with, we have to 
+estimate the error in some other way. 
+The global error of our numerical solution should be $O(h^{4})=O(n^{-4})$,
+where $h$ is the stepsize and $n$ is the number of points used. If we rerun 
+our resolver with $2n=2000$ points, the error should be around $1/16$ times 
+smaller, hence negligible for rough calculations.
+Therefore we can use as a measure of the order of magnitude of the error 
+the difference between the numerical solutions with 1000 and 2000 point in the 
+times in which they overlap (i.e. every value of the $n=1000$ and every
+two values of the $n=2000$ solution).
+In Table \ref{table:rk4_error} we report for each curve considered the errors thus 
+calculated. To calculate the error between two points 
+$(f_{x}(t_{i}),f_{y}(t_{i}))$ and $(f_{x}'(t_{i}),f_{y}'(t_{i}))$ we just 
+consider $\epsilon = 
+\text{max}(|f_{x}(t_{i})-f_{x}'(t_{i})|,|f_{y}(t_{i})-f_{y}'(t_{i})|)$
+
+\begin{table}[ht]
+	\centering
+	\begin{tabular}{l | r@{}l | c | c }
+		System & $x_{0}$,&$y_{0}$ & $\epsilon_{f}$ & $\epsilon_{\text{max}}$\\
+		\hline
+		a & 0.1,&0 & $5.12 \times 10^{-7}$  & $6.89 \times 10^{-7}$\\
+		  & 0,& 1.9 & $5.62 \times 10^{-7}$  & $7.56 \times 10^{-7}$\\
+		b & 0.95,&0 & $1.26 \times 10^{-10}$ & $1.13 \times 10^{-7}$\\
+		  & 0,&1.05 & $1.30 \times 10^{-6}$  & $1.56 \times 10^{-6}$\\
+		  & -2.5,&0 & $1.29 \times 10^{-6}$  & $1.54 \times 10^{-6}$\\
+	\end{tabular}
+	\caption{Table \ref{table:rk4_error}: $\epsilon_{f}$ is the error at last 
+		timestep, while $\epsilon_{\text{max}}$ is the maximum of the errors.}
+	\label{table:rk4_error}
+\end{table}
+
+This suggests that the errors are controlled in the range $10^{-10}--10^{-6}$, 
+which more than enough precision for our limited study.
+
+\paragraph{Analysis of the dynamics of the systems}
+
+The two systems present similar dynamics, in the sense that in both we can see 
+that the trajectories of motion are spyrals centered in the origin. 
+
+For system a), the spyrals seem to converge asymptotically to a closed 
+circular orbit. This motivates the following simple calculation using
+the equations of motion \ref{eq:rk4_nonlinear1}:
+
+\begin{alignat*}{2}
+	\derivative{t}{}{x^{2}+y^{2}} &= 2xx'+2yy' = \\
+	& 2x(- 4y + x(1-x^2-y^2)) + 2y (4x + y(1-x^2-y^2)) =\\
+	& (x^{2}+y^{2})(1-x^{2}-y^{2}) = r^{2}(1-r^{2})
+\end{alignat*}
+
+which proves that the solutions of motion move away from the origin when 
+they lie inside the unit circle, and towards it when they are outside.
+If a point of motion lies on the unit cirlce, then the equation of motion 
+reduce to:
+\begin{alignat*}{2}
+	x &= -4y \\
+	y &= 4x
+\end{alignat*}
+which are the equation of motion of a particle moving on a circle in uniform
+circular motion. Since two solutions cannot intersect in the phase-space, all
+solutions not lying on the unit circle are bound to spyral indefinitely towards
+it, without ever touching it.
+
+Equation b) behaves similarly, except that there are two circle on which 
+the motion is uniformly circular, $r=1$ and $r=2$. In fact, we have here:
+
+\[
+	\derivative{t}{}{r^{2}} = -\frac{1}{2}r^{2}(1-r^{2})(4-r^{2})
+\]
+
+Which is negative when $r<1$ or $r>2$ and is positive when $1<r<2$.
+Hence solutions inside the unit circle converge asymptotically to the center, 
+while solutions outside convergence to the circle of radius 2.
 
 %-------------------------------------
 \subsubsection{Predator-prey model}
@@ -2000,11 +2171,11 @@ To discretize the Hamiltonian, we first discretize space in equally spaced
 nodes and use the following finite difference 
 approximation for the second derivative:
 
-\[
+\begin{equation}\label{eq:2nd_derivative_finite_difference}
     \frac{d^2 \psi}{dx^2}\Big|_{x_j} \approx
     \frac{-\psi_{j+2} + 16 \psi_{j+1} - 30 \psi_j + 16 \psi_{j-1} - \psi_{j-2}}{12 (\Delta x)^2} 
     + \mathcal{O}(\Delta x^4)\,.
-\]
+\end{equation}
 
 We use Dirichlet boundary condition, that is, we consider fixed at 0 the 
 wavefunction outside the simulation interval. This is equivalent to putting 
@@ -2158,13 +2329,147 @@ the reflection and transmission coefficients are
 \subsubsection{Pöschl-Teller potential}
 %-------------------------------------
 
+We now apply our numerical solver to study the scattering from 
+the Pöschl-Teller potential:
 
+\[
+	V(x) = \frac{V_{0}}{\cosh^2\left( \frac{x}{\omega}\right) }
+\]
+
+We tested it with different combinations of the starting parameters.
+The results can be visualised in the 
+\mdcode{gifs} folder inside the \mdcode{report} directory under the name
+\mdcode{poschl_teller_gaussian_X.gif}, with X being the codename given to
+that simulation. In Table \ref{table:poschl_teller}
+we include some of the starting parameters and the values of the reflection 
+and transmission coefficients $R$ and $T$.
+
+\begin{table}[ht]
+	\centering
+	\begin{tabular}{l | c | c | c | c}
+		Name & $V_{0}$ & $\omega$ & $R$ & $T$ \\
+		\hline
+		Positive potential & 2  & 1    & 0.428 & 0.565 \\
+		Negative potential & -2 & 0.5  & 0.147 & 0.835 \\
+		Special & -12 & 0.5 & 0.000 & 0.982 \\
+	\end{tabular}
+	\caption{Table \ref{table:poschl_teller}}
+	\label{table:poschl_teller}
+\end{table}
+
+A positive potential seems to favour reflection, while a negative potential
+transmission. This should be no surprise, since a positive potential acts
+more like a barrier, while a negative one like a well.
+
+The Pöschl-Teller potential is special because it can be solved exactly. 
+Remarkably, when the condition $V_{0} = -l(l+1)/2\omega^{2}$ is satisfied,
+scattering through the potential produces total transmission of the 
+incident wave \parencite{wiki_poschl_teller}. The simulation above marked as 
+"special" shows this precise behaviour.
 
 %-------------------------------------
 \subsection{Time-independant Schrödinger equation}
 %-------------------------------------
 
+For TISE, we solve a discretized version of the eigenvalue problem:
+\[
+	\ham \ket{\psi} = E \ket{\psi}
+\]
 
+As an eigenvalue solver, we chose to implement a version of 
+QR with Wilkinshon shifts described in
+\textcite[Lecture 29. QR Algotithm with shifts]{trefethen}
+specialized for pentadiagonal matrices, as the one produced by the
+discretization in Equation \ref{eq:2nd_derivative_finite_difference}.
+
+We outline here the procedure:
+\begin{enumerate}
+	\item{
+		With Householder reflectors we reduce $\ham$ in Hessenberg (
+		tridiagonal) form 
+		\parencite[Lecture 26. Reduction to Hessenberg or Tridiagonal Form]
+		{trefethen}. This step requires applying repeatedly Householder
+		reflectors,represented by orthogonal matrices $Q_{i}$, to $\ham$.{}
+		This is equivalent to applying a matrix $\mathbf{Q}^{\mathsf{T}}$ to
+		$\ham$. This produces the decomposition $\ham = Q_{0}\ham_{0}$,
+		where $\ham_{0}$ is tridiagonal and $Q_{0}$ is orthogonal.
+		We can reconstruct $Q_{0}$ by storing Householder reflectors.}
+	\item{
+		We calculate Wilkinon shift $\mu$, then QR decompose $QR = \ham_{0}-\mu \id$
+		using a routine specialized for tridiagonal matrices inspired by
+		Householder reflectors. $Q$ is accumulated on $Q_{0}$ inside the 
+		routine in order to avoid a costly matrix multiplication between 
+		$Q$ and $Q_{0}$
+	}
+	\item{
+		A new matrix $\ham_{1} = RQ + \mu \id$ is assembled.
+	}
+	\item{
+		Deflation is applied. In our routine we just check if the entries 
+		adjacent to the bottom right entry of $\ham_{1}$ are 0 within a small 
+		tolerance. If so, they are set to 0 and the matrix is considered to
+		be one dimension lower in future iterations.
+	}
+	\item{
+		Steps 2--4 are repeated until the matrix is fully diagonal.
+	}
+\end{enumerate}
+
+If $n_{i}$ is the dimension of the square tridiagonal matrix $H_{i}$ at 
+iteration $i$ (after considering deflation), 
+then step 2 can be performed in $O(n_{i}^{2})$. This cost
+could be further improved to $O(n_{i})$ by fusing Step 2 and 3 and 
+avoiding to calculate explicitly the full matrix $Q$. Step 3 can be performed 
+just in $O(n_{i})$, thanks to the fact that $R$ is tridiagonal.
+
+The whole algorithm converges in around $O(n_{0})$ iterations, where
+$n_{0}$ is the dimension of $H_{0}$, but this could
+be much improved with a more sofisticated deflation algorithm.
+
+Right now the bottleneck of our implementation is actually Step 1, since we 
+have not written a routine specialized for reducing pentadiagonal matrices
+into tridiagonal matrices, due to time constraints. 
+As it stands, it is $O(n_{0}^{3})$, as it is the whole algorithm overall.
+
+\paragraph{Results}
+
+By using 200 points and a lattice spacing of 0.05, we find as energies:
+
+\begin{table}[ht]
+	\centering
+	\begin{tabular}{l | c | c }
+		Exact $E$ & Numerical $E$ & Difference \\
+		\hline
+		-9.18 & -9.21 & $3.3 \times 10^{-2}$ \\
+		-6.78 & -6.91 & 0.13 \\
+		-3.05 & -3.30 & 0.25
+	\end{tabular}
+	\caption{Table \ref{table:poschl_teller}}
+	\label{table:poschl_teller}
+\end{table}
+
+With errors of the order of 10\% the values are not very accurate.
+By using 1000 points and a lattice spacing of 0.01, we can do much better:
+
+\begin{table}[ht]
+	\centering
+	\begin{tabular}{l | c | c }
+		Exact $E$ & Numerical $E$ & Difference \\
+		\hline
+		-9.18 & -9.19 & $6.7 \times 10^{-3}$ \\
+		-6.78 & -6.80 & $2.5 \times 10^{-2}$ \\
+		-3.05 & -3.10 & $4.9 \times 10^{-2}$
+	\end{tabular}
+	\caption{Table \ref{table:poschl_teller}}
+	\label{table:poschl_teller}
+\end{table}
+
+Now the error is around, at most, 1\%. Note, however, that with this many points
+the algorithm is 125 slower, because of $O(n^{3})$ scaling.
+A $O(n^{2})$ algorithm, entirely feasible as hinted above, would improve 
+dramatically the number of points realistically usable.
+
+In ADD FIGURE AND REFERENCES we show the plot of the bound states thus found.
 
 \nocite{*}
 

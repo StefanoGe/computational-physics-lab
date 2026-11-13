@@ -18,7 +18,8 @@ void reflection_and_transmission(const MatrixC *sol, double tmax,double dt,
 			nxpoints-first_index_transmitted,dx);
 	const double norm_over_whole_interval = schrod_wavefunction_norm(
 		sol->rows[time_index],nxpoints,dx);
-	printf( "Norm over the whole interval [%.0lf,%.0lf]: %.3lf\n"
+	
+	printf( ANSI_RESET"Norm over the whole interval [%.0lf,%.0lf]: %.3lf\n"
 			"R = %lf\n"
 			"T = %lf\n"
 			"R+T = %lf\n",x0,xf,
@@ -79,7 +80,7 @@ void animation(const MatrixC *sol,double x0, double xf,int nxpoints,int ntsteps,
 }
 
 void test_poschl_teller(double omega, double V0, double tf,
-	double xm, double sigma, double k0, bool update_animation, int frameskip,
+	double xm, double sigma, double k0, bool update_animation,
 	int nframes, char *add_name)
 {
 	double gaussian_params[]={xm,sigma,k0};
@@ -94,7 +95,8 @@ void test_poschl_teller(double omega, double V0, double tf,
 	const double dt=0.01;
 	
 	const int nxpoints = (int)round((xf-x0)/dx);
-	const int ntsteps  = (int)round((tf-t0)/dt)
+	const int ntsteps  = (int)round((tf-t0)/dt);
+	const int frameskip = ntsteps / nframes;
 	
 	MatrixC sol = {0};
 	Array time = {0};
@@ -102,8 +104,14 @@ void test_poschl_teller(double omega, double V0, double tf,
 	schrod_rk4(schrod_gaussian,gaussian_params,schrod_poschl_teller,
 		pt_params,&sol,&time,ntsteps,nxpoints,t0,tf,x0,xf);
 	
-	reflection_and_transmission(&sol,30,dt,-4,4,dx,x0,xf,nxpoints);
-		
+	printf( ANSI_YELLOW"Case %s\n"
+			ANSI_GREEN"For V0 = "ANSI_RED"%.2lf"ANSI_GREEN" and omega = "
+			ANSI_RED"%.2lf\n"ANSI_RESET, add_name, V0, omega);
+	
+	reflection_and_transmission(&sol,tf*3/4,dt,-4,4,dx,x0,xf,nxpoints);
+	
+	puts("\n-------------------------------------------------\n");
+	
 	if(update_animation)
 		animation(&sol,x0,xf,nxpoints,ntsteps,schrod_poschl_teller,
 					pt_params,frameskip,nframes,dt,add_name);
@@ -111,13 +119,20 @@ void test_poschl_teller(double omega, double V0, double tf,
 
 int main()
 {
-
-	test_poschl_teller(1,2,40,  -20,    2,2,false);
-	test_poschl_teller(0.5,-2,  -20,4,1,true,40,200,"negative");
+	// In order to update the animations put "true" as parameter 
+	// update_animation in test_poschl_teller
+	
+	test_poschl_teller(1,   2,40,  -20,2,2,false,200,"default");
+	test_poschl_teller(0.5,-2,80,  -20,4,1,false,200,"negative");
 	const double omega=0.5;
-	const double l=4;
-	test_poschl_teller(0.5,-l*(l+1)/2/omega/omega,80,
-			8000,-20,4,1,true,40,200,"special");
+	const double l=2;
+	const double V0_sp = -l*(l+1)/2/omega/omega;
+	test_poschl_teller(0.5, V0_sp, 80,-20,4,1,false,200,"special");
+/*
+	const double k0_slow = 0.5;
+	test_poschl_teller(0.5,-l*(l+1)/2/omega/omega,
+		320,-20,4,k0_slow,true,200,"special2");
+*/
 	
 	exit(EXIT_SUCCESS);
 }

@@ -1066,6 +1066,12 @@ static inline void qr_shifted_accumulate_Q(Matrix *evecs, const Matrix *Q,
 			MATP(evecs,row,col)=MATP(R,row,col);
 }
 
+/*
+ * 
+ * 
+ * 
+ */
+
 static inline int qr_shifted_deflate(const Matrix *A, int hi)
 {
 	const double EIGENVALUE_TOL = 1e-10;
@@ -1172,7 +1178,14 @@ void linst_shifted_qr(Matrix *A, Array *eigenvalues, Matrix *evecs, int max_iter
 	mat_free(&R);
 }
 
-
+/*
+ * QR decomposition specialized for tridiagonal matrices, with a method
+ * reminiscent of Householder reflectors.
+ * 
+ * A is modified inplace and becomes the R matrix. If *evecs is provided,
+ * Q is accumulated directly on the matrix *evecs, which simplifies
+ * the shifted qr algorithm and avoids a further matrix multiplication. 
+ */
 
 void linst_qr_tridiagonal(Matrix *A, Matrix *Q, Matrix *evecs, int dim)
 {
@@ -1190,7 +1203,6 @@ void linst_qr_tridiagonal(Matrix *A, Matrix *Q, Matrix *evecs, int dim)
 		const double c_theta = a/norm;
 		const double s_theta = b/norm;
 		MATP(A,k,k) = norm;
-//		puts(" ");
 		MATP(A,k+1,k)=0;
 		for(int col=k+1; col<=MIN(k+2, dim-1); col++)
 		{
@@ -1207,18 +1219,23 @@ void linst_qr_tridiagonal(Matrix *A, Matrix *Q, Matrix *evecs, int dim)
 			MATP(Q,k,col)   =  c_theta*q_k + s_theta*q_k1;
 			MATP(Q,k+1,col) = -s_theta*q_k + c_theta*q_k1;
 		}
-
-		for(int row=0; row<evecs->nrows; row++)
-		{
-			double e_k  = MATP(evecs,row,k);
-			double e_k1 = MATP(evecs,row,k+1);
-			MATP(evecs,row,k)   = c_theta*e_k  + s_theta*e_k1;
-			MATP(evecs,row,k+1) = -s_theta*e_k + c_theta*e_k1;
-		}
 		
+		if(evecs)
+			for(int row=0; row<evecs->nrows; row++)
+			{
+				double e_k  = MATP(evecs,row,k);
+				double e_k1 = MATP(evecs,row,k+1);
+				MATP(evecs,row,k)   = c_theta*e_k  + s_theta*e_k1;
+				MATP(evecs,row,k+1) = -s_theta*e_k + c_theta*e_k1;
+			}
 	}
 	mat_transpose(Q,Q);
 }
+
+/*
+ * In shifted QR algorithm produces the next matrix *Ato be decomposed 
+ * by performing (efficiently) A = RQ + mu Id
+ */
 
 static inline void qr_shifted_next_A_improved(Matrix *A, const Matrix *Q, const Matrix *R,
 	int hi, double mu)
@@ -1234,26 +1251,6 @@ static inline void qr_shifted_next_A_improved(Matrix *A, const Matrix *Q, const 
 		}
 		MATP(A,row,row)+=mu;
 	}
-}
-
-static inline void qr_shifted_accumulate_Q_improved(Matrix *evecs, 
-	const Matrix *Q, Matrix *R, int hi)
-{
-	const int dim = evecs->nrows;
-	for(int row=0; row<dim; row++)
-	{
-		for(int col=0; col<=hi; col++)
-		{
-			double sum=0;
-			for(int p=0; p<=MIN(col+1,hi); p++)
-				sum+=MATP(evecs,row,p)*MATP(Q,p,col);
-			MATP(R,row,col)=sum;
-		}
-	}
-	
-	for(int row=0; row<dim; row++)
-		for(int col=0; col<=hi; col++)
-			MATP(evecs,row,col)=MATP(R,row,col);
 }
 
 void linst_shifted_qr_optimized_pentadiagonal(Matrix *A, Array *eigenvalues, 

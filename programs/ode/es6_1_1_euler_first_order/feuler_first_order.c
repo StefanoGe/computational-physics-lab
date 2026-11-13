@@ -37,8 +37,6 @@ void plot(
 		int nsteps, char fnc_names[][100], FuncPtr funcs[],
 		Matrix *f_values, Array *t_values)
 {
-	// Static counter to keep track of function calls, for easier file management.
-	static int counter=0; counter++;
 	Array true_values[N_FUNCS]={0};
 	Array normalized_times[N_FUNCS]={0};
 	for(int i=0; i<N_FUNCS; i++)
@@ -50,17 +48,13 @@ void plot(
 		true_values[i]=arr_map(t_values+i,funcs[i]);
 	// Plot setup --- global settings
 	char title[1000];
-	char build_name[100];
-	char output_name[100];
 	char labels[N_FUNCS*2][100];
 	sprintf(title, "ODEs solutions from Euler's method");
-	sprintf(build_name, "euler_test%d", counter);
-	sprintf(output_name, "euler_test%d", counter);
 	SeriesSpec *series;
 	SAFE_ALLOC(series,N_FUNCS*2);
 
-	Global gb_settings = eplot_init_global(title,"t","u(t)",NULL,build_name,
-	output_name,"top left font \",12\"",NULL);
+	Global gb_settings = eplot_init_global(title,"t","u(t)",NULL, 
+		"feuler_first_order", "feuler_first_order","top left font \",12\"",NULL);
 	for(int i=0; i<N_FUNCS; i++)
 	{
 		sprintf(labels[i*2],"u' = %s - exact solution",fnc_names[i]);
@@ -71,7 +65,7 @@ void plot(
 			nsteps+1,"l dt 2",labels[2*i+1],NULL);
 	}
 	
-	eplot_multi(series, 2*N_FUNCS, &gb_settings);
+	eplot_multi_options(series, 2*N_FUNCS, &gb_settings, false);
 	
 	for(int i=0; i<3; i++){
 		arr_free(true_values+i);
@@ -174,8 +168,8 @@ void error_study(Derivative eq[], const double t0[],const double tf[],
 	series[N_FUNCS*2]=eplot_init_series(nsteps_vec.data,
 		approx_stepsize.data,max_k-1,"lp",
 		"1st order conv. ref. line",NULL);
-
-	eplot_multi(series, NPLOTS, &gb_settings);
+		
+	eplot_multi_options(series, NPLOTS, &gb_settings, false);
 	
 	for(int i=0; i<N_FUNCS; i++)
 	{
@@ -184,15 +178,6 @@ void error_study(Derivative eq[], const double t0[],const double tf[],
 		arr_free(true_values+i);
 	}
 }
-
-/*
-void test_feuler(Derivative eq, double t0, double tf, double in_value, 
-	const char *fnc_name, FuncPtr true_func)
-{
-	solve_and_plot(eq, t0, tf, in_value, 320, fnc_name, true_func);
-	error_study(eq, t0, tf, in_value, fnc_name, 10, true_func);
-}
-*/
 
 int main()
 {
@@ -206,18 +191,12 @@ int main()
 	ode_feuler(0,2,init_values  ,eqs  ,NULL,1,320,t_values,  f_values);
 	ode_feuler(0,1,init_values+1,eqs+1,NULL,1,320,t_values+1,f_values+1);
 	ode_feuler(0,3,init_values+2,eqs+2,NULL,1,320,t_values+2,f_values+2);
-	eprint("ok");
+
 	char fnames[][100]={"-2tu","u+t","t^2/u(1+t^3)"};
 	plot(320,fnames,true_funcs,f_values,t_values);
 	const double init_times[]={0,0,0};
 	const double final_times[]={2,1,3};
 	error_study(eqs,init_times,final_times,init_values,fnames,10,true_funcs);
 
-/*
-	test_feuler(eq2, 0, 1, 2, "", true2); 
-	// Remark: inf error is the same as error on final timestep. The error
-	// then grows steadily.
-	test_feuler(eq3, 0, 3, 1, "", true3);
-*/	
 	return 0;
 }

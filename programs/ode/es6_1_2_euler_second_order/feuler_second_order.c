@@ -58,16 +58,14 @@ Array arr_err( const double *x1, const double *x2, int size )
 }
 
 void plot_errors(const Array *t_output, const Array *func_err, 
-		const Array *der_err, int counter,  double t0, double f0, double der0, 
-	int nsteps, const char *fnc_name)
+		const Array *der_err, int counter, int nsteps, const char *fnc_name)
 {
 		// Plot setup --- global settings
 	char title[1000];
 	char build_name[100];
 	char output_name[100];
-	sprintf(title, "Error of Euler method for u\'\'(t) = %s, u(%.0f)=%.2lf,"
-							" u\'(%.0lf)=%.2lf", 
-							fnc_name, t0, f0,t0,der0);
+	sprintf(title, "Error of Euler method for u\'\'(t) = %s",
+							fnc_name);
 	sprintf(build_name, "euler_2_err%d", counter);
 	sprintf(output_name, "euler_2_err%d", counter);
 
@@ -98,7 +96,7 @@ void plot_errors(const Array *t_output, const Array *func_err,
 		.color=nullptr
 	};
 	SeriesSpec specs[]={err_of_func, err_of_der};
-	eplot_multi(specs, 2, &gb_settings);
+	eplot_multi_options(specs, 2, &gb_settings, false);
 }
 
 void test_feuler2(Derivative eq, double t0, double tf, double f0, double der0, 
@@ -121,8 +119,7 @@ void test_feuler2(Derivative eq, double t0, double tf, double f0, double der0,
 	char title[1000];
 	char build_name[100];
 	char output_name[100];
-	sprintf(title, "Numerical solution of u\'\'(t) = %s, u(%.0f)=%.2lf", 
-							fnc_name, t0, f0);
+	sprintf(title, "Numerical solution of u\'\'(t) = %s", fnc_name);
 	sprintf(build_name, "euler_2test%d", counter);
 	sprintf(output_name, "euler_2test%d", counter);
 
@@ -172,14 +169,13 @@ void test_feuler2(Derivative eq, double t0, double tf, double f0, double der0,
 	};
 	
 	SeriesSpec specs[]={data_desc_f, data_desc_der, data_desc_true, data_desc_true_der};
-	eplot_multi(specs, 4, &gb_settings);
+	eplot_multi_options(specs, 4, &gb_settings, false);
 	
 	// Evaluate errors
 	Array func_err=arr_err(true_values.data, f_output.rows[0], true_values.size);
 	Array der_err=arr_err(true_der_value.data, f_output.rows[1], true_der_value.size);
 	
-	plot_errors(&t_output, &func_err, &der_err, counter, t0, f0, der0, nsteps,
-				fnc_name);
+	plot_errors(&t_output, &func_err, &der_err, counter, nsteps, fnc_name);
 	
 	mat_free(&f_output);
 	arr_free(&t_output);

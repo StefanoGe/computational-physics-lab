@@ -96,7 +96,7 @@ void error_study(Derivative eq, double t0, double tf, double in_value,
 	SeriesSpec ref_line4={nsteps_vec.data,one_over_step_size_4th.data,
 		n_iter,"l dt 4","4^{th} order convergence",NULL};
 	SeriesSpec series[]={error_ie2, error_rk4, ref_line2, ref_line4};
-	eplot_multi(series, 4, &gb_settings);
+	eplot_multi_options(series, 4, &gb_settings, false);
 			
 	Array *arr_to_free[]={&errors_ie2,&errors_rk4,&nf_ie2,&nf_rk4,
 		&true_values,&nsteps_vec,&one_over_step_size_4th,&one_over_step_size_sq};

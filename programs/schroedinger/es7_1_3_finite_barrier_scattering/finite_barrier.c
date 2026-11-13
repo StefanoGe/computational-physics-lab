@@ -113,10 +113,7 @@ void study_coefficients_varying_length(double gaussian_params[],
 		reflection_and_transmission_helper(&sol, 40, dt, -a, a, dx, x0, 
 				nxpoints, &R, &T, NULL, NULL);
 		printf("For a = %lf, T = %lf, R = %lf\n", a, T, R);
-	}
-	
-
-	
+	}	
 }
 
 int main()

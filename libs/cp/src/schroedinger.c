@@ -45,13 +45,12 @@ void schrod_init_output(double t0,double tf,int ntimes, int nxsteps,
 		matc_init(f_output, ntimes, nxsteps);
 }
 
-// Nota:
-// Riassunto:
-// Adesso iniziamo solo con V=0
-// Procedimento:
-// Discretizzo l'hamiltoniana, producendo la matrice
-// Applico ripetutamente rk e a ogni step temporale calcolo poi lo step dopo.
-// 
+/*
+ * Given an initialized complex matrix *M, the left margin of the simulation
+ * lattice, the spatial step dx and a time independent potential V with its
+ * potential_params, produces in *M the matrix corresponding to a
+ * finite difference approximation of the exact Hamiltonian
+ */
 
 void schrod_disc_h(MatrixC *M, double x0,double dx, StaticPotential V,
 		void *potential_params)
@@ -79,6 +78,10 @@ void schrod_disc_h(MatrixC *M, double x0,double dx, StaticPotential V,
 //	matc_print_stdout(M, "%.10lf", "%+.10lf", true);
 }
 
+/*
+ * Above function, with no potential.
+ */
+
 void schrod_disc_free_h(MatrixC *M, double dx)
 {
 	schrod_disc_h(M, 0, dx, NULL, NULL);
@@ -94,6 +97,7 @@ void schrod_disc_h_improved(MatrixC *P, double x0,double dx, StaticPotential V,
 	schrod_disc_h(&M, x0, dx, V, potential_params);
 }
 */
+
 void schrod_rk4_core(const MatrixC *M,int nxpoints, int ntsteps,
 		double dt, MatrixC *sol)
 {
@@ -162,6 +166,17 @@ void schrod_rk4_inf_well( WavePacketGen wavepacket, void *wp_params,
 	matc_free(&M);
 }
 
+/*
+ * Numerical solver for TDSE. Uses a fourth order Runge-Kutta time 
+ * discretization.
+ * wavepacket is a mathematical function returning
+ * complex values as a function of x and its parameters wp_params.
+ * V is the potential with its parameters v_params.
+ * *sol is a matrix storing in the entry MAT(sol, t, i) the solution at time
+ * t and lattice point indexed by i.
+ * *time stores the times of the simulation.
+ */
+
 void schrod_rk4( WavePacketGen wavepacket, void *wp_params, 
 			StaticPotential V, void *v_params,
 			MatrixC *sol,
@@ -188,8 +203,10 @@ void schrod_rk4( WavePacketGen wavepacket, void *wp_params,
 	matc_free(&M);
 }
 
-
-void schrod_tise_disc_h(Matrix *H, double x0,double dx, RealPotential V,
+/*
+ * Real-valued and time independent of the discretizer function above.
+ */
+void schrod_tise_disc_h(Matrix *H, double x0, double dx, RealPotential V,
 		void *potential_params)
 {
 	if(!mat_is_squared(H))
@@ -214,6 +231,12 @@ void schrod_tise_disc_h(Matrix *H, double x0,double dx, RealPotential V,
 	}
 }
 
+/*
+ * Finds the eigenvalues and eigenfuncs of a Hamiltonian with 
+ * time-independent 1D real potential V, by solving the discretized 
+ * eigenvalue problem H phi = E phi using QR algorithm with modified
+ * Gram-Schmidt procedure and without shifts.
+ */
 void schrod_tise_pure_qr( RealPotential V, void *v_params,
 			Array *energies, Matrix *efuncs, int nxpoints,
 			double x0, double xf, int n_iter)
@@ -232,6 +255,11 @@ void schrod_tise_pure_qr( RealPotential V, void *v_params,
 	mat_free(&H);
 }
 
+/*
+ * Finds the eigenvalues and eigenfuncs of a Hamiltonian with 
+ * time-independent 1D real potential V, by solving the discretized 
+ * eigenvalue problem H phi = E phi using shifted QR algorithm.
+ */
 void schrod_tise_shifted_qr (RealPotential V, void *v_params,
 			Array *energies, Matrix *efuncs, int nxpoints,
 			double x0, double xf, int n_iter)
@@ -249,7 +277,12 @@ void schrod_tise_shifted_qr (RealPotential V, void *v_params,
 
 	mat_free(&H);
 }
-
+/*
+ * Finds the eigenvalues and eigenfuncs of a Hamiltonian with 
+ * time-independent 1D real potential V, by solving the discretized 
+ * eigenvalue problem H phi = E phi using shifted QR algorithm optimized for
+ * pentadiagonal matrices.
+ */
 void schrod_tise_shifted_qr_optimized (RealPotential V, void *v_params,
 			Array *energies, Matrix *efuncs, int nxpoints,
 			double x0, double xf, int n_iter)
@@ -263,22 +296,9 @@ void schrod_tise_shifted_qr_optimized (RealPotential V, void *v_params,
 	
 //	mat_print_stdout(&H,"%.2e",true);
 	
-	linst_shifted_qr_optimized_pentadiagonal(&H, energies, efuncs, n_iter, true);
+	linst_shifted_qr_optimized_pentadiagonal(&H, energies, efuncs, n_iter, false);
 
 	mat_free(&H);
-}
-
-void schrod_rk4_gaussian_inf_well_nyquist(double sigma, double xm, 
-			double k0, double eps,
-			MatrixC *sol,
-			Array *time, int ntsteps, double t0, double tf,
-			double x0, double xf)
-{
-	double wp_params[]={xm,sigma,k0};
-	const double xwidth = fabs(xf-x0);
-	const int nxpoints = MAX( (int)ceil( nyquist_gaussian(sigma,k0,eps)/xwidth ),
-		MIN_XPOINTS );
-	schrod_rk4_inf_well(schrod_gaussian,(void*)wp_params,sol,time,ntsteps,nxpoints,t0,tf,x0,xf);
 }
 
 // An implementaion of the trapezoidal rule which is good for our purposes

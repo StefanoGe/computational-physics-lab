@@ -21,7 +21,9 @@ double finite_well(double x, void *params)
 	double V0=((double*)params)[1];
 	return (-a<=x && x<=a ? -V0 : 0);
 }
-
+/*
+ * Equation whose roots are the exact values of energies for even indices
+ */
 double even_E_eq(double E, void *params)
 {
 	const double a  = ((double*)params)[0];
@@ -30,7 +32,9 @@ double even_E_eq(double E, void *params)
 	const double pho = sqrt(-2*E);
 	return tan(k*a)-pho/k;
 }
-
+/*
+ * Equation whose roots are the exact values of energies for odd indices
+ */
 double odd_E_eq(double E, void *params)
 {
 	const double a  = ((double*)params)[0];
@@ -39,6 +43,10 @@ double odd_E_eq(double E, void *params)
 	const double pho = sqrt(-2*E);
 	return 1.0/tan(k*a)+pho/k;
 }
+/*
+ * Given energies, finds bound states and puts their indices into an integer
+ * array bound_state_indices whose length is returned
+ */
 
 int find_bound_states(Array *energies, int *bound_states_indices)
 {
@@ -53,6 +61,10 @@ int find_bound_states(Array *energies, int *bound_states_indices)
 	}
 	return nbound;
 }
+
+/*
+ * Plot of bound states found from eigenvalue solution
+ */
 
 void plot_bound_states(int nbound, int *bound_states_indices, 
 		const Matrix *efuncs, double x0, double xf, ParamFuncPtr V,
@@ -98,7 +110,7 @@ void plot_bound_states(int nbound, int *bound_states_indices,
 			"tise_bound_states","","set yrange [-0.5:1]\n"
 								   "set xrange [-2:2]");
 
-	eplot_multi(series,nbound+1,&gb_settings);
+	eplot_multi_options(series,nbound+1,&gb_settings, false);
 	
 	for (int i = 0; i < nbound; i++)
 		arr_free(bound_squared + i);
@@ -114,6 +126,11 @@ bool should_this_mode_redo_calculation(QRVariant mode)
 	return (REDO_CALCULATION_PURE && mode == PURE ) || 
 		(REDO_CALCULATION_SHIFTED && mode == SHIFTED);
 }
+
+/*
+ * If energies and efuncs have already been calculated, they are retrieved from
+ * a data file. Otherwise they are calculated.
+ */
 
 void get_energies_and_efuncs(Array *energies, Matrix *efuncs,
 		int num_iterations, double x0, double xf, int nxpoints,
@@ -151,6 +168,11 @@ void get_energies_and_efuncs(Array *energies, Matrix *efuncs,
 	}
 }
 
+/* 
+ * Graph of the exact energies to setup the rootfinder routine with an 
+ * appropriate guess.
+ */
+
 void exact_energies_graph(double E1, double E2,void *params)
 {
 	Array domain = arr_linspace(E1,E2,DOMAIN_SIZE);
@@ -187,34 +209,37 @@ Array find_exact_energies(void *well_params)
 	ARR(exact_energies,2) = root_bis(even_E_eq,well_params,-4,-3,1e-10,NULL);
 	
 //	arr_print_inline(&exact_energies,"%lf ",true,true);
-	
 //	arr_print_inline(&debug_1,"%lf ",true,true);
-
 	
 	return exact_energies;
 }
 
 void compare_numerical_and_exact_energies(const Array *energies, int nbound,
-		const int bound_states_indices[], const Array *exact_energies)
+		const int bound_states_indices[], const Array *exact_energies,
+		double dx)
 {
-	puts("\n-------------------------------------------\n"
-		 ANSI_GREEN"Comparison between energies found through QR eigenvalue algorithm "
-		 "and exact solution\n\n"
-		 ANSI_YELLOW"Exact | Numerical | Difference"ANSI_RESET);
+	printf("\n-------------------------------------------\n"
+		 ANSI_GREEN"Comparison between energies found through \n"
+		 "QR eigenvalue algorithm "
+		 "and exact solution\n"
+		 ANSI_YELLOW"dx = "ANSI_RED"%g\n\n"
+		 ANSI_YELLOW"Exact | Numerical | Difference\n"ANSI_RESET,
+			dx);
 	for(int i=0; i<nbound; i++)
 	{
 		printf("%.2lf | %9.2lf | %.2e\n",ARRP(exact_energies,i),
 			ARRP(energies,bound_states_indices[i]),ARRP(exact_energies,i)-
 			ARRP(energies,bound_states_indices[i]));
 	}
-	
 	puts("\n-------------------------------------------\n");
 }
 
 
 void test_tise(RealPotential V, void *potential_params, double x0,
-	double xf, double dx, int nxpoints, int n_iter, QRVariant mode)
+	double xf, double dx, int n_iter, QRVariant mode)
 {
+	const int nxpoints=(int)round((xf-x0)/dx)+1;
+	
 	Array energies={0};
 	Matrix efuncs={0};
 	
@@ -244,14 +269,50 @@ void test_tise(RealPotential V, void *potential_params, double x0,
 	Array exact_energies = find_exact_energies(potential_params);
 	
 	compare_numerical_and_exact_energies(&energies,nbound,bound_states_indices,
-		&exact_energies);
+		&exact_energies, dx);
 	
 	arr_free(&exact_energies);
 
 	arr_free(&energies);
 	mat_free(&efuncs);
-	mypause();	
 }
+
+
+
+int main()
+{	
+
+	const double a=1;
+	const double V0=10;
+	double well_params[]={a,V0};
+	
+	if(SHOW_ROOT_HELPER)
+		exact_energies_graph(-10,0,(void*)well_params);
+	
+	const double x0=-5;
+	const double xf= 5;
+	const double dx=0.05;
+
+
+	test_tise(finite_well, well_params, x0, xf, dx, 1000, SHIFTED);
+	test_tise(finite_well, well_params, x0, xf, dx/5, 1000, SHIFTED);
+	
+
+	exit(EXIT_SUCCESS);
+}
+
+/*	OUTDATED
+	Array evec_product=arr_new(nxpoints);
+	Array curr_evec=arr_new(nxpoints);
+		
+	for(int i=0; i<nbound; i++)
+	{
+		for(int j=0; j<nxpoints; j++)
+			ARR(curr_evec,j)=MAT(evecs,j,bound_states_indices[i]);
+		mat_vecmult(&H_copy,&curr_evec,&evec_product);
+		arr_axpy(&evec_product,-ARR(energies,bound_states_indices[i]),&curr_evec);
+		arr_print_inline(&evec_product,"%.2g",true,true);
+	}
 
 void test_qr_trid(RealPotential V, void *potential_params, double x0,
 	double xf, double dx, int nxpoints, int n_iter)
@@ -268,46 +329,10 @@ void test_qr_trid(RealPotential V, void *potential_params, double x0,
 	mat_free(&efuncs);
 }
 
-int main()
-{	
 
-	const double a=1;
-	const double V0=10;
-	double well_params[]={a,V0};
-	
-	if(SHOW_ROOT_HELPER)
-		exact_energies_graph(-10,0,(void*)well_params);
-	
-	const double x0=-5;
-	const double xf= 5;
-	const double dx=0.01;
-	const int nxpoints=(int)round((xf-x0)/dx)+1; // 200
-	
-//	qr_shifted_test(x0, xf, dx, finite_well, well_params, nxpoints, 1000);
-//	test_tise_with_pure_qr(finite_well, well_params, x0, xf, dx, nxpoints, 200);
 
-	test_tise(finite_well, well_params, x0, xf, dx, nxpoints, 1000, SHIFTED);
-//	test_tise(finite_well, well_params, x0, xf, dx, nxpoints, 200, PURE);
 
-//	test_qr_trid(finite_well, well_params, x0, xf, dx, 10, 1000);
 
-	
-
-	exit(EXIT_SUCCESS);
-}
-
-/*	OUTDATED TEST FOR EIGENVALUES
-	Array evec_product=arr_new(nxpoints);
-	Array curr_evec=arr_new(nxpoints);
-		
-	for(int i=0; i<nbound; i++)
-	{
-		for(int j=0; j<nxpoints; j++)
-			ARR(curr_evec,j)=MAT(evecs,j,bound_states_indices[i]);
-		mat_vecmult(&H_copy,&curr_evec,&evec_product);
-		arr_axpy(&evec_product,-ARR(energies,bound_states_indices[i]),&curr_evec);
-		arr_print_inline(&evec_product,"%.2g",true,true);
-	}
 */	
 
 
