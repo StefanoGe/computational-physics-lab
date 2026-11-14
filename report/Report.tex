@@ -2156,6 +2156,33 @@ while solutions outside convergence to the circle of radius 2.
 \subsubsection{Predator-prey model}
 %-------------------------------------
 
+We now apply our RK4 routine to solve find a solution of the predator--prey
+model:
+\[  
+	\begin{split}
+		\derivative{t}{}{y} &= y(1-\alpha y) - \frac{yz}{1+\beta y}, \\[2mm]
+		\derivative{t}{}{z} &= -z + \frac{yz}{1+\beta y},
+	\end{split}
+\]
+where we used as parameters $\alpha = 0.1$ and $\beta=0.25$. 
+In ADD FIGURE AND REFERENCE we show the resulting curves of motion drawn
+in phase-space for a few starting values in the time frame $t\in [0,60]$.
+
+It is easy to see that a nontrivial equilibrium point is:
+\[
+	(x*,g*) = \left( \frac{1}{1-\beta}, \frac{1}{(1-\beta)^{2}}(1-\beta-\alpha){}
+		\right) = \left(\frac{4}{3}, \frac{52}{45}\right)
+\]
+which appears to be unstable, since a solution starting from a point near it 
+spyrals outwards away from it.
+
+After long times the curves seem to converge along a closed curve. We have tried
+to draw it by computing points up to time $t=660$.
+
+Additionally, in Graph ADD FIGURE AND REFERENCE we show the evolution of prey 
+and predators over time. As we expect from prey-predators model, the two 
+variables oscillate almost periodically.
+
 
 %--------------------------------------------------------------------------
 %--------------------------------------------------------------------------
