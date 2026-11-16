@@ -14,7 +14,7 @@ double average( const Array *arr )
 	return sum / (double) arr->size;
 }
 
-double bad_variance( const Array *arr )
+double definition_variance( const Array *arr )
 {
 	if (arr->size == 1)
 		return 0;
@@ -24,10 +24,10 @@ double bad_variance( const Array *arr )
 	for( int i = 0; i < arr->size; i++ )
 		sum += ( ARRP(arr,i) - ave )*( ARRP(arr,i) - ave );
 		
-	return sum / (double) (arr->size - 1);
+	return sum / (arr->size - 1);
 }
 
-double better_variance( const Array *arr )
+double one_loop_variance( const Array *arr )
 {
 	double sum_squares = 0;
 	double sum = 0;
@@ -38,19 +38,30 @@ double better_variance( const Array *arr )
 		sum += ARRP(arr,i);
 	}
 	
-	printf("sum = %f\n", sum);
-	printf("sum squares = %f\n", sum_squares);
+//	printf("sum = %f\n", sum);
+//	printf("sum squares = %f\n", sum_squares);
 	
-	return ( sum_squares - sum*sum / (double)arr->size ) / 
-		(double) (arr->size - 1);
+	return ( sum_squares - sum*sum / arr->size ) / 
+		(arr->size - 1);
 }
 
 void test_var(double values[])
 {
 	Array arr=arr_asarr(values,3);
 	
-	printf( "Bad variance is %lf\n", bad_variance(&arr) );
-	printf( "Better Variance is %lf\n", better_variance(&arr) );
+	printf("Of sample [");
+	
+	for(int i=0; i<3; i++)
+	{
+		if(i!=0)
+			printf("%d+", i);
+		printf("%.0e", ARR(arr, i));
+		if(i!=2)
+			fputs(", ", stdout);
+	}
+	puts("]");
+	printf( "Variance from definition is %.20lf\n", definition_variance(&arr) );
+	printf( "One-loop variance is        %.20lf\n\n", one_loop_variance(&arr) );
 }
 
 

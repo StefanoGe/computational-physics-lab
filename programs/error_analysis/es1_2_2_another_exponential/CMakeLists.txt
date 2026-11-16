@@ -1,0 +1,4 @@
+add_executable(another_exponential another_exponential.c)
+target_link_libraries(another_exponential PRIVATE cp)
+set_target_properties(another_exponential PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/programs/error_analysis/es1_2_2_another_exponential")
+

@@ -8,8 +8,9 @@
 % braket notation
 \usepackage{braket}
 
-% make sech operator
+% make operators
 \DeclareMathOperator{\sech}{sech}
+\DeclareMathOperator{\sign}{sign}
 
 % You can render figure and tables numbers without caption text
 \usepackage{caption}
@@ -78,6 +79,8 @@
 
 % Command for identity matrix
 \newcommand{\id}{\mathrm{I}}
+
+\newcommand{\R}{\mathbb{R}}
 
 % Bibliography
 \usepackage[backend=bibtex, style=alphabetic]{biblatex}
@@ -213,6 +216,12 @@ rewrite our code.
 
 \paragraph{Results}
 
+In Figure \ref{fig:approx_exp} we plot the error made in the approximation
+\[
+	e^{x}\approx\sum^{N}_{n=0}\frac{x^{n}}{n!}
+\]
+for different values of $N$.
+
 \begin{figure}[htbp]
     \centering
     \includegraphics[width=\textwidth]{approx_exp1_0.pdf}
@@ -228,7 +237,8 @@ rewrite our code.
 \begin{itemize}
 	\item{Horner's method was used in polynomial evaluation, because it is
 			faster and reduces roundoff errors. A naive implementation of a 
-			polynomial computation requires more operations ($O(N^{2})$) and, 
+			polynomial computation requires more operations ($O(N^{2})$,
+			if powers of $x$ are recomputed every time) and, 
 			for small values of $x$, adds together numbers of order 1 and $x^{N}$,
 			while Horner's method is $O(N)$ and keeps the additions only
 			between terms of order 1 and x.}
@@ -242,13 +252,12 @@ rewrite our code.
 			indistinguishable from $x^{N+1}/(N+1)$ for small values of x. For
 			larger values, the contribution of higher order terms in the series 
 			becomes ever more important, and hence the divergence from
-			$x^{N+1}/(N+1)$.}
-			
+			$x^{N+1}/(N+1)$.}	
 \end{itemize}
 
 
 %-------------------------------------
-\setcounter{subsection}{1}
+%\setcounter{subsection}{1}
 \subsection{Floating-point arithmetic and roundoff errors}
 %-------------------------------------
 
@@ -260,11 +269,21 @@ rewrite our code.
 
 \paragraph{Results}
 
+In Figure \ref{fig:baselfloat} we plot the error made in the approximation
+\[
+	\frac{\pi^{2}}{6}\approx\sum^{N}_{n=0}\frac{1}{n^{2}}
+\]
+for different values of $N$, calculated in single precision floating variables.
+In Figure \ref{fig:baseldouble} the same calculations are made in double 
+precision.
+
 \begin{figure}[htbp]
     \centering
     \includegraphics[width=\textwidth]{basel1_2_1float.pdf}
-    \caption{Approximation error when computing $\pi^{2}/6$ with the Basel problem truncated
-		series $\Sigma_0^{N}\frac{1}{n^{2}}$, with single precision floating variables. Here $\mathrm{N}$ is 
+    \caption{Approximation error when computing $\pi^{2}/6$ with 
+		the Basel problem truncated
+		series $\Sigma_0^{N}\frac{1}{n^{2}}$, with single precision 
+		floating variables. Here $\mathrm{N}$ is 
 		the number of terms used when calculating the series.}
     \label{fig:baselfloat}
 \end{figure}
@@ -283,15 +302,22 @@ rewrite our code.
 	\item{
 		The algorithm has been implemented with two mathematically equivalent 
 		forms, which, however, resulted in remarkably different numerical
-		results. \\
+		results.
+		
 		In the first the terms of the series are summed in increasing order of 
 		the summation index, i.e. decreasing of the value of the addends. Since
 		small addends are summed to the accumulating partial sum, it gets to a 
-		point where the next addend is smaller than $\epsilon_{mach} \cdot sum \approx \epsilon_{mach}$,
-		so the addition of it and subsequent values does not change the value of the partial sum. \\
-		This can be seen in the error plots in Figure \ref{fig:baselfloat} and \ref{fig:baseldouble},
-		since the error stops decreasing and remains constant after $ \mathrm{1/N^{2}} = \epsilon_{ \mathrm{mach} } $,
-		which is $2^{-24}$ for single precision (N = 4096) and $2^{-53}$ for double precision ($\mathrm{N} \approx 9.5 \times 10^{7}).$ \\
+		point where the next addend is smaller than $\epsilon_{mach} 
+		\cdot sum \approx \epsilon_{mach}$,
+		so the addition of it and subsequent values does not change 
+		the value of the partial sum.
+		
+		This can be seen in the error plots in Figure 
+		\ref{fig:baselfloat} and \ref{fig:baseldouble},
+		since the error stops decreasing and remains constant 
+		after $ \mathrm{1/N^{2}} = \epsilon_{ \mathrm{mach} } $,
+		which is $2^{-24}$ for single precision (N = 4096) and 
+		$2^{-53}$ for double precision ($\mathrm{N} \approx 9.5 \times 10^{7}).$
 		
 		In the second implementation the terms of the series are summed in decreasing
 		order of the summation index, i.e. increasing the value of the addends. Therefore,
@@ -316,9 +342,191 @@ rewrite our code.
 \subsection{Error propagation and condition number}
 %-------------------------------------
 
-\subsubsection{Computing statistical momenta}
+We derive some formulas that will be useful in subsequent parapgraphs.
+From \textcite[2.1]{quarteroni} we define the condition number of a problem
+or algorithm:
+\begin{equation}
+	\kappa(d) = \mathrm{sup}\left\{ \frac{||\delta x||/||x||}
+		{||\delta d||/||d||}\right\}
+\end{equation}
+where $x$ is the value we want to find, $d$ is the algorithm input, both 
+have an associated norm and $\delta x$, $\delta d$ are small variations.
+From this it follows that, if we use $||_{1}$ norm for $\R^{n}$,
+addition of two numbers has condition number 
+$\kappa(x,y) = \frac{|x|+|y|}{|x+y|}$.
 
-\subsubsection{Condition number: study of a simple algorithm}
+Furthermore, multiplication has:
+\begin{alignat*}{2}
+	\kappa(x,y) & = \mathrm{sup}\left\{ \frac{|x\delta y+\delta x y|
+			(|x|+|y|)}{|xy|\,(|\delta x|+|\delta y|)}\right\}
+\end{alignat*}
+But since 
+\begin{alignat*}{2}
+	\frac{|x\delta y+\delta x y|}{|\delta x|+|\delta y|} & \leq
+		\frac{|x\delta y| +|\delta x y|}{|\delta x|+|\delta y|} \\
+		&= \frac{|x|\alpha +|y|}{1+\alpha}
+\end{alignat*}
+Taking the derivative of this function with respect to $\alpha$ shows that it 
+has no zero. The maximum corresponds to $alpha = 0$ or $\alpha=\infty$, 
+therefore the supremum must be $\mathrm{max}(|x|,|y|)$.
+Hence:
+
+\[
+	\kappa(x,y) = \frac{(|x|+|y|)\,\mathrm{max}(|x|,|y|)}{|xy|}
+\]
+
+
+\subsubsection{Computing the variance of a sample}
+
+To analyze further the effect of floating point arithmetic on the result of 
+computations, we now evaluate the variance of a set of samples using 
+two different formulas: the definition of variance
+\begin{equation}\label{eq:samplevar}
+      \sigma^2 = \frac{1}{n-1} \sum_{i=1}^n (x_i - \overline{x})^2,
+      \qquad 
+      \overline{x} = \frac{1}{n} \sum_{i=1}^n x_i
+\end{equation}
+and the one-loop formula:
+\begin{equation}\label{eq:one_loop_var}
+   \begin{split}
+      \sigma^2 = \frac{1}{n-1} \left( u - \tfrac{1}{n}v^2 \right),\\
+      u  = \sum_{i=1}^n x_i^2, 
+      \qquad
+      v = \sum_{i=1}^n x_i.
+   \end{split}
+\end{equation}
+The samples are of the form:
+\[
+	[x, 1+x, 2+x]
+\]
+with $x$ a power of 10.
+
+\paragraph{Results}
+
+In Table \ref{table:variance_float} we show the result of the calculations 
+in single precision
+of the variance for the sample above. In Table \ref{table:variance_double} the 
+same is done in double precision.
+
+\begin{table}[ht]
+	\centering
+	\begin{tabular}{c|c|c}
+		$x$ & Definition $\sigma^{2}$ & One-loop $\sigma^{2}$ \\
+		\hline
+		$10^{3}$ & $1$ & 1 \\
+		$10^{6}$ & $1$ & -131072 \\
+		$10^{7}$ & $1$ & 0 \\
+		$10^{8}$ & $0$ & 0 
+	\end{tabular}
+	\caption{Table \ref{table:variance_float}: variance of sample 
+	evaluated with single-precision floating point variables}
+	\label{table:variance_float}
+\end{table}
+
+\begin{table}[ht]
+	\centering
+	\begin{tabular}{c|c|c}
+		$x$ & Definition $\sigma^{2}$ & One-loop $\sigma^{2}$ \\
+		\hline
+		$10^{3}$ & 1 & 1 \\
+		$10^{6}$ & 1 & 1 \\
+		$10^{7}$ & 1 & 1 \\
+		$10^{8}$ & 1 & 0
+	\end{tabular}
+	\caption{Table \ref{table:variance_double}: : variance of sample 
+	evaluated with double-precision floating point variables}
+	\label{table:variance_double}
+\end{table}
+
+\paragraph{Remarks}
+
+Both formulas \ref{eq:samplevar} and \ref{eq:one_loop_var} are 
+mathematically exact for the calculation of the variance of a sample. 
+How to explain then the discrepancies from the expected value 1 observed 
+in Table \ref{table:variance_float} and \ref{table:variance_double}?
+
+\begin{itemize}
+	\item{
+		Explaining why in the last row of Table \ref{table:variance_float} both 
+		formulas produce a zero variance is simple: since 
+		$2<\epsilon_{\text{mach}} \cdot 10^{8} /2
+		\approx 1.19 10^{-7} \cdot  10^{8} /2$,
+		$1+10^{8}$ and $2+10^{8}$ get stored as $10^{8}$, resulting in a 
+		constant array in memory.
+	}
+	\item{
+		In all other cases where we find values different from 1, large 
+		cancellations are involved in formula \ref{eq:one_loop_var}. 
+		In fact, the subtraction in the formula has condition number 
+		$\k \approx 2\cdot 10^{2m}$, where m is the exponent in the values of 
+		Table \ref{table:variance_float}.
+	}
+	\item{
+		When values are squared in formula \ref{eq:one_loop_var},
+		the last significant digits are truncated coarsely.
+		The numbers are of order $10^{2m}$, hence the spacing between two 
+		adjacent floating-point numbers is of order 
+		$\epsilon_{\text{mach}}\cdot10^{2m}\approx 10^{2m-7}$, which, in our
+		case, is around $10^{-1}$, $10^{5}$, $10^{7}$ and $10^{9}$!
+		As a consequence, the difference between those two numbers must be 
+		either 0 or on the order of these powers of 10. Indeed, all 
+		incorrect variances 0, safe for row 2 of Table \ref{table:variance_float},
+		which is, indeed, very close to $\epsilon_{\text{mach}}\cdot10^{2m}$.
+		The same phenomenon produces variance 0 with the one loop formula 
+		in the last row of Table \ref{variance_double}.
+	}
+	\item{
+		The definition of variance \ref{eq:samplevar} is much more stable, since 
+		cancellations are between numbers of order $10^{m}$ instead of 
+		$10^{2m}$.
+	}
+\end{itemize}
+
+\subsubsection{Computing another exponential function}
+
+We want to study how errors affect the computation of:
+\[
+	f(x)=\frac{e^{x}-1}{x}.
+\]
+
+The condition number of the problem is:
+\[
+	\kappa_{f}(x)=\left|\frac{x}{f(x)}f'(x)\right|={}
+		\left| \frac{e^{x}x-e^{x}+1}{e^{x}-1} \right|
+\]
+which is always less than 1 for $x \in [-1,1]$. The problem is 
+well-conditioned.
+
+If we try to evaluate $f$ in C with \mdcode{(exp(x)-1)/x}, however, 
+the condition number is different. This is because in an algorithm 
+the error propagates at each step.
+
+The condition number of $e^{x}$ is $\kappa[e^{x}]=|x|<1$. 
+Since $\epsilon_{\text{mach}}$
+error is always present, we'll take $\kappa[e^{x}]=1$.
+On the other hand
+\[
+	\kappa[e^{x}-1](x) = \left|\frac{e^{x}}{e^{x}-1}\right|.
+\]
+This gets very large as $x$ approaches 0. In the following calculation 
+we'll set $\kappa_{g}(x)=\kappa[e^{x}-1](x)$:
+\[
+\begin{split}
+	\kappa_{f}(x) &= \left| \frac{x\,\delta f }{f(x)\,\delta x}\right| =\\
+	&= |\kappa_{g}-\sign(g')|
+\end{split}
+\]
+where we used
+\[{}
+\begin{split}
+	\delta f &= \frac{g(x+\delta x)}{x+\delta x}-\frac{g(x)}{x} \approx \\
+	&\approx \frac{1}{x}\left( g(x+\delta x)\left(1-
+		\frac{\delta x}{x}\right) - g(x)\right) = \\
+	&= \sign(g')\frac{\kappa_{g}|g(x)||\delta x|}{x^{2}} 
+		- \frac{g(x)}{x^{2}}\delta x.
+\end{split}
+\]
+
 
 %--------------------------------------------------------------------------
 %--------------------------------------------------------------------------
