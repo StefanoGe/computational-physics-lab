@@ -1,0 +1,4 @@
+add_executable(least_squares_comparison least_squares_comparison.c)
+target_link_libraries(least_squares_comparison PRIVATE cp)
+set_target_properties(least_squares_comparison PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/programs/linear_systems/es2_5_1_least_squares_comparison")
+
