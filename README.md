@@ -60,7 +60,7 @@ cmake --build build
 
 If you have LAPACKE installed, you can also cofigure using:
 ```bash
-cmake -S . -B build   -DCMAKE_C_FLAGS="-DHAVE_LAPACKE=1"   -DCMAKE_C_STANDARD_LIBRARIES="-llapacke -llapack -lblas -lgfortran -lm"
+cmake -S . -B build -G Ninja -DCMAKE_C_FLAGS="-DHAVE_LAPACKE=1"   -DCMAKE_C_STANDARD_LIBRARIES="-llapacke -llapack -lblas -lgfortran -lm"
 ```
 Otherwise, source codes depending on LAPACKE will be compiled into blank executables.
 

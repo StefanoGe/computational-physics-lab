@@ -6,9 +6,12 @@
 
 #define N_XS 100
 #define NORMALIZATION_CONSTANT 2006.787453080206
-#define LUP 0
-#define MGS 1
-#define QLESS 2
+
+typedef enum {
+	LUP,
+	MGS,
+	QLESS
+}Mode;
 
 double monomyal(double x, void *exp){return pow(x, *(int*)exp);}
 
@@ -48,19 +51,18 @@ void plot_fit( const Array *coeffs, const Array *x_data,
 		
 	SeriesSpec series[] = {fit_data, true_data};
 	
-	eplot_multi(series, 2, &gb_settings);
+	eplot_multi_options(series, 2, &gb_settings, false);
 	
 	
 	arr_free(&x_data_plot);
 	arr_free(&y_data_plot);
 }
 
-void fit_exp_sin(int n_pol, int mode, bool do_plot)
+void fit_exp_sin(int n_pol, Mode mode, bool do_plot, Array *coeffs)
 {
 	const int n_data = 100;
 	Array x_data = arr_linspace( 0, 1, n_data );
 	Array y_data = arr_map( &x_data, h_norm );
-	Array coeffs = {0};
 	
 	int *exponents = malloc(n_pol*sizeof(int));
 	
@@ -73,34 +75,42 @@ void fit_exp_sin(int n_pol, int mode, bool do_plot)
 	}
 	
 	if(mode==LUP)
-		linst_lsqr_fit_linear_lup(&x_data, &y_data, &model, &coeffs);
+		linst_lsqr_fit_linear_lup(&x_data, &y_data, &model, coeffs);
 	else if(mode==MGS)
-		linst_lsqr_fit_linear_qr(&x_data, &y_data, &model, &coeffs);
+		linst_lsqr_fit_linear_qr(&x_data, &y_data, &model, coeffs);
 	else if(mode==QLESS)
-		linst_lsqr_fit_linear_qless(&x_data, &y_data, &model, &coeffs);
+		linst_lsqr_fit_linear_qless(&x_data, &y_data, &model, coeffs);
 	else
 		raiseErr("Select an appropriate mode");
 
-	char *used_decomposition = (mode==0 ? "LUP" : (mode==1 ? "QR" : "Q-less") );
-	printf("Found coeffs using %s decomposition:\n", used_decomposition);
-	arr_print_inline(&coeffs, "%g", true, true);
 
-	printf("Last coefficient c%d: %.10g\n\n", n_pol, ARR(coeffs, n_pol-1));
 
 	if(do_plot)
-		plot_fit( &coeffs, &x_data, &y_data, &model, n_data);
+		plot_fit( coeffs, &x_data, &y_data, &model, n_data);
 
-	Array *arr_to_free[]={&x_data, &y_data, &coeffs};
-	arr_free_many(arr_to_free, 3);
+	Array *arr_to_free[]={&x_data, &y_data};
+	arr_free_many(arr_to_free, 2);
 	free(exponents);
 	linear_model_free(&model);
 }
 
 int main()
 {
-	fit_exp_sin(15, LUP, false);
-	fit_exp_sin(15, MGS, false);
-	fit_exp_sin(15, QLESS, true);
+	Array coeffs[3]={0};
+	
+	
+	fit_exp_sin(15, LUP,  false, coeffs);
+	fit_exp_sin(15, MGS,  false, coeffs+1);
+	fit_exp_sin(15, QLESS, true, coeffs+2);
+	
+	puts(ANSI_YELLOW"Coefficients found in least squares fitting\n"ANSI_RESET);
+	puts("n  |    LUP    |    MGS    |  Q-LESS");
+	for(int i=0; i<15; i++)
+		printf("%2d | % 9.3g | % 9.3g | % 9.3g\n", i, ARR(coeffs[0],i), 
+			ARR(coeffs[1],i),ARR(coeffs[2],i));
+	
+	for(int i=0; i<3; i++)
+		arr_free(coeffs+i);
 	
 	exit(EXIT_SUCCESS);
 }

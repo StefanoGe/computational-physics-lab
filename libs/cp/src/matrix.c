@@ -339,5 +339,17 @@ void mat_col_to_arr(const Matrix *mat, Array *arr, int col)
 		ARRP(arr,i)=MATP(mat,i,col);
 }
 
+void mat_atb(const Matrix *A, const Array *b, Array *x)
+{
+	const int dim_g = A->ncols;
+	for (int i=0; i<dim_g; i++)
+	{
+		double sum = 0;
 
+		for (int p=0; p<A->nrows; p++)
+			sum += MATP(A,p,i) * ARRP(b,p);
+
+		ARRP(x,i) = sum;
+	}
+}
 

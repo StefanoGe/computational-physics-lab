@@ -67,8 +67,8 @@ void linst_lsqr_qless( const Matrix *A, const Array *b, Array *x );
 void linst_lsqr_fit_linear_qless( const Array *x, const Array *y, 
 	const LinearModel *model, Array *coeffs );
 	
-int linst_pure_qr(const Matrix *A, Array *eigenvalues, Matrix *evecs, 
-	double tol);
+bool linst_pure_qr(const Matrix *A, Array *eigenvalues, Matrix *evecs, 
+	double tol, int max_iter);
 
 int linst_inv_qr(const Matrix *A, Matrix *invA);
 
@@ -84,5 +84,8 @@ void linst_shifted_qr(Matrix *A, Array *eigenvalues, Matrix *evecs, int max_iter
 	
 void linst_shifted_qr_optimized_pentadiagonal(Matrix *A, Array *eigenvalues, 
 	Matrix *evecs, int max_iter, bool print_progress);
+
+void make_linear_model_matrix(Matrix *A, const LinearModel *model,
+	const Array *x);
 
 #endif

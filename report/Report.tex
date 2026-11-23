@@ -84,6 +84,18 @@
 
 \newcommand{\emach}{\epsilon_{\text{mach}}}
 
+% Overline longer than \bar and shorter than \overline 
+\newcommand{\overbar}[1]{\mkern 1.5mu\overline{\mkern-1.5mu#1\mkern-1.5mu}\mkern 1.5mu}
+
+% Bold matrices
+\newcommand{\bA}{\mathbf{A}}
+\newcommand{\bQ}{\mathbf{Q}}
+\newcommand{\bR}{\mathbf{R}}
+\newcommand{\bv}{\mathbf{v}}
+\newcommand{\bvec}{\mathbf{v}}
+\newcommand{\bq}{\mathbf{q}}
+\newcommand{\be}{\mathbf{e}}
+
 % Bibliography
 \usepackage[backend=bibtex, style=alphabetic]{biblatex}
 
@@ -981,7 +993,7 @@ However, if we set $\epsilon = 10^{-12}$, we find:
 
 \subsection{Overdetermined linear systems}
 
-\subsubsection{Least squares through normal equations}
+\subsubsection{Least squares through normal equations}\label{sssection:lsqr_normal}
 
 \paragraph{Results}
 
@@ -1108,19 +1120,25 @@ Results are shown in Figure \ref{fig:expsin_pol} and in Figure
 
 \subsection{QR decomposition}
 
-In this section we implement algorithms to find the QR decomposition of
-any matrices. First the modified Gram-Schmidt procedure (MGS).
+In this section we implement algorithms to find the (thin) QR decomposition of
+any matrix and to solve the least squares problem, i.e. 
+to find vector $\mathbf x$ that minimizes $|\mathbf A\mathbf x = \mathbf b|$. 
+First we implement the modified Gram-Schmidt procedure (MGS) to find the 
+Q-less decomposition $\mathbf A = \mathbf{\tilde{Q}\tilde{R}}$, with 
+$\mathbf{\tilde{R}}$
+square upper triangular and $\mathbf{\tilde{Q}}$ ONC.
 
 \paragraph{Results}
 
 We test the modified Gram-Schmidt procedure on the following matrices:
 
-\[
+\[{}
+\begin{aligned}
 	\begin{bmatrix}
 		2 & -1 \\
 		0 & 1 \\
 		-2 & 2
-	\end{bmatrix}=
+	\end{bmatrix}&=
 	\begin{bmatrix}
 		0.707 & 0.408 \\
 		0.000 & 0.816 \\
@@ -1129,16 +1147,14 @@ We test the modified Gram-Schmidt procedure on the following matrices:
 	\begin{bmatrix}
 		2.828 & -2.121 \\
 		0 & 1.225
-	\end{bmatrix}
-\]
-
-\[
+	\end{bmatrix}\\
+%
 	\begin{bmatrix}
 		2 & 3 & 4 \\
 		4 & 5 & 10 \\
 		4 & 8 & 2
 	\end{bmatrix}
-	=
+	&=
 	\begin{bmatrix}
 		 0.333 & -0.104 &  0.937 \\
 		 0.667 & -0.677 & -0.312 \\
@@ -1148,17 +1164,15 @@ We test the modified Gram-Schmidt procedure on the following matrices:
 		6.000 & 9.667 & 9.333 \\
 		0      & 2.134 & -5.726 \\
 		0      & 0      &  0.312
-	\end{bmatrix}
-\]
-
-\[
+	\end{bmatrix}\\
+%
 	\begin{bmatrix}
 		2 & -1 & 4 \\
 		0 & 3 & 5 \\
 		7 & 2 & -6 \\
 		1 & -4 & 0
 	\end{bmatrix}
-	=
+	&=
 	\begin{bmatrix}
 		 0.272 & -0.241 &  0.733 \\
 		 0.000 &  0.559 &  0.617 \\
@@ -1170,25 +1184,223 @@ We test the modified Gram-Schmidt procedure on the following matrices:
 		0     & 5.368 &  0.752 \\
 		0     & 0     &  7.418
 	\end{bmatrix}
+\end{aligned}
 \]
-
+%
 Computing the product $\mathbf{A=QR}$ gives us the matrices we have decomposed,
 confirming the correctness of the decomposition.
-Also we computed $\mathbf{Q}^\intercal \mathbf{Q}$ and we confirmed that the 
-computed $\mathbf{Q}$'s are indeed ONC matrices. 
+Computing $\mathbf{Q}^\intercal \mathbf{Q}$ confirms that
+$\mathbf{Q}$'s we obtained are indeed ONC matrices. 
 
 \subsubsection{Least squares through QR}
 
-We implemented QR algorithm to solve least-squares problem, and applied it
-to the problem of fitting the function $\exp^{\sin(4t)}$ with a 14th degree
-polynomial.
+We implemented a QR decomposition-based 
+routine to solve the least-squares problem. We also implemented 
+a stabler version of the algorithm, called 
+$Q-less$, that avoids a source of error by operating on the augmented matrix 
+$\mathbf A' = \mathbf Q' \mathbf R'$. We tested both routines
+in the problem of fitting the function $\exp^{\sin(4t)}/D$,
+with $D\approx 2006.79$, with a 14th degree
+polynomial:
+\[
+	P(t)=c_{0}+c_{1}t+...+c_{14}t^{14}.
+\]
+We also provided for reference the results of the fit obtained using 
+the algorithm in \ref{sssection:lsqr_normal} for least squares.
+Executing \mdcode{least_squares_comparison} yields all the coefficients 
+$\{c_{i}\}$ found. We report here only the values of $c_{14}$ in Table 
+\ref{table:c14}.
+%
+\begin{table}[ht]
+	\centering
+	\begin{tabular}{c|c|c|c}
+		 & LUP & QR-MGS & Q-less \\
+		\hline
+		$c_{14}$ & -0.505 & 1.03 & $1+8\cdot10^{-8}$ \\
+	\end{tabular}
+	\caption{Table \ref{table:c14}}
+	\label{table:c14}
+\end{table}
+%
+The expected value is 1. As we can see, Q-less gets the exact value, MGS has 
+an error of 3\% and least squares through LUP-Decomposition produces a number 
+which is completely wrong. Among the three Q-less is the most stable stable 
+algorithm, while LUP the least.
 
-\paragraph{Results}
+In order to study the error, we compute the
+two-norm condition numbers $\kappa_{2}$ of matrices $\mathbf A$ and 
+$\mathbf A^{\intercal}\mathbf A$.
+$||_{2}$ norm of a matrix is $\sigma_{1}$, its largest singular value
+\parencite[1.11 Norme matriciali]{quarteroni}. Hence te condition number
+\[
+	\kappa_{2}(\mathbf A) = |\mathbf A|_{2}|\mathbf A^{-1}|_{2} =
+		\frac{\sigma_{1}(A)}{\sigma_{n}(A)}
+\]
+where $\sigma_{n}(\mathbf A)$ is the lowest singular value of $\mathbf A$, 
+since the singular 
+values of $\mathbf A^{-1}$ are just the reciprocal of the singular values of 
+$\mathbf A$.
+To find the SVD-decomposition we use the LAPACK routine \mdcode{dgesvd}.
+We find $\kappa_{2}(\mathbf A)=2\cdot 10^{10}$ and 
+$\kappa_{2}(\mathbf A^{\intercal}\mathbf A)=5\cdot 10^{17}$.
+The conditioning of the whole least-squares problem for finding $x$
+is of order $\kappa(A)$ if $\mathbf A$ is taken to be exact
+\parencite[18]{trefethen}. With the normal equations approach, however, 
+the algorithm solves a system $\mathbf A^{\intercal}\mathbf A \mathbf x =
+\mathbf y$ which has relative condition number 
+$\mathbf A^{\intercal}\mathbf A)=5\cdot 10^{17}$. Since 
+$\mathbf A^{\intercal}\mathbf A) \, \emach > 1$, we do not find a single digit 
+of precision from the calculation. 
 
+In MGS case, the relative error that we find is 
+$|\delta \mathbf x|/|\mathbf x| \approx 2\%$. Since we started from a relative 
+error $\emach \approx 10^{-16}$, this is very bad and is much higher than the 
+error from the conditioning of the problem. This happens because the matrix 
+$Q$ produced by Gram-Schmidt orthogonalization is not necessary orthogonal, 
+which is, however, a necessary condition to invert $Q$ by taking its transpose.
 
+Q-less obviates the problem by avoiding the calculation of $Q$. 
+In particular, the difference between estimated $c_{14}$ and 1 
+is about $10^{-7}$. This is even lower than the error from the conditioning 
+of the problem $\emach \cdot \kappa (A) = 10^{-6}$ (which, however, refers 
+only to errors in two norms, which we cannot calculate here).
+
+\begin{comment}
+The abolute error should behave as
+\[
+	|\delta x| = \frac{\kappa_{2}(\mathbf A^{\intercal}\mathbf A \,|x|\,
+		|\delta y|)}{|y|} \approx 
+		\kappa_{2}(\mathbf A^{\intercal}\mathbf A \,|x|\,\emach \approx 
+		
+\]
+
+To study the error in the MSG case, we consider the Q-less value to be exact and
+evaluate a numerical estimate of the condition number:
+\[
+	\kappa_{2}(\mathbf A) = \frac{|\delta x|( \,|x|\,
+		|\delta y|)}{|y|} \approx 
+		\kappa_{2}(\mathbf A^{\intercal}\mathbf A \,|x|\,\emach \approx 
+\]
+\end{comment}
 
 \subsubsection{QR decomposition for eigenvalues and eigenvectors}
 
+
+
+
+We will now discuss a simple technique for eigenvalues 
+and eigenvectors research based on QR-decomposition, "pure" QR. The algorithm 
+reads as:
+%
+\begin{enumerate}
+	\item[]{
+		Let $\bA_{0}=\bA$ be the matrix of which we want to find the eigenvalues.
+	}
+	\item{
+		Evaluate the QR-decomposition
+			$\bQ_{n}\bR_{n}=\bA_{n-1}$.
+		}
+	\item{
+		Evaluate $\bA_{n}=\bR_{n}\bQ_{n}$.
+	}
+	\item{
+		Evaluate $\overline{\bQ}_{n}=\overline{\bQ}_{n-1}\bQ_{n}$.
+	}
+	\item[]{
+		Repeat steps 1-3 until convergence.
+	}
+\end{enumerate}
+%
+Due to its simplicity, the algorithm converges slowly and convergence 
+is guaranteed only for a limited class of matrices, namely those real symmetric 
+which have eigenvalues all distinct in absolute value. Nonetheless, it is very 
+instructive to understand the clever argument on which the algorithm is based,
+thus we now present our intuitive understanding of it, mainly for our future 
+reference.
+
+The key point is that the repetition of the steps listed in the algorithm is 
+equilavent to QR-decomposing the power matrix $\bA_{0}^{n}$.
+In fact, inductively:
+%
+\begin{flalign*}
+	&\overbar{\bQ}_{1}=\bQ_{1}=\bA_{0}\bR_{1}^{-1} \\
+	&\bQ_{2}=\bA_{1}\bR_{2}^{-1}=\bR_{1}\bA_{0}\bR^{-1}_{1}\bR_{2}^{-1} \\
+	&\bQ_{n}=\overbar{\bR}_{n-1}\bA_{0}\overbar{\bR}_{n}^{-1}
+\end{flalign*}
+where we set 
+$\overbar{\bR}_{n}=\bA_{n}...\bR_{1}$. Hence:
+\[
+	\overbar{\bQ}_{n}=\bA_{0}\bR_{1}^{-1}\bR_{1}\bA_{0}\overbar{\bR}_{2}^{-1}
+	...\overbar{\bR}_{n-1}\bA_{0}\overbar{\bR}_{n}^{-1} =
+	\bA_{0}^n\overbar{\bR}_{n}^{-1}{n}.
+\]
+Note that $\overbar{\bR}_{n}^{-1}{n}$ is upper trangular, because both the 
+product and inverses of upper triangular matrices are upper triangular.
+Let's now focus on the last equality and how the columns of 
+$\overbar{\bQ}_{n}$ look.
+For any vector $\bvec=v_{1}\bq_{1}+...+v_{m}\bq_{m}$, 
+with ${\bq_{i}}$ a set of orthogonal eigenvectors, 
+$\bA_{0}^{n}\bvec=v_{1}\lambda_{1}^{n}\bq_{1}+...+v_{m}\lambda_{m}^{n}\bq_{m}$,
+where $\lambda_{i}$ is the eigenvalue relative to $\bq_{i}$.
+We see that if all the eigenvalues are different than others, as $n$ goes to 
+infinity the vector will converge to the eigenvector relative to the eigenvalue 
+with greater absolute value \parencite{trefethen}.
+Since $\overbar{\bR}_{n\,[:,1]}^{-1}\propto\be_{1}$, $\overbar{\bQ}_{n\,[:,1]}$ will 
+converge to the eigenvector relative to the eigenvalue of greater absolute value.
+The second column of $\overbar{\bQ}_{n}$ is obtained in a similar manner and is 
+bound to converge to an eigenvector of $\bA_{0}$, but since the column of 
+$\overbar{\bQ}_{n}$ are orthogonal, it will converge to the eigenvector whose 
+eigenvalues has the second greater absolute value, and so on. 
+Also, it can be shown that:
+\[
+	\bA_{0}^{n}=\overbar{\bQ}_{n}\bA_{n}\overbar{\bQ}_{n}^{-1}.
+\]
+Hence, by spectral theorem, if $\overbar{\bQ}_{n}$ converges to the matrix of 
+eigenvectors, $\bA_{n}$ will converge to the diagonal matrix of eigenvalues.
+
+\paragraph{Results}
+
+We tested our routine for pure QR on the matrix
+\[
+	\bA=\begin{bmatrix}
+		 5 & 1 & 0 & 0\\
+		 1 & 4 & 1 & 0\\
+		 0 & 1 & 3 & 1\\
+		 0 & 0 & 1 & 2
+	\end{bmatrix}
+\]
+and found the eigenvalues $[5.75,  4.18,  2.82, 1.25]$ relative to the 
+eigenvectors:
+\[
+	\begin{bmatrix}
+		 0.778 \\
+		 0.580 \\
+		 0.234 \\
+		 0.063 
+	\end{bmatrix},
+	\begin{bmatrix}
+		-0.553 \\
+		 0.455 \\
+		 0.634 \\
+		 0.291 
+	\end{bmatrix},
+	\begin{bmatrix}
+		 0.2912 \\
+		-0.6340 \\
+		 0.4552 \\
+		 0.5533
+	\end{bmatrix},
+	\begin{bmatrix}
+		-0.063 \\
+		 0.234 \\
+		-0.580 \\
+		 0.778
+	\end{bmatrix}.
+\]
+To see if the correctness of the results we check if, for each eigenvalue, it 
+holds that $\bA \bv - \lambda \bv \approx \mathbf 0$. 
+The relation holds within the same tolerance that we requested on the off diagonal
+terms of the eigenvalue matrix in the algorithm.
 
 
 %--------------------------------------------------------------------------

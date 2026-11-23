@@ -77,6 +77,6 @@ void mat_init_if_wrong_dimension(Matrix *mat, int nrows, int ncols);
 void mat_print( const Matrix *mat, FILE *stream,char *format_entry,
 	char *end_line);
 
-
+void mat_atb(const Matrix *A, const Array *b, Array *x);
 
 #endif

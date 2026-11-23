@@ -286,19 +286,6 @@ Matrix linst_lu_extract_p(int *pivots, int dim)
 	return P;
 }
 
-static inline void mat_atb(const Matrix *A, const Array *b, Array *x)
-{
-	const int dim_g = A->ncols;
-	for (int i=0; i<dim_g; i++)
-	{
-		double sum = 0;
-
-		for (int p=0; p<A->nrows; p++)
-			sum += MATP(A,p,i) * ARRP(b,p);
-
-		ARRP(x,i) = sum;
-	}
-}
 
 void linst_lsqr_lup ( const Matrix *A, const Array *b, Array *x )
 {
@@ -352,7 +339,7 @@ void linear_model_free(LinearModel *m) {
     m->nfuncs=0;
 }
 
-static inline void make_linear_model_matrix(Matrix *A, const LinearModel *model,
+void make_linear_model_matrix(Matrix *A, const LinearModel *model,
 	const Array *x)
 {
 	
@@ -627,14 +614,14 @@ double off_diagonal_norm(const Matrix *A)
 	double off = 0;
 	for (int i = 1; i < A->nrows; i++)
 		for (int j = 0; j < i; j++)
-			off += MATP(A,i,j) * MATP(A,i,j)+MATP(A,j,i)+MATP(A,j,i);
+			off += MATP(A,i,j) * MATP(A,i,j)+MATP(A,j,i)*MATP(A,j,i);
 
 	off = sqrt(off);
 	return off;
 }
 
-int linst_pure_qr(const Matrix *A, Array *eigenvalues, Matrix *evecs, 
-	double tol)
+bool linst_pure_qr(const Matrix *A, Array *eigenvalues, Matrix *evecs, 
+	double tol, int max_iter)
 {
 	const int dim=A->nrows;
 	
@@ -650,7 +637,7 @@ int linst_pure_qr(const Matrix *A, Array *eigenvalues, Matrix *evecs,
 	
 	int i=0;
 	
-	while(tol<off_norm)
+	while(!(off_norm <= tol))
 	{
 		linst_qr_mgs(&Acp,&Q,&R);
 		mat_mult(&R,&Q,&Acp);
@@ -658,8 +645,14 @@ int linst_pure_qr(const Matrix *A, Array *eigenvalues, Matrix *evecs,
 		off_norm=off_diagonal_norm(&Acp);
 		
 		i++;
-		if(i>=1000)
-			raiseErr("loop did not stop");
+		if(i>=max_iter)
+		{
+			mat_print_stdout(evecs,"%g",true);
+			mat_print_stdout(&Acp, "%g", true);
+			mat_free(&Q); mat_free(&R); mat_free(&Acp);
+			return 1;
+		}
+
 	}
 	
 	arr_init(eigenvalues,dim);
@@ -668,7 +661,7 @@ int linst_pure_qr(const Matrix *A, Array *eigenvalues, Matrix *evecs,
 	
 	Matrix *to_free[]={&Q,&R,&Acp};
 	mat_free_many(to_free,3);
-	return i;
+	return 0;
 }
 
 void linst_pure_qr_iter(const Matrix *A, Array *eigenvalues, Matrix *evecs, 
